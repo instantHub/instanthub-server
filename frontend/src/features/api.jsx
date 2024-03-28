@@ -17,7 +17,8 @@ export const api = createApi({
       providesTags: ["User"],
     }),
     getCategory: build.query({
-      query: () => "/api/category?_sort=name&_order=desc",
+      // query: () => "/api/category?_sort=name&_order=desc",
+      query: () => "/api/category",
     }),
     createCategory: build.mutation({
       query: (catData) => ({
@@ -36,12 +37,27 @@ export const api = createApi({
         body: data,
       }),
     }),
+    getBrand: build.query({
+      query: (catId) => `/api/brand/${catId}`,
+    }),
+    createBrand: build.mutation({
+      query: (data) => ({
+        url: "/api/brand/add-brand",
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: data,
+      }),
+    }),
   }),
 });
 
 export const {
   useGetUserQuery,
+  useGetCategoryQuery,
   useCreateCategoryMutation,
   useUploadFileHandlerMutation,
-  useGetCategoryQuery,
+  useGetBrandQuery,
+  useCreateBrandMutation,
 } = api;

@@ -14,7 +14,7 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className="bg-white text-[#E27D60] p-4 rounded-full mt-4 mx-4 sticky top-2 border-b border-[#E27D60] shadow-xl">
+      <nav className="bg-white text-[#E27D60] p-4 rounded-xl mt-4 mx-4 sticky top-2 border-b border-[#E27D60] shadow-xl">
         <div className="max-w-full mx-auto px-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center grow">
@@ -28,11 +28,7 @@ const Navbar = () => {
             <div className="hidden  md:flex ">
               <ul className="flex space-x-4">
                 <li className="">
-                  <Link to="/">
-                    <a href="#" className="">
-                      Home
-                    </a>
-                  </Link>
+                  <Link to="/">Home</Link>
                 </li>
                 <li>
                   <a href="#" className="">

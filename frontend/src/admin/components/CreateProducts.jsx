@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-const AddProducts = () => {
+const CreateProducts = () => {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedProdType, setSelectedProdType] = useState(""); // State to hold the selected option
   const [selectedFile, setSelectedFile] = useState(null);
@@ -22,7 +22,7 @@ const AddProducts = () => {
 
   console.log(selectedCategory);
   return (
-    <div className=" px-[2%] pt-[2%] ">
+    <div className=" px-[2%] pt-[2%] " disabled="true">
       <div className="flex justify-between items-center">
         <h1 className="bold text-[1.4rem] mb-2">Create Product</h1>
         <div className="flex">
@@ -31,7 +31,7 @@ const AddProducts = () => {
         </div>
       </div>
       <div className="bg-white border rounded-md shadow-lg">
-        <form action="" method="post" className="flex flex-col gap-4  p-5">
+        <form action="" method="post" className="flex flex-col gap-4  p-5 ">
           <div>
             <h2 className="">Add Product</h2>
           </div>
@@ -120,12 +120,8 @@ const AddProducts = () => {
                     <p className="absolute mt-[3.8rem]">
                       Selected file: {selectedFile.name}
                     </p>
-                  )}{" "}
-                  {/* Display the selected file name */}
+                  )}
                 </div>
-                {/* <div className="border rounded-md text-sm p-1">
-                  <span>Upload</span>
-                </div> */}
               </div>
             </div>
 
@@ -157,4 +153,4 @@ const AddProducts = () => {
   );
 };
 
-export default AddProducts;
+export default CreateProducts;

@@ -8,11 +8,15 @@ import cors from "cors";
 import path from "path";
 import helmet from "helmet";
 import morgan from "morgan";
+import multer from "multer";
+
+// Routers import
 import adminRoutes from "./routes/admin.js";
 import userRoutes from "./routes/user.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
+import brandRouter from "./routes/brandRoutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
-import multer from "multer";
+import productRoutes from "./routes/productRoutes.js";
 
 // data imports
 import User from "./models/user.js";
@@ -33,14 +37,15 @@ app.use(cors());
 /* ROUTES */
 app.use("/admin", adminRoutes);
 app.use("/api", userRoutes);
-app.use("/api", categoryRoutes);
+app.use("/api/category", categoryRoutes);
 app.use("/api/upload", uploadRoutes);
+app.use("/api/brand", brandRouter);
+app.use("api/products", productRoutes);
 
 const __dirname = path.resolve();
 // app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-app.use("/uploads", express.static(path.join(__dirname, "uploads")))
-
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // if (process.env.NODE_ENV === "production") {
 //   const __dirname = path.resolve();

@@ -4,7 +4,6 @@ const categorySchema = mongoose.Schema({
   name: {
     type: String,
     required: true,
-    unique: true,
   },
   uniqueURL: {
     type: String,
@@ -14,6 +13,12 @@ const categorySchema = mongoose.Schema({
     type: String,
     required: true,
   },
+  brands: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Brand",
+    },
+  ],
 });
 
 const virtual = categorySchema.virtual("id");

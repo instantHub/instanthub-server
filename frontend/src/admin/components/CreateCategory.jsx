@@ -6,7 +6,7 @@ import {
 import axios from "axios";
 import { toast } from "react-toastify";
 
-const AddProducts = () => {
+const CreateCategory = () => {
   const [category, setCategory] = useState("");
   const [uniqueURL, setUniqueURL] = useState("");
   const [imageSelected, setImageSelected] = useState("");
@@ -35,7 +35,7 @@ const AddProducts = () => {
   };
 
   // File handler
-  const uploadFileHandler = async (e) => {
+  const uploadFileHandler = async () => {
     const formData = new FormData();
     formData.append("image", imageSelected);
 
@@ -88,8 +88,6 @@ const AddProducts = () => {
   //   useEffect(() => {
   //     console.log("From useEffect()", categoryData);
   //   }, [categoryData]);
-
-  //   TESTING END
 
   return (
     <div className=" px-[2%] pt-[2%] ">
@@ -174,7 +172,7 @@ const AddProducts = () => {
   );
 };
 
-export default AddProducts;
+export default CreateCategory;
 
 // const result = await axios.post(
 //   "http://localhost:8000/api/upload",

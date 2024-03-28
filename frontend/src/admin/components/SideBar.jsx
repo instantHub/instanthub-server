@@ -20,12 +20,24 @@ const SideBar = (props) => {
       url: "add-products",
     },
     {
+      text: "Categories",
+      url: "categories",
+    },
+    {
       text: "Add Category",
       url: "add-category",
     },
     {
+      text: "Brands",
+      url: "brands",
+    },
+    {
+      text: "Add Brands",
+      url: "add-brands",
+    },
+    {
       text: "Questions",
-      url: "Icon",
+      url: "questions",
     },
     {
       text: "Setting",
@@ -54,9 +66,14 @@ const SideBar = (props) => {
       <ul className="flex flex-col my-28 items-center">
         {sideBarLinks.map(({ text, url }, i) => {
           return (
-            <li className={`${active ? "bg-white" : ""} my-4 `} key={i}>
+            <li className={`my-4 `} key={i}>
               <button onClick={handleActive}>
-                <Link to={`/admin/${url}`}>{text}</Link>
+                <Link
+                  to={`/admin/${url}`}
+                  className={`${active ? "bg-white" : ""} `}
+                >
+                  {text}
+                </Link>
               </button>
             </li>
           );

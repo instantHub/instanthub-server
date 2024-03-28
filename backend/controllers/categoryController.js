@@ -1,4 +1,4 @@
-import Category from "../models/category.js";
+import Category from "../models/categoryModel.js";
 
 export const addCategory = async (req, res) => {
   try {
@@ -33,7 +33,7 @@ export const addCategory = async (req, res) => {
       let category = await Category.create({
         name: req.body.name,
         uniqueURL: req.body.uniqueURL,
-        image: req.body.uniqueURL,
+        image: req.body.image,
       });
       category.save();
       res.status(200).json(category);
@@ -61,7 +61,6 @@ export const getCategory = async (req, res) => {
     query = query.sort({ [req.query._sort]: req.query._order });
   }
 
-
   try {
     const docs = await query.exec();
     // res.set('X-Total-Count', totalDocs);
@@ -69,7 +68,6 @@ export const getCategory = async (req, res) => {
   } catch (err) {
     res.status(400).json(err);
   }
-
 
   // try {
   //   const categories = await Category.find();
