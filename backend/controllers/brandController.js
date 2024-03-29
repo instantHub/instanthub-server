@@ -1,6 +1,17 @@
 import Brand from "../models/brandModel.js";
 import Category from "../models/categoryModel.js";
 
+export const getAllBrands = async (req, res) => {
+  try {
+    const brand = await Brand.find();
+    console.log(brand);
+
+    res.status(200).json(brand);
+  } catch (error) {
+    res.status(404).json({ message: error.message });
+  }
+};
+
 export const getBrands = async (req, res) => {
   const catId = req.params.catId;
   //   console.log("catId from brandController", catId);
@@ -42,10 +53,6 @@ export const addBrand = async (req, res) => {
               checking = true;
             }
           }
-
-          // if (cat.name === req.body.name) {
-          //   checking = true;
-          // }
         });
 
         if (checking == false) {
@@ -57,9 +64,10 @@ export const addBrand = async (req, res) => {
           });
           brand.save();
 
-          // push the brand into its category
+          // push the brand into its category's brands array & save
           categoryFound.brands.push(brand);
           categoryFound.save();
+
           res.status(200).json(brand);
         } else {
           res.status(200).send({

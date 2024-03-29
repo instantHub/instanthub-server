@@ -1,47 +1,54 @@
 import mongoose from "mongoose";
-import Brand from "./brandModel.js";
-import Category from "./categoryModel.js";
 
 const productSchema = mongoose.Schema({
   name: {
     type: String,
     required: true,
   },
-  brand: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: Brand,
-    },
-  ], // Reference to the Brands collection
+  uniqueURL: {
+    type: String,
+    required: true,
+  },
+  image: {
+    type: String,
+    required: true,
+  },
   category: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: Category,
+      ref: "Category",
     },
   ], // Reference to the Categories collection
+  brand: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Brand",
+    },
+  ], // Reference to the Brands collection
   variants: [
     {
-      name: {
-        type: String,
-        required: true,
-      },
-      price: {
-        type: Number,
-        required: true,
-      },
-      stock: {
-        type: Number,
-        required: true,
-      },
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Variant",
     },
   ],
   series: [
     {
-      name: {
-        type: String,
-      },
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Series",
     },
   ],
+});
+
+const virtual = productSchema.virtual("id");
+virtual.get(function () {
+  return this._id;
+});
+productSchema.set("toJSON", {
+  virtuals: true,
+  versionKey: false,
+  transform: function (doc, ret) {
+    delete ret._id;
+  },
 });
 
 const Product = mongoose.model("Product", productSchema);

@@ -37,12 +37,25 @@ export const api = createApi({
         body: data,
       }),
     }),
+    getAllBrand: build.query({
+      query: () => `/api/brand`,
+    }),
     getBrand: build.query({
       query: (catId) => `/api/brand/${catId}`,
     }),
     createBrand: build.mutation({
       query: (data) => ({
         url: "/api/brand/add-brand",
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: data,
+      }),
+    }),
+    createProduct: build.mutation({
+      query: (data) => ({
+        url: "/api/products/add-product",
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -58,6 +71,8 @@ export const {
   useGetCategoryQuery,
   useCreateCategoryMutation,
   useUploadFileHandlerMutation,
+  useGetAllBrandQuery,
   useGetBrandQuery,
   useCreateBrandMutation,
+  useCreateProductMutation,
 } = api;

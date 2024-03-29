@@ -1,16 +1,8 @@
 import mongoose from "mongoose";
 
-const variantSchema = mongoose.Schema({
+const seriesSchema = mongoose.Schema({
   name: {
     type: String,
-    required: true,
-  },
-  price: {
-    type: Number,
-    required: true,
-  },
-  stock: {
-    type: Number,
     required: true,
   },
   product: [
@@ -21,11 +13,11 @@ const variantSchema = mongoose.Schema({
   ],
 });
 
-const virtual = variantSchema.virtual("id");
+const virtual = seriesSchema.virtual("id");
 virtual.get(function () {
   return this._id;
 });
-variantSchema.set("toJSON", {
+seriesSchema.set("toJSON", {
   virtuals: true,
   versionKey: false,
   transform: function (doc, ret) {
@@ -33,5 +25,5 @@ variantSchema.set("toJSON", {
   },
 });
 
-const Variant = mongoose.model("Variant", variantSchema);
-export default Variant;
+const Series = mongoose.model("Series", seriesSchema);
+export default Series;
