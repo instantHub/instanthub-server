@@ -1,5 +1,44 @@
 import mongoose from "mongoose";
 
+// const productSchema = mongoose.Schema({
+//   name: {
+//     type: String,
+//     required: true,
+//   },
+//   uniqueURL: {
+//     type: String,
+//     required: true,
+//   },
+//   image: {
+//     type: String,
+//     required: true,
+//   },
+//   category: [
+//     {
+//       type: mongoose.Schema.Types.ObjectId,
+//       ref: "Category",
+//     },
+//   ], // Reference to the Categories collection
+//   brand: [
+//     {
+//       type: mongoose.Schema.Types.ObjectId,
+//       ref: "Brand",
+//     },
+//   ], // Reference to the Brands collection
+//   variants: [
+//     {
+//       type: mongoose.Schema.Types.ObjectId,
+//       ref: "Variant",
+//     },
+//   ],
+//   series: [
+//     {
+//       type: mongoose.Schema.Types.ObjectId,
+//       ref: "Series",
+//     },
+//   ],
+// });
+
 const productSchema = mongoose.Schema({
   name: {
     type: String,
@@ -27,8 +66,14 @@ const productSchema = mongoose.Schema({
   ], // Reference to the Brands collection
   variants: [
     {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Variant",
+      name: {
+        type: String,
+        required: true,
+      },
+      price: {
+        type: Number,
+        required: true,
+      },
     },
   ],
   series: [

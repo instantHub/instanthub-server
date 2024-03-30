@@ -1,6 +1,24 @@
 import Product from "../models/productModel.js";
 import Brand from "../models/brandModel.js";
 
+export const getProducts = async (req, res) => {
+  try {
+    const brandId = req.params.brandId;
+    console.log(brandId);
+
+    const brandWithProducts = await Brand.findById(brandId).populate(
+      "products"
+    );
+
+    console.log("productsController GetProducts");
+    console.log(brandWithProducts);
+
+    const products = brandWithProducts.products;
+
+    res.status(200).json(products);
+  } catch (error) {}
+};
+
 export const createProduct = async (req, res) => {
   try {
     const products = await Product.find();
@@ -19,6 +37,7 @@ export const createProduct = async (req, res) => {
           checking = true;
         }
       });
+      console.log(checking);
 
       if (checking == false) {
         let product = await Product.create({
@@ -27,6 +46,7 @@ export const createProduct = async (req, res) => {
           image: req.body.image,
           category: req.body.category,
           brand: req.body.brand,
+          variants: req.body.variants,
         });
         product.save();
 
@@ -35,10 +55,20 @@ export const createProduct = async (req, res) => {
         productBrand.save();
 
         res.status(200).json(product);
-      } else {
+      } else if (checking == true) {
+        // TODO Task, Unique Name Validation not working
         res.status(200).send({
           msg: "Product (" + req.body.name + ") already exist ",
         });
+
+        // res.status(200).send({
+        //   msg:
+        //     "Brand (" +
+        //     req.body.name +
+        //     ") in the category (" +
+        //     req.body.category +
+        //     ")already exist ",
+        // });
       }
     } else {
       let product = await Product.create({
@@ -47,6 +77,7 @@ export const createProduct = async (req, res) => {
         image: req.body.image,
         category: req.body.category,
         brand: req.body.brand,
+        variants: req.body.variants,
       });
       product.save();
       // push the new product into its brand's products array & save
@@ -59,5 +90,3 @@ export const createProduct = async (req, res) => {
     res.status(404).json({ message: error.message });
   }
 };
-
-export const getProducts = (req, res) => {};

@@ -53,6 +53,9 @@ export const api = createApi({
         body: data,
       }),
     }),
+    getProducts: build.query({
+      query: (brandId) => `/api/products/${brandId}`,
+    }),
     createProduct: build.mutation({
       query: (data) => ({
         url: "/api/products/add-product",
@@ -75,4 +78,5 @@ export const {
   useGetBrandQuery,
   useCreateBrandMutation,
   useCreateProductMutation,
+  useGetProductsQuery,
 } = api;

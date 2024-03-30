@@ -11,6 +11,8 @@ import ElectronicsComponent from "./pages/brands/ElectronicsComponent";
 import ClientHome from "./pages/home/Home";
 import ClientNavbar from "./components/navbar/Navbar";
 import ClientBrands from "./pages/brands/Brands";
+import ClientProducts from "./pages/products/Products";
+import ClientProductDetail from "./pages/products/ProductDetail";
 
 // Admin side
 import AdminDashboard from "./admin/pages/dashboard/Dashboard";
@@ -40,6 +42,15 @@ function App() {
         {
           path: "/categories/brands/:catId",
           element: <ClientBrands />,
+        },
+        {
+          // path: "/categories/brands/products/:brandId",
+          path: "/categories/brands/products/:brandId",
+          element: <ClientProducts />,
+        },
+        {
+          path: "/categories/brands/productDetails",
+          element: <ClientProductDetail />,
         },
         // {
         //   path: "/test",

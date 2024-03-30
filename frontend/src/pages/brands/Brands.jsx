@@ -33,7 +33,7 @@ const Brands = () => {
           <div className="flex flex-wrap justify-evenly gap-6">
             {!data.length == 0 ? (
               data.map((brand, i) => (
-                <Link to={`/brands/${brand.name}`} key={i}>
+                <Link to={`/categories/brands/products/${brand.id}`} key={i}>
                   <div
                     key={i}
                     className="w-28 p-4 cursor-pointer border border-[#E27D60] rounded-lg shadow-sm hover:shadow-xl transition ease-in-out duration-500"

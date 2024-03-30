@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import CreateVariant from "./CreateVariant";
 import CreateSeries from "./CreateSeries";
 import {
@@ -16,16 +16,19 @@ const CreateProducts = () => {
   const [imageSelected, setImageSelected] = useState("");
   const [prodName, setProdName] = useState("");
   const [uniqueURL, setUniqueURL] = useState("");
+  // const [variants, setVariants] = useState([{ name: "", price: undefined }]);
   const [uploadProductImage, { isLoading: uploadLoading }] =
     useUploadFileHandlerMutation();
-  const [createProduct, { isLoading }] = useCreateProductMutation();
-
+  const [createProduct, { isLoading: productCreationLoading }] =
+    useCreateProductMutation();
   const { data: categoryData, isLoading: categoryLoading } =
     useGetCategoryQuery();
-  // console.log(categoryData);
-
   const { data: BrandData, isLoading: BrandLoading } = useGetAllBrandQuery();
+
+  let productId = undefined;
+
   // const [getBrand, { isLoading: BrandLoading }] = useGetBrandQuery();
+  // console.log(categoryData);
 
   // File handler
   const uploadFileHandler = async () => {
@@ -34,7 +37,6 @@ const CreateProducts = () => {
 
     try {
       const res = await uploadProductImage(formData).unwrap();
-      console.log("Product res.image", res.image);
 
       return res.image;
     } catch (error) {
@@ -42,11 +44,38 @@ const CreateProducts = () => {
     }
   };
 
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+
+  //   const imageURL = await uploadFileHandler();
+
+  //   const productsData = {
+  //     name: prodName,
+  //     uniqueURL: uniqueURL,
+  //     image: imageURL,
+  //     category: selectedCategory,
+  //     brand: selectedBrand,
+  //   };
+
+  //   console.log("productsData: ", productsData);
+
+  //   try {
+  //     const product = await createProduct(
+  //       JSON.stringify(productsData)
+  //     ).unwrap();
+  //     productId = product.id;
+  //     console.log("Product created", product);
+  //     toast("Product created successfull..!");
+  //   } catch (error) {
+  //     console.log("Error: ", error);
+  //   }
+  // };
+  console.log();
+  // TESTING
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     const imageURL = await uploadFileHandler();
-    console.log("imageURL", imageURL);
 
     const productsData = {
       name: prodName,
@@ -54,24 +83,44 @@ const CreateProducts = () => {
       image: imageURL,
       category: selectedCategory,
       brand: selectedBrand,
+      variants: variants,
     };
 
     console.log("productsData: ", productsData);
 
     try {
-      await createProduct(JSON.stringify(productsData)).unwrap();
+      const product = await createProduct(
+        JSON.stringify(productsData)
+      ).unwrap();
+      productId = product.id;
+      console.log("Product created", product);
       toast("Product created successfull..!");
-      // setBrand("");
-      // setUniqueURL("");
-      // setImageSelected("");
     } catch (error) {
       console.log("Error: ", error);
     }
   };
 
+  // VARIANT TESTING
+
+  const [variants, setVariants] = useState([{ name: "", price: "" }]);
+
+  const handleVariantChange = (index, key, value) => {
+    const updatedVariants = [...variants];
+    updatedVariants[index][key] = value;
+    setVariants(updatedVariants);
+  };
+
+  const addVariant = () => {
+    setVariants([...variants, { name: "", price: "" }]);
+  };
+
+  console.log("variants", variants);
+
+  // useEffect(() => {}, []);
+
   return (
-    <div className=" px-[2%] pt-[2%]">
-      <div>
+    <div className="flex px-[2%] pt-[2%]">
+      <div className="grow">
         <div className="flex justify-between items-center">
           <h1 className="bold text-[1.4rem] mb-2">Create Product</h1>
           <div className="flex">
@@ -178,6 +227,15 @@ const CreateProducts = () => {
                   }}
                   required
                 />
+                <div className="flex gap-2">
+                  {variants.map((variant) => (
+                    <div className="flex gap-1 border px-1 m-1 rounded-lg">
+                      <span className="opacity-50">{variant.name}</span>
+                      <span>-</span>
+                      <span className="opacity-50">{variant.price}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
 
               <div className="flex flex-col">
@@ -194,6 +252,40 @@ const CreateProducts = () => {
                   required
                 />
               </div>
+
+              {/* VARIANT TESTING */}
+
+              {/* <div>
+                <h3>Variants:</h3>
+                {variants.map((variant, index) => (
+                  <div key={index} className="my-2">
+                    <input
+                      type="text"
+                      value={variant.name}
+                      placeholder="variant name"
+                      onChange={(e) =>
+                        handleVariantChange(index, "name", e.target.value)
+                      }
+                    />
+                    <input
+                      type="number"
+                      value={variant.price}
+                      placeholder="variant price"
+                      onChange={(e) =>
+                        handleVariantChange(index, "price", e.target.value)
+                      }
+                    />
+                  </div>
+                ))}
+                <button
+                  onClick={addVariant}
+                  className="px-3 py-1 bg-emerald-500 rounded-lg"
+                >
+                  Add Variant
+                </button>
+              </div> */}
+
+              {/* VARIANT TESTING END */}
 
               <div className="p-2">
                 <label htmlFor="fileInput">File Input :</label>
@@ -238,6 +330,7 @@ const CreateProducts = () => {
               <button
                 type="submit"
                 className="border border-gray-950 bg-blue-500 rounded-md p-1 w-[20%] cursor-pointer hover:bg-white"
+                // onClick={handleSubmit}
               >
                 Submit
               </button>
@@ -246,9 +339,47 @@ const CreateProducts = () => {
         </div>
       </div>
 
-      <CreateVariant />
+      <div className="m-1 flex flex-col items-center justify-center">
+        <h3 className="text-xl inline-block">Add Variants:</h3>
+        {variants.map((variant, index) => (
+          <div
+            key={index}
+            className="my-2 bg-white border rounded-md shadow-lg p-6"
+          >
+            <input
+              type="text"
+              value={variant.name}
+              placeholder="variant name"
+              onChange={(e) =>
+                handleVariantChange(index, "name", e.target.value)
+              }
+              className="m-1 p-2 border rounded-lg"
+              required
+            />
+            <input
+              type="number"
+              value={variant.price}
+              placeholder="variant price"
+              onChange={(e) =>
+                handleVariantChange(index, "price", e.target.value)
+              }
+              className="m-1 p-2 border rounded-lg"
+              required
+            />
+          </div>
+        ))}
+        <button
+          onClick={addVariant}
+          className="px-3 py-1 bg-emerald-500 text-white rounded-lg"
+        >
+          Add Variant
+        </button>
+      </div>
 
-      <CreateSeries />
+      {/* <div className="flex justify-evenly mx-6 gap-80 2sm:gap-5 items-center">
+        <CreateVariant productId={productId} />
+        <CreateSeries />
+      </div> */}
     </div>
   );
 };
