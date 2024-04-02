@@ -52,18 +52,16 @@ const productSchema = mongoose.Schema({
     type: String,
     required: true,
   },
-  category: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Category",
-    },
-  ], // Reference to the Categories collection
-  brand: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Brand",
-    },
-  ], // Reference to the Brands collection
+  category: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Category",
+  },
+  // Reference to the Categories collection
+  brand: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Brand",
+  },
+  // Reference to the Brands collection
   variants: [
     {
       name: {
@@ -76,12 +74,10 @@ const productSchema = mongoose.Schema({
       },
     },
   ],
-  series: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Series",
-    },
-  ],
+  series: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Series",
+  },
 });
 
 const virtual = productSchema.virtual("id");

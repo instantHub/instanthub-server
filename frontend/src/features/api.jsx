@@ -53,12 +53,31 @@ export const api = createApi({
         body: data,
       }),
     }),
+    getAllProducts: build.query({
+      query: () => `/api/products`,
+    }),
     getProducts: build.query({
       query: (brandId) => `/api/products/${brandId}`,
+    }),
+    getProductDetails: build.query({
+      query: (prodId) => `/api/products/product-details/${prodId}`,
     }),
     createProduct: build.mutation({
       query: (data) => ({
         url: "/api/products/add-product",
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: data,
+      }),
+    }),
+    getAllQuestions: build.query({
+      query: () => `/api/questions`,
+    }),
+    createQuestion: build.mutation({
+      query: (data) => ({
+        url: "/api/questions/add-questions",
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -78,5 +97,9 @@ export const {
   useGetBrandQuery,
   useCreateBrandMutation,
   useCreateProductMutation,
+  useGetAllProductsQuery,
   useGetProductsQuery,
+  useGetProductDetailsQuery,
+  useGetAllQuestionsQuery,
+  useCreateQuestionMutation,
 } = api;

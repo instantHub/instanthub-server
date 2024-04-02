@@ -22,6 +22,8 @@ import AdminBrands from "./admin/pages/brands/Brands";
 import AdminCreateBrand from "./admin/components/CreateBrand";
 import AdminCategories from "./admin/pages/categories/Categories";
 import AdminCreateCategory from "./admin/components/CreateCategory";
+import AdminCreateQuestions from "./admin/components/CreateQuestions";
+import AdminQuestionsList from "./admin/pages/questions/QuestionsList";
 
 import Admin from "./admin/Admin";
 import AdminLayout from "./admin/pages/layout/Layout";
@@ -49,7 +51,7 @@ function App() {
           element: <ClientProducts />,
         },
         {
-          path: "/categories/brands/productDetails",
+          path: "/categories/brands/productDetails/:prodId",
           element: <ClientProductDetail />,
         },
         // {
@@ -116,7 +118,11 @@ function App() {
         },
         {
           path: "/admin/questions",
-          element: <AdminCreateCategory />,
+          element: <AdminCreateQuestions />,
+        },
+        {
+          path: "/admin/questionsList",
+          element: <AdminQuestionsList />,
         },
       ],
     },

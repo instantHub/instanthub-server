@@ -17,6 +17,7 @@ import categoryRoutes from "./routes/categoryRoutes.js";
 import brandRouter from "./routes/brandRoutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
+import questionRoutes from "./routes/questionRoutes.js";
 
 // data imports
 import User from "./models/user.js";
@@ -41,6 +42,7 @@ app.use("/api/category", categoryRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/brand", brandRouter);
 app.use("/api/products", productRoutes);
+app.use("/api/questions", questionRoutes);
 
 const __dirname = path.resolve();
 // app.use("/uploads", express.static(path.join(__dirname, "uploads")));

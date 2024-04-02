@@ -1,6 +1,17 @@
 import Product from "../models/productModel.js";
 import Brand from "../models/brandModel.js";
 
+export const getAllProducts = async (req, res) => {
+  try {
+    const products = await Product.find();
+    console.log(products);
+
+    res.status(200).json(products);
+  } catch (error) {
+    res.status(404).json({ message: error.message });
+  }
+};
+
 export const getProducts = async (req, res) => {
   try {
     const brandId = req.params.brandId;
@@ -16,7 +27,24 @@ export const getProducts = async (req, res) => {
     const products = brandWithProducts.products;
 
     res.status(200).json(products);
-  } catch (error) {}
+  } catch (error) {
+    res.status(404).json({ message: error.message });
+  }
+};
+
+export const getProductDetails = async (req, res) => {
+  try {
+    const prodId = req.params.prodId;
+    console.log(prodId);
+    const product = await Product.findById(prodId);
+
+    console.log("productsController GetProductDetails");
+    console.log(product);
+
+    res.status(200).json(product);
+  } catch (error) {
+    res.status(404).json({ message: error.message });
+  }
 };
 
 export const createProduct = async (req, res) => {
@@ -60,15 +88,6 @@ export const createProduct = async (req, res) => {
         res.status(200).send({
           msg: "Product (" + req.body.name + ") already exist ",
         });
-
-        // res.status(200).send({
-        //   msg:
-        //     "Brand (" +
-        //     req.body.name +
-        //     ") in the category (" +
-        //     req.body.category +
-        //     ")already exist ",
-        // });
       }
     } else {
       let product = await Product.create({

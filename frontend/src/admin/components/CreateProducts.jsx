@@ -75,6 +75,12 @@ const CreateProducts = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (variants.name == "" || variants.price == "") {
+      console.log("variants not added");
+      alert("Add Variants..!");
+      return;
+    }
+
     const imageURL = await uploadFileHandler();
 
     const productsData = {
@@ -94,16 +100,16 @@ const CreateProducts = () => {
       ).unwrap();
       productId = product.id;
       console.log("Product created", product);
-      toast("Product created successfull..!");
+      toast.success("Product created successfull..!");
     } catch (error) {
+      toast.error("Fill all required fields..");
       console.log("Error: ", error);
     }
   };
 
-  // VARIANT TESTING
+  // VARIANTS
 
   const [variants, setVariants] = useState([{ name: "", price: "" }]);
-
   const handleVariantChange = (index, key, value) => {
     const updatedVariants = [...variants];
     updatedVariants[index][key] = value;

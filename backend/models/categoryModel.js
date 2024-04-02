@@ -19,12 +19,10 @@ const categorySchema = mongoose.Schema({
       ref: "Brand",
     },
   ],
-  // products: [
-  //   {
-  //     type: mongoose.Schema.Types.ObjectId,
-  //     ref: "Product",
-  //   },
-  // ],
+  questions: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Question",
+  },
 });
 
 const virtual = categorySchema.virtual("id");
