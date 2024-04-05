@@ -62,6 +62,9 @@ export const api = createApi({
     getProductDetails: build.query({
       query: (prodId) => `/api/products/product-details/${prodId}`,
     }),
+    getProductQuestions: build.query({
+      query: (prodId) => `/api/products/product/product-questions/${prodId}`,
+    }),
     createProduct: build.mutation({
       query: (data) => ({
         url: "/api/products/add-product",
@@ -72,12 +75,22 @@ export const api = createApi({
         body: data,
       }),
     }),
-    getAllQuestions: build.query({
-      query: () => `/api/questions`,
+    getConditions: build.query({
+      query: () => `/api/questions/conditions`,
     }),
-    createQuestion: build.mutation({
+    createConditions: build.mutation({
       query: (data) => ({
-        url: "/api/questions/add-questions",
+        url: "/api/questions/add-conditions",
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: data,
+      }),
+    }),
+    createConditionLabels: build.mutation({
+      query: (data) => ({
+        url: "/api/questions/add-conditionlabels",
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -100,6 +113,37 @@ export const {
   useGetAllProductsQuery,
   useGetProductsQuery,
   useGetProductDetailsQuery,
-  useGetAllQuestionsQuery,
-  useCreateQuestionMutation,
+  useGetProductQuestionsQuery,
+  useGetConditionsQuery,
+  useCreateConditionsMutation,
+  useCreateConditionLabelsMutation,
 } = api;
+
+// useGetAllQuestionsQuery,
+// useGetQuestionsQuery,
+// useCreateQuestionMutation,
+// useUpdateQuestionMutation,
+
+// getAllQuestions: build.query({
+//   query: () => `/api/questions`,
+// }),
+// getQuestions: build.query({
+//   query: (questionsId) => `/api/questions/${questionsId}`,
+// }),
+// createQuestion: build.mutation({
+//   query: (data) => ({
+//     url: "/api/questions/add-questions",
+//     method: "POST",
+//     headers: {
+//       "Content-Type": "application/json",
+//     },
+//     body: data,
+//   }),
+// }),
+// updateQuestion: build.mutation({
+//   query: ({ questionId, data }) => ({
+//     url: `/api/questions/update-questions/${questionId}`,
+//     method: "PUT",
+//     body: data,
+//   }),
+// }),

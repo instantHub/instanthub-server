@@ -37,6 +37,35 @@ import mongoose from "mongoose";
 //       ref: "Series",
 //     },
 //   ],
+// questions: [
+//   {
+//     category: { type: mongoose.Schema.Types.ObjectId, ref: "Category" },
+//     conditions: [
+//       {
+//         conditionName: {
+//           type: String,
+//           required: true,
+//         },
+//         questions: [
+//           {
+//             questionName: {
+//               type: String,
+//               required: true,
+//             },
+//             priceDrop: {
+//               type: Number,
+//             },
+//             options: [
+//               {
+//                 type: String,
+//               },
+//             ],
+//           },
+//         ],
+//       },
+//     ],
+//   },
+// ],
 // });
 
 const productSchema = mongoose.Schema({
@@ -56,12 +85,10 @@ const productSchema = mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Category",
   },
-  // Reference to the Categories collection
   brand: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Brand",
   },
-  // Reference to the Brands collection
   variants: [
     {
       name: {
@@ -78,6 +105,41 @@ const productSchema = mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Series",
   },
+  questions: {
+    conditionNames: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Condition",
+      },
+    ],
+
+    conditionLabels: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "ConditionLabel",
+      },
+    ],
+  },
+  deductions: [
+    {
+      condtitionNames: {
+        type: String,
+      },
+      conditionLabels: [
+        {
+          conditionLabel: {
+            type: String,
+          },
+          conditionLabelImg: {
+            type: String,
+          },
+          priceDrop: {
+            type: Number,
+          },
+        },
+      ],
+    },
+  ],
 });
 
 const virtual = productSchema.virtual("id");

@@ -3,6 +3,7 @@ import {
   useGetBrandQuery,
   useGetProductsQuery,
   useGetCategoryQuery,
+  useGetAllProductsQuery,
 } from "../../features/api";
 import { useParams, Link } from "react-router-dom";
 
@@ -11,13 +12,26 @@ const Products = () => {
   const { data: getCategories, isLoading: categoryLoading } =
     useGetCategoryQuery();
 
+  // const {
+  //   data: productsData,
+  //   isLoading: productsLoading,
+  //   isSuccess: productsLoaded,
+  //   isError,
+  // } = useGetProductsQuery(brandId);
   const {
-    data: productsData,
+    data: products,
     isLoading: productsLoading,
     isSuccess: productsLoaded,
     isError,
-  } = useGetProductsQuery(brandId);
+  } = useGetAllProductsQuery();
   const [toggle, setToggle] = useState(false);
+
+  let productsData = undefined;
+
+  if (!productsLoading) {
+    productsData = products.filter((product) => product.brand.id == brandId);
+    console.log("productsData", productsData);
+  }
 
   // Finding Category of the Product
   let category = { name: "", id: "" };
@@ -34,6 +48,9 @@ const Products = () => {
     category.id
   );
 
+  if (!brandLoading) {
+    console.log("brandData", brandData);
+  }
   // Finding Brand of the Product
   let brand = { name: "", id: "" };
   if (!categoryLoading && !productsLoading && !brandLoading) {

@@ -5,13 +5,12 @@ import { setMode } from "../../features/globalSlice";
 import { useGetUserQuery } from "../../features/api";
 import { getUser } from "../../features/userSlice";
 
-
 const Navbar = (props) => {
   const dispatch = useDispatch();
   const userId = useSelector((state) => state.global.userId);
   const { data, isLoading } = useGetUserQuery(userId);
   if (!isLoading) {
-    console.log("data", data);
+    // console.log("data", data);
     dispatch(getUser(data));
   }
 

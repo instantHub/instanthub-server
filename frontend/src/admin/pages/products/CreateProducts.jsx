@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from "react";
-import CreateVariant from "./CreateVariant";
-import CreateSeries from "./CreateSeries";
+import CreateSeries from "../../components/CreateSeries";
 import {
   useGetCategoryQuery,
   useGetBrandQuery,
   useGetAllBrandQuery,
   useUploadFileHandlerMutation,
   useCreateProductMutation,
-} from "../../features/api";
+} from "../../../features/api";
 import { toast } from "react-toastify";
 
 const CreateProducts = () => {
@@ -383,7 +382,6 @@ const CreateProducts = () => {
       </div>
 
       {/* <div className="flex justify-evenly mx-6 gap-80 2sm:gap-5 items-center">
-        <CreateVariant productId={productId} />
         <CreateSeries />
       </div> */}
     </div>

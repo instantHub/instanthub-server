@@ -17,13 +17,17 @@ import ClientProductDetail from "./pages/products/ProductDetail";
 // Admin side
 import AdminDashboard from "./admin/pages/dashboard/Dashboard";
 import AdminProducts from "./admin/pages/products/Products";
-import AdminCreateProducts from "./admin/components/CreateProducts";
+import AdminCreateProducts from "./admin/pages/products/CreateProducts";
 import AdminBrands from "./admin/pages/brands/Brands";
-import AdminCreateBrand from "./admin/components/CreateBrand";
+import AdminCreateBrand from "./admin/pages/brands/CreateBrand";
 import AdminCategories from "./admin/pages/categories/Categories";
-import AdminCreateCategory from "./admin/components/CreateCategory";
-import AdminCreateQuestions from "./admin/components/CreateQuestions";
-import AdminQuestionsList from "./admin/pages/questions/QuestionsList";
+import AdminCreateCategory from "./admin/pages/categories/CreateCategory";
+import AdminCreateConditions from "./admin/pages/questions/CreateCondtions";
+import AdminProductsList from "./admin/pages/products/ProductsList";
+// import AdminProductQuestions from "./admin/pages/products/ProductQuestions";
+// import AdminCreateQuestions from "./admin/pages/questions/CreateQuestions";
+// import AdminQuestionsList from "./admin/pages/questions/QuestionsList";
+// import AdminUpdateQuestions from "./admin/pages/questions/UpdateQuestions";
 
 import Admin from "./admin/Admin";
 import AdminLayout from "./admin/pages/layout/Layout";
@@ -97,9 +101,17 @@ function App() {
           element: <AdminProducts />,
         },
         {
+          path: "/admin/productsList",
+          element: <AdminProductsList />,
+        },
+        {
           path: "/admin/add-products",
           element: <AdminCreateProducts />,
         },
+        // {
+        //   path: "/admin/products/product-questions/:prodQuesId/:prodId",
+        //   element: <AdminProductQuestions />,
+        // },
         {
           path: "/admin/categories",
           element: <AdminCategories />,
@@ -118,12 +130,20 @@ function App() {
         },
         {
           path: "/admin/questions",
-          element: <AdminCreateQuestions />,
+          element: <AdminCreateConditions />,
         },
-        {
-          path: "/admin/questionsList",
-          element: <AdminQuestionsList />,
-        },
+        // {
+        //   path: "/admin/questions-new",
+        //   element: <AdminCreateConditions />,
+        // },
+        // {
+        //   path: "/admin/questionsList",
+        //   element: <AdminQuestionsList />,
+        // },
+        // {
+        //   path: "/admin/updateQuestions/:questionsId",
+        //   element: <AdminUpdateQuestions />,
+        // },
       ],
     },
   ]);

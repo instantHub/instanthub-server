@@ -3,7 +3,7 @@ import {
   useGetCategoryQuery,
   useCreateBrandMutation,
   useUploadFileHandlerMutation,
-} from "../../features/api";
+} from "../../../features/api";
 import { toast } from "react-toastify";
 
 const CreateBrand = () => {

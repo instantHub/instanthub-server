@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import {
   useCreateCategoryMutation,
   useUploadFileHandlerMutation,
-} from "../../features/api";
+} from "../../../features/api";
 import axios from "axios";
 import { toast } from "react-toastify";
 

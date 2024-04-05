@@ -13,28 +13,32 @@ const SideBar = (props) => {
     },
     {
       text: "Products",
-      url: "products",
+      url: "productsList",
     },
     {
       text: "Add Products",
       url: "add-products",
     },
-    {
-      text: "Categories",
-      url: "categories",
-    },
+    // {
+    //   text: "Categories",
+    //   url: "categories",
+    // },
     {
       text: "Add Category",
       url: "add-category",
     },
-    {
-      text: "Brands",
-      url: "brands",
-    },
+    // {
+    //   text: "Brands",
+    //   url: "brands",
+    // },
     {
       text: "Add Brands",
       url: "add-brands",
     },
+    // {
+    //   text: "Questions",
+    //   url: "questions",
+    // },
     {
       text: "Questions",
       url: "questions",

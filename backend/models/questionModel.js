@@ -1,32 +1,31 @@
 import mongoose from "mongoose";
 
 const questionSchema = mongoose.Schema({
-  category: { type: mongoose.Schema.Types.ObjectId, ref: "Category" },
-  
-  conditions: [
-    {
-      conditionName: {
-        type: String,
-        required: true,
-      },
-      questions: [
-        {
-          questionName: {
-            type: String,
-            required: true,
-          },
-          priceDrop: {
-            type: Number,
-          },
-          options: [
-            {
-              type: String,
-            },
-          ],
-        },
-      ],
-    },
-  ],
+  // category: { type: mongoose.Schema.Types.ObjectId, ref: "Category" },
+  // conditions: [
+  //   {
+  //     conditionName: {
+  //       type: String,
+  //       required: true,
+  //     },
+  //     questions: [
+  //       {
+  //         questionName: {
+  //           type: String,
+  //           required: true,
+  //         },
+  //         priceDrop: {
+  //           type: Number,
+  //         },
+  //         options: [
+  //           {
+  //             type: String,
+  //           },
+  //         ],
+  //       },
+  //     ],
+  //   },
+  // ],
 });
 
 // Remove unique constraint on name field
