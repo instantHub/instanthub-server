@@ -10,7 +10,7 @@ export const api = createApi({
   }),
   // reducerPath: "adminApi",
   reducerPath: "API",
-  tagTypes: ["User"],
+  tagTypes: ["User", "Conditions"],
   endpoints: (build) => ({
     getUser: build.query({
       query: (id) => `api/user/${id}`,
@@ -77,6 +77,7 @@ export const api = createApi({
     }),
     getConditions: build.query({
       query: () => `/api/questions/conditions`,
+      providesTags: ["Conditions"],
     }),
     createConditions: build.mutation({
       query: (data) => ({
@@ -87,6 +88,18 @@ export const api = createApi({
         },
         body: data,
       }),
+      invalidatesTags: ["Conditions"],
+    }),
+    updateCondition: build.mutation({
+      query: ({ conditionId, data }) => ({
+        url: `/api/questions/update-condition/${conditionId}`,
+        method: "PUT",
+        body: data,
+      }),
+    }),
+    getConditionLabels: build.query({
+      query: () => `/api/questions/conditionlabels`,
+      // providesTags: ["Conditions"],
     }),
     createConditionLabels: build.mutation({
       query: (data) => ({
@@ -116,6 +129,8 @@ export const {
   useGetProductQuestionsQuery,
   useGetConditionsQuery,
   useCreateConditionsMutation,
+  useUpdateConditionMutation,
+  useGetConditionLabelsQuery,
   useCreateConditionLabelsMutation,
 } = api;
 
@@ -142,7 +157,7 @@ export const {
 // }),
 // updateQuestion: build.mutation({
 //   query: ({ questionId, data }) => ({
-//     url: `/api/questions/update-questions/${questionId}`,
+//     url: `/api/questions/update-condition/${conditionId}`,
 //     method: "PUT",
 //     body: data,
 //   }),

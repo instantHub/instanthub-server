@@ -122,11 +122,17 @@ const productSchema = mongoose.Schema({
   },
   deductions: [
     {
-      condtitionNames: {
+      conditionId: {
+        type: String,
+      },
+      conditionName: {
         type: String,
       },
       conditionLabels: [
         {
+          conditionLabelId: {
+            type: String,
+          },
           conditionLabel: {
             type: String,
           },
@@ -135,12 +141,22 @@ const productSchema = mongoose.Schema({
           },
           priceDrop: {
             type: Number,
+            default: 0,
           },
         },
       ],
     },
   ],
 });
+
+// Define a compound unique index
+// productSchema.index(
+//   {
+//     "deductions.condtitionNames": 1,
+//     "deductions.conditionLabels.conditionLabel": 1,
+//   },
+//   { unique: true }
+// );
 
 const virtual = productSchema.virtual("id");
 virtual.get(function () {

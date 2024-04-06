@@ -19,8 +19,11 @@ const conditionLabelSchema = mongoose.Schema({
   },
 });
 
-// Remove unique constraint on name field
-// conditionSchema.index({ name: 1 });
+// Define a compound unique index
+conditionLabelSchema.index(
+  { category: 1, conditionName: 1, conditionLabel: 1 },
+  { unique: true }
+);
 
 const virtual = conditionLabelSchema.virtual("id");
 virtual.get(function () {

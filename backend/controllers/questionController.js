@@ -157,26 +157,28 @@ export const updateQuestions = async (req, res) => {
   }
 };
 
-// Create Condtiion
+// Get Condtiions
 export const getConditions = async (req, res) => {
   console.log("getConditions controller");
   try {
-    console.log("before");
+    // console.log("before");
     const conditions = await Condition.find();
-    console.log(conditions);
-    console.log("after");
+    // console.log(conditions);
+    // console.log("after");
     res.status(200).json(conditions);
   } catch (error) {
     return res.status(500).json({ message: "Internal server error.", error });
   }
 };
 
+// Create Conditions
 export const createCondtions = async (req, res) => {
   const { category, conditionNames } = req.body;
 
   try {
     // Fetch existing conditions for the given category
     const existingConditions = await Condition.find({ category });
+    const productsToAddCon = await Product.find({ category });
 
     // Extract existing condition names
     const existingConditionNames = existingConditions.map(
@@ -202,6 +204,33 @@ export const createCondtions = async (req, res) => {
         conditionName: conditionName.name,
       }))
     );
+    console.log(newConditions);
+
+    const newDeductions = newConditions.map((condition) => ({
+      conditionId: condition.id,
+      conditionName: condition.conditionName,
+      conditionLabel: [], // Initialize with an empty array
+    }));
+
+    // Or update specific products based on a condition (e.g., category)
+    await Product.updateMany(
+      { category: category }, // Update products of a specific category
+      { $push: { deductions: { $each: newDeductions } } }
+    );
+
+    // Map conditions and condition labels to deductions array
+    // for (const product of productsToAddCon) {
+    //   // console.log(product.name);
+    //   // console.log(product.deductions);
+
+    //   if (product.deduction.length > 0) {
+    //     product.deductions.map((deduction) => {
+
+    //     });
+    //   } else {
+    //     // product.deduction
+    //   }
+    // }
 
     return res.status(201).json(newConditions);
   } catch (error) {
@@ -209,7 +238,97 @@ export const createCondtions = async (req, res) => {
   }
 };
 
+export const updateCondition = async (req, res) => {
+  try {
+    const conditionId = req.params.conditionId;
+    console.log("updateCondition Controller");
+    console.log("req.body", req.body);
+
+    const conditionFound = await Condition.findById(conditionId);
+
+    // Find all products of the same category
+    const productsToUpdate = await Product.find({
+      category: conditionFound.category,
+    });
+    // console.log("productsToUpdate", productsToUpdate);
+
+    // NEW APPROACH TO UPDATE PRODUCTS DEDUCTIONS CONDITION
+    for (const product of productsToUpdate) {
+      product.deductions.forEach((deduction) => {
+        if (deduction.conditionId === conditionId) {
+          deduction.conditionName = req.body.conditionName;
+        }
+      });
+
+      // Save the updated product
+      await product.save();
+    }
+
+    // Use Mongoose to find the question by ID and update it with the provided updates
+    const updatedCondition = await Condition.findByIdAndUpdate(
+      conditionId,
+      req.body,
+      { new: true }
+    );
+
+    // updateCondition.save();
+
+    // if (!updatedQuestion) {
+    //   return res.status(404).json({ message: "Question not found" });
+    // }
+
+    res.status(200).json(updatedCondition); // Send the updated question as a response
+  } catch (error) {
+    res.status(404).json({ message: error.message });
+  }
+};
+
+// Get ConditionLabels
+export const getConditionLabels = async (req, res) => {
+  console.log("getConditionLabels controller");
+  try {
+    console.log("before");
+    const conditionLabels = await ConditionLabel.find();
+    console.log(conditionLabels);
+    console.log("after");
+    res.status(200).json(conditionLabels);
+  } catch (error) {
+    return res.status(500).json({ message: "Internal server error.", error });
+  }
+};
+
+// Create ConditionLabel
 export const createCondtionLabels = async (req, res) => {
   console.log("getConditionLabel controller");
-  const { category, condition, conditionNames } = req.body;
+  const { category, condition, conditionLabel, conditionLabelImg } = req.body;
+  console.log(category, condition, typeof conditionLabel, conditionLabelImg);
+  try {
+    // Fetch existing ConditionLabel for the given condition
+    const existingConditions = await ConditionLabel.find({ condition });
+    console.log(existingConditions);
+    //   // Extract existing condition names
+    //   const existingConditionNames = existingConditions.map(
+    //     (condition) => condition.conditionName
+    //   );
+    //   // Check for duplicate condition names
+    //   const duplicateConditionNames = conditionNames.filter((conditionName) =>
+    //     existingConditionNames.includes(conditionName)
+    //   );
+    //   if (duplicateConditionNames.length > 0) {
+    //     return res.status(400).json({
+    //       message: "Duplicate condition names found for this category.",
+    //       duplicateConditionNames,
+    //     });
+    //   }
+    //   // Create new conditions
+    const newConditionLabel = await ConditionLabel.create({
+      category,
+      conditionName: condition,
+      conditionLabel: conditionLabel,
+      conditionLabelImg: conditionLabelImg,
+    });
+    return res.status(201).json(newConditionLabel);
+  } catch (error) {
+    return res.status(500).json({ message: "Internal server error.", error });
+  }
 };

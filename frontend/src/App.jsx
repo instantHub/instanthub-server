@@ -23,10 +23,11 @@ import AdminCreateBrand from "./admin/pages/brands/CreateBrand";
 import AdminCategories from "./admin/pages/categories/Categories";
 import AdminCreateCategory from "./admin/pages/categories/CreateCategory";
 import AdminCreateConditions from "./admin/pages/questions/CreateCondtions";
+import AdminUpdateConditions from "./admin/pages/questions/UpdateConditions";
 import AdminProductsList from "./admin/pages/products/ProductsList";
 // import AdminProductQuestions from "./admin/pages/products/ProductQuestions";
 // import AdminCreateQuestions from "./admin/pages/questions/CreateQuestions";
-// import AdminQuestionsList from "./admin/pages/questions/QuestionsList";
+import AdminConditionsList from "./admin/pages/questions/ConditionsList";
 // import AdminUpdateQuestions from "./admin/pages/questions/UpdateQuestions";
 
 import Admin from "./admin/Admin";
@@ -64,26 +65,7 @@ function App() {
         // },
       ],
     },
-    // {
-    //   path: "/admin",
-    //   element: <Admin />,
-    //   children: [
-    //     {
-    //       index: true,
-    //       element: <Navigate to="/admin/dashboard" replace />,
-    //     },
-    //     {
-    //       path: "/admin/dashboard",
-    //       element: <Dashboard />,
-    //       children: [
-    //         {
-    //           path: "/admin/dashboard/products",
-    //           element: <Products />,
-    //         },
-    //       ],
-    //     },
-    //   ],
-    // },
+
     {
       path: "/admin",
       element: <Admin />,
@@ -136,14 +118,14 @@ function App() {
         //   path: "/admin/questions-new",
         //   element: <AdminCreateConditions />,
         // },
-        // {
-        //   path: "/admin/questionsList",
-        //   element: <AdminQuestionsList />,
-        // },
-        // {
-        //   path: "/admin/updateQuestions/:questionsId",
-        //   element: <AdminUpdateQuestions />,
-        // },
+        {
+          path: "/admin/conditionsList",
+          element: <AdminConditionsList />,
+        },
+        {
+          path: "/admin/updateCondition/:conditionId",
+          element: <AdminUpdateConditions />,
+        },
       ],
     },
   ]);

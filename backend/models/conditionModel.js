@@ -8,7 +8,7 @@ const conditionSchema = mongoose.Schema({
     required: true,
   },
 
-  conditionLabel: [
+  conditionLabels: [
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: "ConditionLabel",

@@ -2,6 +2,8 @@ import Product from "../models/productModel.js";
 import Brand from "../models/brandModel.js";
 import Category from "../models/categoryModel.js";
 import Question from "../models/questionModel.js";
+import Condition from "../models/conditionModel.js";
+import ConditionLabel from "../models/conditionLabelModel.js";
 
 export const getAllProducts = async (req, res) => {
   try {
@@ -53,62 +55,54 @@ export const getProductDetails = async (req, res) => {
 
 export const createProduct = async (req, res) => {
   try {
-    const products = await Product.find();
+    const products = await Product.find({ brand: req.body.brand });
     const productBrand = await Brand.findById(req.body.brand);
-    const productCategory = await Category.findById(req.body.category).populate(
-      "questions"
-    );
-
-    // New Approach
-    // Step 1: Fetch questions data from Questions schema
-    const questionsData = await Question.find({
+    const productCategory = await Category.findById(req.body.category);
+    const conditionsList = await Condition.find({
       category: req.body.category,
     });
-    console.log("new", questionsData);
-
-    // Step 2: Format the questions data
-    const formattedQuestions = questionsData.map((question) => ({
-      category: question.category,
-      conditions: question.conditions.map((condition) => ({
-        conditionName: condition.conditionName,
-        questions: condition.questions.map((q) => ({
-          questionName: q.questionName,
-          priceDrop: q.priceDrop,
-          options: q.options,
-        })),
-      })),
-    }));
-    console.log("new formattedQuestions", formattedQuestions);
-
-    // New Approach ENDS
-
-    let categoryHasQuestions = false;
-    let categoryQuestion = undefined;
-
-    // console.log("productsController", req.body);
-    console.log(products.length);
-    // console.log("productBrand Found", productBrand);
-
-    if (productCategory.questions) {
-      categoryHasQuestions = true;
-      categoryQuestion = productCategory.questions;
-      // console.log("productCategory Found with questions", categoryQuestion);
-    } else {
-      // console.log("productCategory Found without", categoryQuestion);
-    }
+    const conditionLabelsList = await ConditionLabel.find({
+      category: req.body.category,
+    });
 
     if (products.length > 0) {
-      let checking = false;
+      let duplicate = false;
 
       products.map((product) => {
         // console.log(typeof product.name);
         if (product.name.toLowerCase() === req.body.name.toLowerCase()) {
-          checking = true;
+          duplicate = true;
         }
       });
-      console.log(checking);
+      console.log(duplicate);
 
-      if (checking == false) {
+      if (duplicate == false) {
+        let deductions = [
+          {
+            conditionName: "",
+            conditionLabels: {
+              conditionLabel: "",
+              conditionLabelImg: "",
+            },
+          },
+        ];
+
+        // Map conditions and condition labels to deductions array
+        deductions = conditionsList.map((condition) => ({
+          conditionId: condition.id,
+          conditionName: condition.conditionName,
+          conditionLabels: conditionLabelsList
+          .filter((label) => label.conditionName == condition.id)
+          .map((label) => ({
+              conditionLabelId: label.id,
+              conditionLabel: label.conditionLabel,
+              conditionLabelImg: label.conditionLabelImg,
+              // priceDrop: 0, // Default price drop, can be updated later
+            })),
+        }));
+
+        console.log(deductions);
+
         let product = await Product.create({
           name: req.body.name,
           uniqueURL: req.body.uniqueURL,
@@ -116,40 +110,39 @@ export const createProduct = async (req, res) => {
           category: req.body.category,
           brand: req.body.brand,
           variants: req.body.variants,
+          deductions: deductions,
           // questions: categoryHasQuestions ? categoryQuestion.id : undefined,
-          questions: formattedQuestions,
         });
         product.save();
 
         // push the new product into its brand's products array & save
-        productBrand.products.push(product);
-        productBrand.save();
+        // productBrand.products.push(product);
+        // productBrand.save();
 
         res.status(200).json(product);
-      } else if (checking == true) {
+        // res.status(200).json(deductions);
+      } else if (duplicate == true) {
         // TODO Task, Unique Name Validation not working
         res.status(200).send({
           msg: "Product (" + req.body.name + ") already exist ",
         });
       }
     } else {
-      let product = await Product.create({
-        name: req.body.name,
-        uniqueURL: req.body.uniqueURL,
-        image: req.body.image,
-        category: req.body.category,
-        brand: req.body.brand,
-        variants: req.body.variants,
-        // questions: categoryHasQuestions ? categoryQuestion : undefined,
-        questions: formattedQuestions,
-      });
-      product.save();
-      console.log(product);
+      // let product = await Product.create({
+      //   name: req.body.name,
+      //   uniqueURL: req.body.uniqueURL,
+      //   image: req.body.image,
+      //   category: req.body.category,
+      //   brand: req.body.brand,
+      //   variants: req.body.variants,
+      //   // questions: categoryHasQuestions ? categoryQuestion : undefined,
+      // });
+      // product.save();
+      // console.log(product);
       // push the new product into its brand's products array & save
-      productBrand.products.push(product);
-      productBrand.save();
-
-      res.status(200).json(product);
+      // productBrand.products.push(product);
+      // productBrand.save();
+      // res.status(200).json(product);
     }
   } catch (error) {
     res.status(404).json({ message: error.message });

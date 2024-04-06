@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import {
   useCreateConditionsMutation,
   useGetCategoryQuery,
+  useGetConditionsQuery,
 } from "../../../features/api";
 
 import { Link } from "react-router-dom";
@@ -15,6 +16,8 @@ function Condtions() {
     createConditions,
     { isError: conditionFailed, isSuccess: conditionCreated },
   ] = useCreateConditionsMutation();
+  const { data: conditionsData, isLoading: conditionsLoading } =
+    useGetConditionsQuery();
 
   const [formData, setFormData] = useState({
     category: "",
@@ -53,11 +56,11 @@ function Condtions() {
       JSON.stringify(formData)
     ).unwrap();
     console.log(conditions);
-    if (conditionCreated) {
-      toast.success("Conditions created successfull..!");
-    } else if (conditionFailed) {
-      toast.error("Conditions creation failed..!");
-    }
+    // if (conditionCreated) {
+    toast.success("Conditions created successfull..!");
+    // } else if (conditionFailed) {
+    //   toast.error("Conditions creation failed..!");
+    // }
     console.log("handleSubmit", formData);
   };
 
@@ -70,13 +73,13 @@ function Condtions() {
               <h1 className="bold text-[1.4rem] mb-2">Create Condition</h1>
               <div className="flex items-center gap-1">
                 <h2>Home </h2>
-                <h2 className="pl-1"> / Add Question</h2>
-                <Link to="/admin/questionsList">
+                <h2 className="pl-1"> / Add Condition</h2>
+                <Link to="/admin/conditionsList">
                   <button
                     type="button"
                     className="border mx-auto border-gray-950 bg-blue-500 rounded-md p-1 cursor-pointer hover:bg-white"
                   >
-                    Questions List
+                    Conditions List
                   </button>
                 </Link>
               </div>
@@ -169,13 +172,16 @@ function Condtions() {
             </div>
           </div>
           <div className="my-auto ml-[5%]">
-            <ul>
-              <li>Item 1</li>
-              <li>Item 1</li>
-              <li>Item 1</li>
-              <li>Item 1</li>
-              <li>Item 1</li>
-              <li>Item 1</li>
+            <ul className="">
+              {!conditionsLoading &&
+                conditionsData.map(
+                  (condition) =>
+                    condition.category == formData.category && (
+                      <li className="bg-white text-lg px-4 py-2">
+                        {condition.conditionName}{" "}
+                      </li>
+                    )
+                )}
             </ul>
           </div>
         </div>
