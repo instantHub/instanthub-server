@@ -11,8 +11,12 @@ const storage = multer.diskStorage({
   filename(req, file, cb) {
     cb(
       null,
-      `${file.fieldname}-${Date.now()}-${file.originalname}`
+      // `${file.fieldname}-${Date.now()}-${file.originalname}`
+      `${path.parse(file.originalname).name}-${
+        file.fieldname
+      }-${Date.now()}${path.extname(file.originalname)}`
     );
+    // console.log(extname(file.originalname));
   },
 });
 
@@ -47,11 +51,11 @@ router.post("/", (req, res) => {
   });
 });
 
+export default router;
+
 // const upload = multer({ dest: "uploads/" });
 
 // router.post("/", upload.single("image"), async (req, res) => {
 //   console.log("Image received:", req.body);
 //   res.send("Image uploaded successfully");
 // });
-
-export default router;

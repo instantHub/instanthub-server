@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const conditionLabelSchema = mongoose.Schema({
   category: { type: mongoose.Schema.Types.ObjectId, ref: "Category" },
 
-  conditionName: {
+  conditionNameId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Condition",
   },

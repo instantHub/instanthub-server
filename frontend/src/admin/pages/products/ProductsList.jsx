@@ -13,10 +13,10 @@ const ProductsList = () => {
     useGetCategoryQuery();
 
   if (!productsDataLoading) {
-    console.log(productsData);
+    // console.log(productsData);
   }
 
-  const [selectedCondition, setSelectedCondition] = useState(null);
+  const [selectedCondition, setSelectedCondition] = useState("");
 
   const handleConditionChange = (e) => {
     setSelectedCondition(e.target.value);
@@ -63,7 +63,7 @@ const ProductsList = () => {
     //   </table>
     // </div>
 
-    //QuestionsList based on the Category selected
+    //Products based on the Category selected
     <div className="p-4 bg-black">
       <h2 className="text-white text-lg font-bold mb-4">Products Table</h2>
       <div className="mb-4">

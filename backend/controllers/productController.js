@@ -80,10 +80,12 @@ export const createProduct = async (req, res) => {
         let deductions = [
           {
             conditionName: "",
-            conditionLabels: {
-              conditionLabel: "",
-              conditionLabelImg: "",
-            },
+            conditionLabels: [
+              {
+                conditionLabel: "",
+                conditionLabelImg: "",
+              },
+            ],
           },
         ];
 
@@ -92,8 +94,8 @@ export const createProduct = async (req, res) => {
           conditionId: condition.id,
           conditionName: condition.conditionName,
           conditionLabels: conditionLabelsList
-          .filter((label) => label.conditionName == condition.id)
-          .map((label) => ({
+            .filter((label) => label.conditionNameId == condition.id)
+            .map((label) => ({
               conditionLabelId: label.id,
               conditionLabel: label.conditionLabel,
               conditionLabelImg: label.conditionLabelImg,
@@ -128,21 +130,49 @@ export const createProduct = async (req, res) => {
         });
       }
     } else {
-      // let product = await Product.create({
-      //   name: req.body.name,
-      //   uniqueURL: req.body.uniqueURL,
-      //   image: req.body.image,
-      //   category: req.body.category,
-      //   brand: req.body.brand,
-      //   variants: req.body.variants,
-      //   // questions: categoryHasQuestions ? categoryQuestion : undefined,
-      // });
-      // product.save();
-      // console.log(product);
+      let deductions = [
+        {
+          conditionName: "",
+          conditionLabels: [
+            {
+              conditionLabel: "",
+              conditionLabelImg: "",
+            },
+          ],
+        },
+      ];
+
+      // Map conditions and condition labels to deductions array
+      deductions = conditionsList.map((condition) => ({
+        conditionId: condition.id,
+        conditionName: condition.conditionName,
+        conditionLabels: conditionLabelsList
+          .filter((label) => label.conditionNameId == condition.id)
+          .map((label) => ({
+            conditionLabelId: label.id,
+            conditionLabel: label.conditionLabel,
+            conditionLabelImg: label.conditionLabelImg,
+            // priceDrop: 0, // Default price drop, can be updated later
+          })),
+      }));
+
+      let product = await Product.create({
+        name: req.body.name,
+        uniqueURL: req.body.uniqueURL,
+        image: req.body.image,
+        category: req.body.category,
+        brand: req.body.brand,
+        variants: req.body.variants,
+        deductions: deductions,
+        // questions: categoryHasQuestions ? categoryQuestion.id : undefined,
+      });
+      product.save();
+
       // push the new product into its brand's products array & save
       // productBrand.products.push(product);
       // productBrand.save();
-      // res.status(200).json(product);
+
+      res.status(200).json(product);
     }
   } catch (error) {
     res.status(404).json({ message: error.message });

@@ -1,6 +1,6 @@
 import express from "express";
 import {
-  createCondtionLabels,
+  createCondtionLabel,
   createCondtions,
   createQuestions,
   getAllQuestions,
@@ -9,6 +9,9 @@ import {
   getQuestions,
   updateCondition,
   updateQuestions,
+  updateConditionLabel,
+  deleteConditionLabel,
+  deleteCondition,
 } from "../controllers/questionController.js";
 
 const router = express.Router();
@@ -20,10 +23,16 @@ const router = express.Router();
 // router.put("/update-questions", updateQuestions);
 
 // New Questions Structures Routes
+// Contions routes
 router.get("/conditions", getConditions);
-router.get("/conditionlabels", getConditionLabels);
 router.post("/add-conditions", createCondtions);
 router.put("/update-condition/:conditionId", updateCondition);
-router.post("/add-conditionlabels", createCondtionLabels);
+router.delete("/delete-condition", deleteCondition);
+
+// ConditionLabels routes
+router.get("/conditionlabels", getConditionLabels);
+router.post("/add-conditionlabel", createCondtionLabel);
+router.put("/update-conditionlabel/:conditionLabelId", updateConditionLabel);
+router.delete("/delete-conditionlabel", deleteConditionLabel);
 
 export default router;

@@ -3,18 +3,21 @@ import axios from "axios";
 import {
   useGetConditionsQuery,
   useGetCategoryQuery,
-  useDeleteConditionMutation,
+  useGetConditionLabelsQuery,
+  useDeleteConditionLabelMutation,
 } from "../../../features/api";
 import { Link } from "react-router-dom";
 
-const ConditionsTable = () => {
+const ConditionLabelsTable = () => {
   //   const [questions, setQuestions] = useState([]);
-  const { data: conditions, isLoading: conditionsLoading } =
+  const { data: conditionsData, isLoading: conditionsLoading } =
     useGetConditionsQuery();
+  const { data: conditionLabelsData, isLoading: conditionLabelsLoading } =
+    useGetConditionLabelsQuery();
+  const [deleteConditionLabel, { isLoading: deleteLoading }] =
+    useDeleteConditionLabelMutation();
   const { data: categories, isLoading: categoriesLoading } =
     useGetCategoryQuery();
-  const [deleteCondition, { isLoading: deleteLoading }] =
-    useDeleteConditionMutation();
 
   const [selectedCondition, setSelectedCondition] = useState(null);
 
@@ -22,15 +25,17 @@ const ConditionsTable = () => {
     setSelectedCondition(e.target.value);
   };
 
-  const handleDelete = async (category, conditionId) => {
-    console.log(category, conditionId);
-    await deleteCondition({ category, conditionId });
+  const handleDelete = async (category, conditionLabelId) => {
+    console.log(category, conditionLabelId);
+    await deleteConditionLabel({ category, conditionLabelId });
   };
 
   return (
-    //ConditionsListList
+    //ConditionLabelsTable based on the Condition selected
     <div className="p-4 bg-black">
-      <h2 className="text-white text-lg font-bold mb-4">Conditions Table</h2>
+      <h2 className="text-white text-lg font-bold mb-4">
+        ConditionLabels Table
+      </h2>
       <div className="mb-4">
         <label htmlFor="condition" className="text-white mr-2">
           Select Category:
@@ -44,10 +49,13 @@ const ConditionsTable = () => {
           <option value="">Select</option>
 
           {!conditionsLoading &&
-            conditions.map(
+            conditionsData.map(
               (condition) => (
                 //   question.map((question) => (
-                <option key={condition.category} value={condition.category}>
+                <option
+                  key={condition.category.id}
+                  value={condition.conditionName}
+                >
                   {condition.conditionName}
                 </option>
               )
@@ -60,7 +68,12 @@ const ConditionsTable = () => {
           <tr>
             <th className="px-4 py-2 text-white bg-gray-800">Category</th>
             <th className="px-4 py-2 text-white bg-gray-800">Condition</th>
-            {/* <th className="px-4 py-2 text-white bg-gray-800">Price Drop</th> */}
+            <th className="px-4 py-2 text-white bg-gray-800">
+              Condition Label
+            </th>
+            <th className="px-4 py-2 text-white bg-gray-800">
+              Condition Label Image
+            </th>
             {/* <th className="px-4 py-2 text-white bg-gray-800">Options</th> */}
             <th className="px-4 py-2 text-white bg-gray-800">Edit & Delete</th>
           </tr>
@@ -92,16 +105,31 @@ const ConditionsTable = () => {
         </tbody> */}
 
         <tbody className="text-center">
-          {!conditionsLoading &&
-            conditions.map(
-              (condition, index) => (
+          {!conditionLabelsLoading &&
+            conditionLabelsData.map(
+              (conditionLabel, index) => (
                 //   question.map((question) => (
                 <tr className={index % 2 === 0 ? "bg-gray-200" : "bg-white"}>
-                  <td className=" py-2">{condition.category.name}</td>
-                  <td className=" py-2">{condition.conditionName}</td>
+                  <td className=" py-2">{conditionLabel.category.name}</td>
+                  <td className=" py-2">
+                    {conditionLabel.conditionNameId.conditionName}
+                  </td>
+                  <td className=" py-2">{conditionLabel.conditionLabel}</td>
+                  <td className=" py-2">
+                    <img
+                      src={
+                        "http://localhost:8000" +
+                        conditionLabel.conditionLabelImg
+                      }
+                      alt="CAT"
+                      className="w-[60px] h-[60px] mx-auto "
+                    />
+                  </td>
                   <td className="text-white py-2">
                     <div className="flex gap-2 justify-center">
-                      <Link to={`/admin/updateCondition/${condition.id}`}>
+                      <Link
+                        to={`/admin/updateConditionLabel/${conditionLabel.id}`}
+                      >
                         <button className="bg-blue-600 px-3 py-1 rounded-md">
                           Edit
                         </button>
@@ -109,7 +137,10 @@ const ConditionsTable = () => {
                       <button
                         className="bg-red-600 px-3 py-1 rounded-md"
                         onClick={() =>
-                          handleDelete(condition.category.id, condition.id)
+                          handleDelete(
+                            conditionLabel.category.id,
+                            conditionLabel.id
+                          )
                         }
                       >
                         Delete
@@ -126,4 +157,4 @@ const ConditionsTable = () => {
   );
 };
 
-export default ConditionsTable;
+export default ConditionLabelsTable;

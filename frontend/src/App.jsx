@@ -23,11 +23,13 @@ import AdminCreateBrand from "./admin/pages/brands/CreateBrand";
 import AdminCategories from "./admin/pages/categories/Categories";
 import AdminCreateCategory from "./admin/pages/categories/CreateCategory";
 import AdminCreateConditions from "./admin/pages/questions/CreateCondtions";
-import AdminUpdateConditions from "./admin/pages/questions/UpdateConditions";
+import AdminUpdateCondition from "./admin/pages/questions/UpdateCondition";
+import AdminUpdateConditionLabel from "./admin/pages/questions/UpdateConditionLabel";
 import AdminProductsList from "./admin/pages/products/ProductsList";
 // import AdminProductQuestions from "./admin/pages/products/ProductQuestions";
 // import AdminCreateQuestions from "./admin/pages/questions/CreateQuestions";
 import AdminConditionsList from "./admin/pages/questions/ConditionsList";
+import AdminConditionLabelsList from "./admin/pages/questions/ConditionLabelsList";
 // import AdminUpdateQuestions from "./admin/pages/questions/UpdateQuestions";
 
 import Admin from "./admin/Admin";
@@ -114,17 +116,21 @@ function App() {
           path: "/admin/questions",
           element: <AdminCreateConditions />,
         },
-        // {
-        //   path: "/admin/questions-new",
-        //   element: <AdminCreateConditions />,
-        // },
         {
           path: "/admin/conditionsList",
           element: <AdminConditionsList />,
         },
         {
+          path: "/admin/conditionLabelsList",
+          element: <AdminConditionLabelsList />,
+        },
+        {
           path: "/admin/updateCondition/:conditionId",
-          element: <AdminUpdateConditions />,
+          element: <AdminUpdateCondition />,
+        },
+        {
+          path: "/admin/updateConditionLabel/:conditionLabelId",
+          element: <AdminUpdateConditionLabel />,
         },
       ],
     },

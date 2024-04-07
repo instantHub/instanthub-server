@@ -10,7 +10,7 @@ export const api = createApi({
   }),
   // reducerPath: "adminApi",
   reducerPath: "API",
-  tagTypes: ["User", "Conditions"],
+  tagTypes: ["User", "Conditions", "ConditionLabels"],
   endpoints: (build) => ({
     getUser: build.query({
       query: (id) => `api/user/${id}`,
@@ -97,19 +97,43 @@ export const api = createApi({
         body: data,
       }),
     }),
+    deleteCondition: build.mutation({
+      query: ({ category, conditionId }) => ({
+        url: `/api/questions/delete-condition?category=${category}&conditionId=${conditionId}`,
+        method: "DELETE",
+        // body: data,
+      }),
+      invalidatesTags: ["ConditionLabels"],
+    }),
     getConditionLabels: build.query({
       query: () => `/api/questions/conditionlabels`,
-      // providesTags: ["Conditions"],
+      providesTags: ["ConditionLabels"],
     }),
     createConditionLabels: build.mutation({
       query: (data) => ({
-        url: "/api/questions/add-conditionlabels",
+        url: "/api/questions/add-conditionlabel",
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: data,
       }),
+      invalidatesTags: ["ConditionLabels"],
+    }),
+    updateConditionLabel: build.mutation({
+      query: ({ conditionLabelId, data }) => ({
+        url: `/api/questions/update-conditionlabel/${conditionLabelId}`,
+        method: "PUT",
+        body: data,
+      }),
+    }),
+    deleteConditionLabel: build.mutation({
+      query: ({ category, conditionLabelId }) => ({
+        url: `/api/questions/delete-conditionlabel?category=${category}&conditionLabelId=${conditionLabelId}`,
+        method: "DELETE",
+        // body: data,
+      }),
+      invalidatesTags: ["ConditionLabels"],
     }),
   }),
 });
@@ -130,8 +154,11 @@ export const {
   useGetConditionsQuery,
   useCreateConditionsMutation,
   useUpdateConditionMutation,
+  useDeleteConditionMutation,
   useGetConditionLabelsQuery,
   useCreateConditionLabelsMutation,
+  useUpdateConditionLabelMutation,
+  useDeleteConditionLabelMutation,
 } = api;
 
 // useGetAllQuestionsQuery,

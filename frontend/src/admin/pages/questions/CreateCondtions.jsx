@@ -148,6 +148,7 @@ function Condtions() {
                           onChange={(event) =>
                             handleChange(event, index, "name", "conditionNames")
                           }
+                          required
                         />
                         <button
                           type="button"
@@ -176,9 +177,9 @@ function Condtions() {
               {!conditionsLoading &&
                 conditionsData.map(
                   (condition) =>
-                    condition.category == formData.category && (
+                    condition.category.id == formData.category && (
                       <li className="bg-white text-lg px-4 py-2">
-                        {condition.conditionName}{" "}
+                        {condition.conditionName}
                       </li>
                     )
                 )}

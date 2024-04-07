@@ -6,6 +6,7 @@ import {
   useCreateConditionLabelsMutation,
 } from "../../../features/api";
 import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const YourComponent = () => {
   const { data: categoryData, isLoading: categoryLoading } =
@@ -63,10 +64,13 @@ const YourComponent = () => {
         JSON.stringify(formData)
       ).unwrap();
       // productId = product.id;
-      console.log("Product created", conditionLabel);
-      toast.success("conditionLabel created successfull..!");
+      console.log("conditionLabel created", conditionLabel);
+      toast.success("conditionLabel created successfully..!");
     } catch (error) {
-      console.log("Error while creating conditionLabel using API call: ", error);
+      console.log(
+        "Error while creating conditionLabel using API call: ",
+        error
+      );
     }
   };
 
@@ -78,6 +82,14 @@ const YourComponent = () => {
           <div className="flex items-center gap-1">
             <h2>Home </h2>
             <h2 className="pl-1"> / Add ConditionLabels</h2>
+            <Link to="/admin/conditionLabelsList">
+              <button
+                type="button"
+                className="border mx-auto border-gray-950 bg-blue-500 rounded-md p-1 cursor-pointer hover:bg-white"
+              >
+                ConditionLabels List
+              </button>
+            </Link>
           </div>
         </div>
         <div className="bg-white border rounded-md shadow-lg">
@@ -137,7 +149,7 @@ const YourComponent = () => {
                       {!conditionsLoading &&
                         conditionsData.map(
                           (condition) =>
-                            condition.category == formData.category && (
+                            condition.category.id == formData.category && (
                               <option
                                 key={condition.id}
                                 value={condition.id}
@@ -198,7 +210,7 @@ const YourComponent = () => {
           {!conditionsLoading &&
             conditionsData.map(
               (condition) =>
-                condition.category == formData.category && (
+                condition.category.id == formData.category && (
                   <li className="bg-white text-lg px-4 py-2">
                     {condition.conditionName}{" "}
                   </li>

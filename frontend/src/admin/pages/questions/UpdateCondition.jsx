@@ -36,7 +36,7 @@ function UpdateCondition() {
       console.log("useEffect", conditiontoUpdate);
       setFormData((prevFormData) => ({
         ...prevFormData,
-        category: conditiontoUpdate[0].category,
+        category: conditiontoUpdate[0].category.id,
         conditionName: conditiontoUpdate[0].conditionName,
       }));
     }
@@ -89,7 +89,6 @@ function UpdateCondition() {
         conditionId: conditionId,
         data: formData,
       }).unwrap();
-      //   console.log("Updated question:", data);
       // Handle success
     } catch (error) {
       console.error("Error updating condition:", error);
