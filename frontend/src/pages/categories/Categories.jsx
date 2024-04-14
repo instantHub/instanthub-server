@@ -29,7 +29,7 @@ const Categories = () => {
                   alt="CAT"
                   className=""
                 />
-                <p className="size-4 pt-1">{category.name}</p>
+                {/* <p className="size-4 pt-1">{category.name}</p> */}
               </div>
             </Link>
           ))}

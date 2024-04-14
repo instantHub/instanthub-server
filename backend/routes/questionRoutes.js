@@ -2,25 +2,15 @@ import express from "express";
 import {
   createCondtionLabel,
   createCondtions,
-  createQuestions,
-  getAllQuestions,
   getConditionLabels,
   getConditions,
-  getQuestions,
   updateCondition,
-  updateQuestions,
   updateConditionLabel,
   deleteConditionLabel,
   deleteCondition,
 } from "../controllers/questionController.js";
 
 const router = express.Router();
-
-// router.get("/", getAllQuestions);
-// router.get("/:questionsId", getQuestions);
-// router.post("/add-questions", createQuestions);
-// router.put("/update-questions/:questionsId", updateQuestions);
-// router.put("/update-questions", updateQuestions);
 
 // New Questions Structures Routes
 // Contions routes

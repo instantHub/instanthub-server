@@ -3,6 +3,7 @@ import axios from "axios";
 import {
   useGetAllProductsQuery,
   useGetCategoryQuery,
+  useDeleteProductMutation,
 } from "../../../features/api";
 import { Link } from "react-router-dom";
 
@@ -11,6 +12,8 @@ const ProductsList = () => {
     useGetAllProductsQuery();
   const { data: categoryData, isLoading: categoryDataLoading } =
     useGetCategoryQuery();
+  const [deleteProduct, { isLoading: deleteLoading }] =
+    useDeleteProductMutation();
 
   if (!productsDataLoading) {
     // console.log(productsData);
@@ -22,47 +25,12 @@ const ProductsList = () => {
     setSelectedCondition(e.target.value);
   };
 
-  return (
-    // Completed List of Questions
-    // <div className="flex flex-col gap-2 items-center p-4">
-    //   <h2 className="text-white text-lg font-bold mb-4">Question Table</h2>
-    //   <table className="w-full">
-    //     <thead className="p-3 ">
-    //       <tr className="bg-slate-400 ">
-    //         <th className="px-4 py-2 text-white bg-gray-800">Category</th>
-    //         <th className="px-4 py-2 text-white bg-gray-800">Condition Name</th>
-    //         <th className="px-4 py-2 text-white bg-gray-800">Question Name</th>
-    //         <th className="px-4 py-2 text-white bg-gray-800">Price Drop</th>
-    //         <th className="px-4 py-2 text-white bg-gray-800">Options</th>
-    //         <th className="px-4 py-2 text-white bg-gray-800">Edit/Update</th>
-    //       </tr>
-    //     </thead>
-    //     <tbody className="">
-    //       {!questionsLoading &&
-    //         questions.map((question) =>
-    //           question.conditions.map((condition) =>
-    //             condition.questions.map((q, index) => (
-    //               <tr
-    //                 key={`${question._id}-${condition.conditionName}-${index}`}
-    //               >
-    //                 <td className="px-4 py-2">{question.category.name}</td>
-    //                 <td className="px-4 py-2">{condition.conditionName}</td>
-    //                 <td className="px-4 py-2">{q.questionName}</td>
-    //                 <td className="px-4 py-2">{q.priceDrop}</td>
-    //                 <td className="px-4 py-2">{q.options.join(", ")}</td>
-    //                 <td>
-    //                   <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-    //                     Edit
-    //                   </button>
-    //                 </td>
-    //               </tr>
-    //             ))
-    //           )
-    //         )}
-    //     </tbody>
-    //   </table>
-    // </div>
+  const handleDelete = async (productId) => {
+    console.log("handledelete", productId);
+    await deleteProduct(productId);
+  };
 
+  return (
     //Products based on the Category selected
     <div className="p-4 bg-black">
       <h2 className="text-white text-lg font-bold mb-4">Products Table</h2>
@@ -119,6 +87,7 @@ const ProductsList = () => {
             <th className="px-4 py-2 text-white bg-gray-800">Variants</th>
             <th className="px-4 py-2 text-white bg-gray-800">Product IMG</th>
             <th className="px-4 py-2 text-white bg-gray-800">Edit/Update</th>
+            <th className="px-4 py-2 text-white bg-gray-800">Delete</th>
             <th className="px-4 py-2 text-white bg-gray-800">Questions</th>
           </tr>
         </thead>
@@ -137,11 +106,21 @@ const ProductsList = () => {
                   <td className="px-4 py-2">{product.brand.name}</td>
                   <td className="px-4 py-2">{product.name}</td>
                   <td className="px-4 py-2">
-                    {product.variants.map((variant, i) => (
-                      <ul>
-                        <li>{variant.name}</li>
-                      </ul>
-                    ))}
+                    <ul>
+                      {product.variants.map((variant, i) => (
+                        <div key={i} className="flex items-center gap-2">
+                          <label
+                            htmlFor="variantName"
+                            className="text-xs text-gray-500"
+                          >
+                            Variant Name
+                          </label>
+                          <li key={i} className="" name="variantName">
+                            {variant.name}
+                          </li>
+                        </div>
+                      ))}
+                    </ul>
                   </td>
                   <td className="px-4 py-2">
                     <img
@@ -157,8 +136,24 @@ const ProductsList = () => {
                       </button>
                     </Link>
                   </td>
+                  <td>
+                    <button
+                      onClick={() => handleDelete(product.id)}
+                      className="bg-red-600 text-white px-3 py-1 rounded-md"
+                    >
+                      Delete
+                    </button>
+                  </td>
                   <td className="px-4 py-2">
-                    {product.questions && <h2>Tagged</h2>}
+                    {product.deductions && (
+                      <Link
+                        to={`/admin/products/product-questions/${product.id}`}
+                      >
+                        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                          validate
+                        </button>
+                      </Link>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -177,11 +172,34 @@ const ProductsList = () => {
                   <td className="px-4 py-2">{product.brand.name}</td>
                   <td className="px-4 py-2">{product.name}</td>
                   <td className="px-4 py-2">
-                    {product.variants.map((variant, i) => (
-                      <ul>
-                        <li>{variant.name}</li>
-                      </ul>
-                    ))}
+                    <ul>
+                      {product.variants.map((variant, i) => (
+                        <div key={i} className="flex gap-2 justify-center">
+                          <div className="">
+                            <label
+                              htmlFor="variantName"
+                              className="text-xs text-gray-500"
+                            >
+                              Variant Name
+                            </label>
+                            <li key={i} className="" name="variantName">
+                              {variant.name}
+                            </li>
+                          </div>
+                          <div>
+                            <label
+                              htmlFor="variantName"
+                              className="text-xs text-gray-500"
+                            >
+                              Variant Price
+                            </label>
+                            <li key={i} className="" name="variantName">
+                              {variant.price}
+                            </li>
+                          </div>
+                        </div>
+                      ))}
+                    </ul>
                   </td>
                   <td className="px-4 py-2">
                     <img
@@ -197,10 +215,18 @@ const ProductsList = () => {
                       </button>
                     </Link>
                   </td>
+                  <td>
+                    <button
+                      onClick={() => handleDelete(product.id)}
+                      className="bg-red-600 text-white px-3 py-1 rounded-md"
+                    >
+                      Delete
+                    </button>
+                  </td>
                   <td className="px-4 py-2">
-                    {product.questions && (
+                    {product.deductions && (
                       <Link
-                        to={`/admin/products/product-questions/${product.questions}/${product.id}`}
+                        to={`/admin/products/product-questions/${product.id}`}
                       >
                         <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                           validate

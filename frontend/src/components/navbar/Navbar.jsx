@@ -14,7 +14,7 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className="bg-white text-[#E27D60] p-4 rounded-xl mt-4 mx-4 sticky top-2 border-b border-[#E27D60] shadow-xl">
+      <nav className="bg-[#E27D60] text-white p-4 rounded-xl mt-4 mx-4 sticky top-2 border-b border-[#E27D60] shadow-xl">
         <div className="max-w-full mx-auto px-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center grow">
@@ -78,7 +78,7 @@ const Navbar = () => {
         </div>
         {isOpen && (
           <div className="md:hidden mt-2 text-center  float-right">
-            <ul className="flex flex-col bg-white p-4 items-center justify-around space-y-2">
+            <ul className="flex flex-col bg-white text-black p-4 items-center justify-around space-y-2">
               <li>
                 <a href="#" className="">
                   Home
@@ -104,7 +104,9 @@ const Navbar = () => {
         )}
       </nav>
 
-      <Outlet />
+      {/* <Outlet />
+
+      <div>Footer</div> */}
     </>
   );
 };

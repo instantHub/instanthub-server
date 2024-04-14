@@ -47,34 +47,45 @@ export const getCategory = async (req, res) => {
   // filter = {"category":["smartphone","laptops"]}
   // sort = {_sort:"price",_order="desc"}
   // pagination = {_page:1,_limit=10}
-  let condition = {};
+  // let condition = {};
   // if (!req.query.admin) {
   //   condition.deleted = { $ne: true };
   // }
 
-  let query = Category.find(condition);
-  // let totalProductsQuery = Product.find(condition);
+  // let condition = {};
 
-  console.log(req.query);
+  // let query = Category.find(condition);
+  // console.log("query", query);
+  // // let totalProductsQuery = Product.find(condition);
 
-  if (req.query._sort && req.query._order) {
-    query = query.sort({ [req.query._sort]: req.query._order });
-  }
+  // console.log(req.query);
 
-  try {
-    const docs = await query.exec();
-    // res.set('X-Total-Count', totalDocs);
-    res.status(200).json(docs);
-  } catch (err) {
-    res.status(400).json(err);
-  }
+  // if (req.query._sort && req.query._order) {
+  //   query = query.sort({ [req.query._sort]: req.query._order });
+  // }
 
   // try {
-  //   const categories = await Category.find();
-  //   res.status(200).json(categories);
-  // } catch (error) {
-  //   res
-  //     .status(404)
-  //     .json({ message: "Error in GET categories" + error.message });
+  //   const docs = await query.exec();
+  //   // res.set('X-Total-Count', totalDocs);
+  //   res.status(200).json(docs);
+  // } catch (err) {
+  //   res.status(400).json(err);
   // }
+
+  try {
+    const categories = await Category.find();
+    res.status(200).json(categories);
+  } catch (error) {
+    res
+      .status(404)
+      .json({ message: "Error in GET categories" + error.message });
+  }
+};
+
+export const updateCategory = async (req, res) => {
+  console.log("Update Category controller");
+};
+
+export const deleteCategory = async (req, res) => {
+  console.log("Delete Category controller");
 };

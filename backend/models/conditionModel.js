@@ -1,20 +1,23 @@
 import mongoose from "mongoose";
 
-const conditionSchema = mongoose.Schema({
-  category: { type: mongoose.Schema.Types.ObjectId, ref: "Category" },
+const conditionSchema = mongoose.Schema(
+  {
+    category: { type: mongoose.Schema.Types.ObjectId, ref: "Category" },
 
-  conditionName: {
-    type: String,
-    required: true,
-  },
-
-  conditionLabels: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "ConditionLabel",
+    conditionName: {
+      type: String,
+      required: true,
     },
-  ],
-});
+
+    conditionLabels: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "ConditionLabel",
+      },
+    ],
+  },
+  { timestamps: true }
+);
 
 // Define a compound unique index
 conditionSchema.index({ category: 1, conditionName: 1 }, { unique: true });

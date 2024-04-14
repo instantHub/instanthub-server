@@ -10,7 +10,7 @@ export const api = createApi({
   }),
   // reducerPath: "adminApi",
   reducerPath: "API",
-  tagTypes: ["User", "Conditions", "ConditionLabels"],
+  tagTypes: ["User", "Products", "Conditions", "ConditionLabels"],
   endpoints: (build) => ({
     getUser: build.query({
       query: (id) => `api/user/${id}`,
@@ -53,8 +53,24 @@ export const api = createApi({
         body: data,
       }),
     }),
+    updateBrand: build.mutation({
+      query: ({ brandId, data }) => ({
+        url: `/api/brand/update-brand/${brandId}`,
+        method: "PUT",
+        body: data,
+      }),
+    }),
+    deleteBrand: build.mutation({
+      query: (brandId) => ({
+        url: `/api/brand/delete-brand/${brandId}`,
+        method: "DELETE",
+        // body: data,
+      }),
+      invalidatesTags: ["ConditionLabels"],
+    }),
     getAllProducts: build.query({
       query: () => `/api/products`,
+      providesTags: ["Products"],
     }),
     getProducts: build.query({
       query: (brandId) => `/api/products/${brandId}`,
@@ -74,6 +90,22 @@ export const api = createApi({
         },
         body: data,
       }),
+    }),
+    updatePriceDrop: build.mutation({
+      query: ({ productId, data }) => ({
+        url: `/api/products/update-pricedrop/${productId}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["Products"],
+    }),
+    deleteProduct: build.mutation({
+      query: (productId) => ({
+        url: `/api/products/delete-product/${productId}`,
+        method: "DELETE",
+        // body: data,
+      }),
+      invalidatesTags: ["Products"],
     }),
     getConditions: build.query({
       query: () => `/api/questions/conditions`,
@@ -146,11 +178,15 @@ export const {
   useGetAllBrandQuery,
   useGetBrandQuery,
   useCreateBrandMutation,
+  useUpdateBrandMutation,
+  useDeleteBrandMutation,
   useCreateProductMutation,
   useGetAllProductsQuery,
   useGetProductsQuery,
   useGetProductDetailsQuery,
   useGetProductQuestionsQuery,
+  useUpdatePriceDropMutation,
+  useDeleteProductMutation,
   useGetConditionsQuery,
   useCreateConditionsMutation,
   useUpdateConditionMutation,

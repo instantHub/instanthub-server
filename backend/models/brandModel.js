@@ -1,30 +1,33 @@
 import mongoose, { mongo } from "mongoose";
 
-const brandSchema = mongoose.Schema({
-  category: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Category",
-    required: true,
-  },
-  name: {
-    type: String,
-    required: true,
-  },
-  uniqueURL: {
-    type: String,
-    required: true,
-  },
-  image: {
-    type: String,
-    required: true,
-  },
-  products: [
-    {
+const brandSchema = mongoose.Schema(
+  {
+    category: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Product",
+      ref: "Category",
+      required: true,
     },
-  ],
-});
+    name: {
+      type: String,
+      required: true,
+    },
+    uniqueURL: {
+      type: String,
+      required: true,
+    },
+    image: {
+      type: String,
+      required: true,
+    },
+    products: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Product",
+      },
+    ],
+  },
+  { timestamps: true }
+);
 
 // brandSchema.index({ name: 1, category: 1 }, { unique: true });
 

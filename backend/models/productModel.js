@@ -68,86 +68,74 @@ import mongoose from "mongoose";
 // ],
 // });
 
-const productSchema = mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-  },
-  uniqueURL: {
-    type: String,
-    required: true,
-  },
-  image: {
-    type: String,
-    required: true,
-  },
-  category: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Category",
-  },
-  brand: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Brand",
-  },
-  variants: [
-    {
-      name: {
-        type: String,
-        required: true,
-      },
-      price: {
-        type: Number,
-        required: true,
-      },
+const productSchema = mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
     },
-  ],
-  series: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Series",
-  },
-  questions: {
-    conditionNames: [
+    uniqueURL: {
+      type: String,
+      required: true,
+    },
+    image: {
+      type: String,
+      required: true,
+    },
+    category: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
+    },
+    brand: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Brand",
+    },
+    variants: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Condition",
-      },
-    ],
-
-    conditionLabels: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "ConditionLabel",
-      },
-    ],
-  },
-  deductions: [
-    {
-      conditionId: {
-        type: String,
-      },
-      conditionName: {
-        type: String,
-      },
-      conditionLabels: [
-        {
-          conditionLabelId: {
-            type: String,
-          },
-          conditionLabel: {
-            type: String,
-          },
-          conditionLabelImg: {
-            type: String,
-          },
-          priceDrop: {
-            type: Number,
-            default: 0,
-          },
+        name: {
+          type: String,
+          required: true,
         },
-      ],
+        price: {
+          type: Number,
+          required: true,
+        },
+      },
+    ],
+    series: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Series",
     },
-  ],
-});
+    deductions: [
+      {
+        conditionId: {
+          type: String,
+        },
+        conditionName: {
+          type: String,
+        },
+        conditionLabels: [
+          {
+            conditionLabelId: {
+              type: String,
+            },
+            conditionLabel: {
+              type: String,
+            },
+            conditionLabelImg: {
+              type: String,
+            },
+            priceDrop: {
+              type: Number,
+              default: 0,
+            },
+          },
+        ],
+      },
+    ],
+  },
+  { timestamps: true }
+);
 
 // Define a compound unique index
 // productSchema.index(

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import CreateSeries from "../../components/CreateSeries";
 import {
   useGetCategoryQuery,
@@ -15,7 +15,6 @@ const CreateProducts = () => {
   const [imageSelected, setImageSelected] = useState("");
   const [prodName, setProdName] = useState("");
   const [uniqueURL, setUniqueURL] = useState("");
-  // const [variants, setVariants] = useState([{ name: "", price: undefined }]);
   const [uploadProductImage, { isLoading: uploadLoading }] =
     useUploadFileHandlerMutation();
   const [createProduct, { isLoading: productCreationLoading }] =
@@ -24,10 +23,30 @@ const CreateProducts = () => {
     useGetCategoryQuery();
   const { data: BrandData, isLoading: BrandLoading } = useGetAllBrandQuery();
 
+  // Create a ref to store the reference to the file input element
+  const fileInputRef = useRef(null);
+
   let productId = undefined;
 
-  // const [getBrand, { isLoading: BrandLoading }] = useGetBrandQuery();
-  // console.log(categoryData);
+  // VARIANTS
+  const [variants, setVariants] = useState([{ name: "", price: "" }]);
+  const handleVariantChange = (index, key, value) => {
+    const updatedVariants = [...variants];
+    updatedVariants[index][key] = value;
+    setVariants(updatedVariants);
+  };
+
+  const addVariant = () => {
+    setVariants([...variants, { name: "", price: "" }]);
+  };
+
+  const handleRemoveVariant = (index) => {
+    const newVariants = [...variants];
+    newVariants.splice(index, 1);
+    setVariants(newVariants);
+  };
+
+  // console.log("variants", variants);
 
   // File handler
   const uploadFileHandler = async () => {
@@ -43,40 +62,17 @@ const CreateProducts = () => {
     }
   };
 
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-
-  //   const imageURL = await uploadFileHandler();
-
-  //   const productsData = {
-  //     name: prodName,
-  //     uniqueURL: uniqueURL,
-  //     image: imageURL,
-  //     category: selectedCategory,
-  //     brand: selectedBrand,
-  //   };
-
-  //   console.log("productsData: ", productsData);
-
-  //   try {
-  //     const product = await createProduct(
-  //       JSON.stringify(productsData)
-  //     ).unwrap();
-  //     productId = product.id;
-  //     console.log("Product created", product);
-  //     toast("Product created successfull..!");
-  //   } catch (error) {
-  //     console.log("Error: ", error);
-  //   }
-  // };
-  console.log();
-  // TESTING
+  // Handle Submit to create Product
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (variants.name == "" || variants.price == "") {
-      console.log("variants not added");
-      alert("Add Variants..!");
+    // Check if any variant fields are empty
+    const isEmptyVariant = variants.some(
+      (variant) => variant.name.trim() === "" || variant.price.trim() === ""
+    );
+
+    if (isEmptyVariant) {
+      toast.warning("Please fill out all variant fields");
       return;
     }
 
@@ -94,32 +90,38 @@ const CreateProducts = () => {
     console.log("productsData: ", productsData);
 
     try {
-      const product = await createProduct(
+      const productCreated = await createProduct(
         JSON.stringify(productsData)
       ).unwrap();
-      productId = product.id;
-      console.log("Product created", product);
+      // productId = product.id;
+      console.log(productCreated);
+      if (
+        !productCreated.success &&
+        productCreated.data === "Duplicate productName"
+      ) {
+        // setErrorMessage(response.data);
+        toast.error(productCreated.message);
+        return;
+      }
+
+      console.log("Product created", productCreated);
       toast.success("Product created successfull..!");
+      setSelectedCategory("");
+      setSelectedBrand("");
+      setImageSelected("");
+      setProdName("");
+      setUniqueURL("");
+      // Reset the variants state to a single empty variant
+      setVariants([{ name: "", price: "" }]);
+      // Clear the value of the file input
+      fileInputRef.current.value = "";
+      // Mark the file input as required again
+      fileInputRef.current.required = true;
     } catch (error) {
-      toast.error("Fill all required fields..");
+      toast.error(error);
       console.log("Error: ", error);
     }
   };
-
-  // VARIANTS
-
-  const [variants, setVariants] = useState([{ name: "", price: "" }]);
-  const handleVariantChange = (index, key, value) => {
-    const updatedVariants = [...variants];
-    updatedVariants[index][key] = value;
-    setVariants(updatedVariants);
-  };
-
-  const addVariant = () => {
-    setVariants([...variants, { name: "", price: "" }]);
-  };
-
-  console.log("variants", variants);
 
   // useEffect(() => {}, []);
 
@@ -197,7 +199,7 @@ const CreateProducts = () => {
                   {!BrandLoading &&
                     BrandData.map((brand) => {
                       // console.log("selectedCategory", selectedCategory);
-                      if (selectedCategory == brand.category) {
+                      if (selectedCategory == brand.category.id) {
                         return (
                           <option
                             key={brand.id}
@@ -233,8 +235,11 @@ const CreateProducts = () => {
                   required
                 />
                 <div className="flex gap-2">
-                  {variants.map((variant) => (
-                    <div className="flex gap-1 border px-1 m-1 rounded-lg">
+                  {variants.map((variant, index) => (
+                    <div
+                      key={index}
+                      className="flex gap-1 border px-1 m-1 rounded-lg"
+                    >
                       <span className="opacity-50">{variant.name}</span>
                       <span>-</span>
                       <span className="opacity-50">{variant.price}</span>
@@ -300,7 +305,8 @@ const CreateProducts = () => {
                       type="file"
                       id="fileInput"
                       name="fileInput"
-                      className="relative z-[2] w-full overflow-hidden m-0 opacity-0"
+                      ref={fileInputRef}
+                      className="relative z-[2] w-full overflow-hidden m-0 opacity-0 cursor-pointer"
                       onChange={(e) => setImageSelected(e.target.files[0])}
                       required
                     />
@@ -349,28 +355,43 @@ const CreateProducts = () => {
         {variants.map((variant, index) => (
           <div
             key={index}
-            className="my-2 bg-white border rounded-md shadow-lg p-6"
+            className="my-2 bg-white flex items-center gap-2 border rounded-md shadow-lg p-6"
           >
-            <input
-              type="text"
-              value={variant.name}
-              placeholder="variant name"
-              onChange={(e) =>
-                handleVariantChange(index, "name", e.target.value)
-              }
-              className="m-1 p-2 border rounded-lg"
-              required
-            />
-            <input
-              type="number"
-              value={variant.price}
-              placeholder="variant price"
-              onChange={(e) =>
-                handleVariantChange(index, "price", e.target.value)
-              }
-              className="m-1 p-2 border rounded-lg"
-              required
-            />
+            <div>
+              <input
+                type="text"
+                value={variant.name}
+                placeholder="variant name"
+                onChange={(e) =>
+                  handleVariantChange(index, "name", e.target.value)
+                }
+                className="m-1 p-2 border rounded-lg"
+                required
+              />
+              <input
+                type="number"
+                value={variant.price}
+                placeholder="variant price"
+                onChange={(e) =>
+                  handleVariantChange(index, "price", e.target.value)
+                }
+                className="m-1 p-2 border rounded-lg"
+                required
+              />
+            </div>
+
+            <div>
+              {variants.length != 1 && (
+                <button
+                  className="bg-red-600 px-2 py-1 text-white rounded-md"
+                  onClick={() => {
+                    handleRemoveVariant(index);
+                  }}
+                >
+                  remove
+                </button>
+              )}
+            </div>
           </div>
         ))}
         <button

@@ -1,17 +1,20 @@
 import mongoose from "mongoose";
 
-const seriesSchema = mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-  },
-  product: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Product",
+const seriesSchema = mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
     },
-  ],
-});
+    product: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Product",
+      },
+    ],
+  },
+  { timestamps: true }
+);
 
 const virtual = seriesSchema.virtual("id");
 virtual.get(function () {

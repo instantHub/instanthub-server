@@ -1,165 +1,11 @@
 import Category from "../models/categoryModel.js";
-import Question from "../models/questionModel.js";
 import Product from "../models/productModel.js";
 import Condition from "../models/conditionModel.js";
 import ConditionLabel from "../models/conditionLabelModel.js";
 import path from "path";
 import fs from "fs";
 
-export const getAllQuestions = async (req, res) => {
-  try {
-    // const questions = await Question.find();
-    const questions = await Question.find().populate("category", "name");
-    const questionCategory = await Question.find().populate("category", "name");
-    // console.log("questionCategory", questionCategory);
-
-    res.status(200).json(questions);
-  } catch (error) {
-    res.status(404).json({ message: error.message });
-  }
-};
-
-export const getQuestions = async (req, res) => {
-  try {
-    const questionsId = req.params.questionsId;
-    console.log(questionsId);
-    const questionsFound = await Question.findById(questionsId).populate(
-      "category",
-      "name"
-    );
-    // console.log("questions", questionsFound);
-
-    res.status(200).json(questionsFound);
-    // res
-    //   .status(200)
-    //   .json({ msg: "success from getQuestions", data: questionsFound });
-  } catch (error) {
-    res.status(404).json({ message: error.message });
-  }
-};
-
-export const createQuestions = async (req, res) => {
-  try {
-    const { category, conditions } = req.body;
-    const categoryFound = await Category.findById(category);
-
-    const Questions = await Question.find();
-
-    // Map over the conditions array and construct the questions array for each condition
-    const questions = conditions.map(({ conditionName, questions }) => ({
-      conditionName,
-      questions: questions.map(({ questionName, priceDrop, options }) => ({
-        questionName, // Include the questionName field
-        priceDrop,
-        options,
-      })),
-    }));
-
-    if (Questions.length > 0) {
-      let categoryPresent = false;
-
-      Questions.map((questionsList) => {
-        if (questionsList.category == category) {
-          console.log("present");
-          categoryPresent = true;
-        }
-      });
-
-      if (categoryPresent == false) {
-        // If category not present in Questions database then Create the questions in the database
-        const createdQuestions = await Question.create({
-          category,
-          conditions: questions,
-        });
-        createdQuestions.save();
-        // categoryFound.questions.push(createdQuestions);
-        // Update the questions field in the Category schema with the newly created question's ID
-        await Category.findByIdAndUpdate(category, {
-          questions: createdQuestions._id,
-        });
-
-        categoryFound.save();
-
-        res.status(201).json({ success: true, data: createdQuestions });
-      } else if ((categoryPresent = true)) {
-        res.status(200).send({
-          msg:
-            "Questions for the category " +
-            categoryFound.name +
-            " already exist ",
-        });
-      }
-    } else {
-      const createdQuestions = await Question.create({
-        category,
-        conditions: questions,
-      });
-      createdQuestions.save();
-      //   categoryFound.questions.push(createdQuestions);
-      await Category.findByIdAndUpdate(category, {
-        questions: createdQuestions._id,
-      });
-      //   categoryFound.save();
-
-      res.status(201).json({ success: true, data: createdQuestions });
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, error: "Server Error" });
-  }
-
-  console.log("working");
-};
-
-export const updateQuestions = async (req, res) => {
-  try {
-    const questionsId = req.params.questionsId;
-    console.log("questionsController UpdateQuestions");
-    // console.log("req.body", req.body);
-
-    const catId = req.body.category;
-    console.log(catId);
-
-    // NEW APPROACH
-    const updatedQuestions = [req.body];
-    console.log("updatedQuestions", updatedQuestions);
-
-    // Find all products of the same category
-    const productsToUpdate = await Product.find({
-      category: catId,
-      questions: { $exists: true, $ne: [] },
-    });
-
-    try {
-      const updatedConditions = req.body.conditions;
-      // My testing
-    } catch (error) {
-      console.error(error);
-      res
-        .status(500)
-        .json({ success: false, error: "Error in udating products questions" });
-    }
-
-    // NEW APPROACH ENDS
-
-    // Use Mongoose to find the question by ID and update it with the provided updates
-    const updatedQuestion = await Question.findByIdAndUpdate(
-      questionsId,
-      req.body,
-      { new: true }
-    );
-
-    if (!updatedQuestion) {
-      return res.status(404).json({ message: "Question not found" });
-    }
-
-    res.status(200).json(updatedQuestion); // Send the updated question as a response
-  } catch (error) {
-    res.status(404).json({ message: error.message });
-  }
-};
-
-// Get Condtiions
+// Get Conditions
 export const getConditions = async (req, res) => {
   console.log("getConditions controller");
   try {
@@ -228,6 +74,7 @@ export const createCondtions = async (req, res) => {
   }
 };
 
+// Update condition
 export const updateCondition = async (req, res) => {
   try {
     const conditionId = req.params.conditionId;
@@ -267,7 +114,7 @@ export const updateCondition = async (req, res) => {
   }
 };
 
-// Delete ConditionLabel
+// Delete Condition
 export const deleteCondition = async (req, res) => {
   const category = req.query.category;
   const conditionId = req.query.conditionId;
@@ -276,6 +123,7 @@ export const deleteCondition = async (req, res) => {
   try {
     const deletedCondition = await Condition.findByIdAndDelete(conditionId);
     console.log("deletedCondition", deletedCondition);
+
     const associatedConditionLabels = await ConditionLabel.find({
       conditionNameId: conditionId,
     });
@@ -350,19 +198,25 @@ export const getConditionLabels = async (req, res) => {
 // Create ConditionLabel
 export const createCondtionLabel = async (req, res) => {
   console.log("CreateConditionLabel controller");
-  const { category, condition, conditionLabel, conditionLabelImg } = req.body;
-  console.log(category, condition, typeof conditionLabel, conditionLabelImg);
+  const { category, conditionNameId, conditionLabel, conditionLabelImg } =
+    req.body;
+  console.log(
+    category,
+    conditionNameId,
+    typeof conditionLabel,
+    conditionLabelImg
+  );
   try {
     // Fetch existing ConditionLabel for the given condition
     const existingConditions = await ConditionLabel.find({
-      conditionNameId: condition,
+      conditionNameId: conditionNameId,
     });
     // console.log("existingConditions", existingConditions);
 
     // Create new conditions
     const newConditionLabel = await ConditionLabel.create({
       category,
-      conditionNameId: condition,
+      conditionNameId: conditionNameId,
       conditionLabel: conditionLabel,
       conditionLabelImg: conditionLabelImg,
     });
@@ -370,7 +224,7 @@ export const createCondtionLabel = async (req, res) => {
     await Product.updateMany(
       {
         category: category, // Add any other conditions if needed
-        "deductions.conditionId": condition, // Match by conditionId
+        "deductions.conditionId": conditionNameId, // Match by conditionId
       },
       {
         $push: {
@@ -390,6 +244,7 @@ export const createCondtionLabel = async (req, res) => {
   }
 };
 
+// Update conditionLabel
 export const updateConditionLabel = async (req, res) => {
   const conditionLabelId = req.params.conditionLabelId;
   console.log("updateConditionLabel Controller");
@@ -443,14 +298,9 @@ export const deleteConditionLabel = async (req, res) => {
   const conditionLabelId = req.query.conditionLabelId;
   // const paramss = req.query;
   console.log("Delete ConditionLabel controller");
-  // const { category } = req.body;
   console.log(category, conditionLabelId);
-  // console.log(paramss);
   try {
     // Step 1: Delete the conditionLabel
-    // const deleteLabel = await ConditionLabel.deleteOne({
-    //   _id: conditionLabelId,
-    // });
     const deletedLabel = await ConditionLabel.findByIdAndDelete(
       conditionLabelId
     );
@@ -474,14 +324,30 @@ export const deleteConditionLabel = async (req, res) => {
     const imagePath = path.join(__dirname, deletedLabel.conditionLabelImg);
     console.log("imagePath", deletedLabel.conditionLabelImg);
 
-    fs.unlink(imagePath, (err) => {
-      // fs.unlink(deletedLabel.conditionLabelImg, (err) => {
-      if (err) {
-        console.error("Error deleting image:", err);
-        return res.status(500).json({ message: "Error deleting image" });
-      }
-      console.log("Image deleted successfully");
-    });
+    try {
+      fs.unlink(imagePath, (err) => {
+        if (err) {
+          if (err.code === "ENOENT") {
+            console.log(`Image ${imagePath} does not exist.`);
+          } else {
+            console.error(`Error deleting image ${imagePath}:`, err);
+          }
+        } else {
+          console.log(`Image ${imagePath} deleted successfully.`);
+        }
+      });
+    } catch (err) {
+      console.error(`Error deleting image ${imagePath}:`, err);
+    }
+
+    // fs.unlink(imagePath, (err) => {
+    //   // fs.unlink(deletedLabel.conditionLabelImg, (err) => {
+    //   if (err) {
+    //     console.error("Error deleting image:", err);
+    //     return res.status(500).json({ message: "Error deleting image" });
+    //   }
+    //   console.log("Image deleted successfully");
+    // });
 
     return res.status(201).json(deletedLabel);
   } catch (error) {

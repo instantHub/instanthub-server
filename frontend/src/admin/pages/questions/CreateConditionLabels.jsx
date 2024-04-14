@@ -22,7 +22,8 @@ const YourComponent = () => {
 
   const [formData, setFormData] = useState({
     category: "",
-    condition: "",
+    conditionNameId: "",
+    // condition: "",
     conditionLabel: "",
     conditionLabelImg: undefined,
   });
@@ -140,7 +141,8 @@ const YourComponent = () => {
                       onChange={(e) => {
                         setFormData({
                           ...formData,
-                          condition: e.target.value,
+                          // condition: e.target.value,
+                          conditionNameId: e.target.value,
                         });
                       }}
                       required

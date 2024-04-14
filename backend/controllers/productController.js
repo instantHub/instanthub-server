@@ -1,9 +1,10 @@
 import Product from "../models/productModel.js";
 import Brand from "../models/brandModel.js";
 import Category from "../models/categoryModel.js";
-import Question from "../models/questionModel.js";
 import Condition from "../models/conditionModel.js";
 import ConditionLabel from "../models/conditionLabelModel.js";
+import path from "path";
+import fs from "fs";
 
 export const getAllProducts = async (req, res) => {
   try {
@@ -18,7 +19,7 @@ export const getAllProducts = async (req, res) => {
   }
 };
 
-export const getProducts = async (req, res) => {
+export const getProductsByBrand = async (req, res) => {
   try {
     const brandId = req.params.brandId;
     console.log(brandId);
@@ -28,7 +29,7 @@ export const getProducts = async (req, res) => {
     );
 
     console.log("productsController GetProducts");
-    console.log(brandWithProducts);
+    // console.log(brandWithProducts);
 
     const products = brandWithProducts.products;
 
@@ -42,7 +43,9 @@ export const getProductDetails = async (req, res) => {
   try {
     const prodId = req.params.prodId;
     console.log(prodId);
-    const product = await Product.findById(prodId);
+    const product = await Product.findById(prodId)
+      .populate("category", "name")
+      .populate("brand", "name");
 
     console.log("productsController GetProductDetails");
     console.log(product);
@@ -113,20 +116,20 @@ export const createProduct = async (req, res) => {
           brand: req.body.brand,
           variants: req.body.variants,
           deductions: deductions,
-          // questions: categoryHasQuestions ? categoryQuestion.id : undefined,
         });
         product.save();
 
         // push the new product into its brand's products array & save
-        // productBrand.products.push(product);
-        // productBrand.save();
+        productBrand.products.push(product);
+        productBrand.save();
 
         res.status(200).json(product);
-        // res.status(200).json(deductions);
       } else if (duplicate == true) {
         // TODO Task, Unique Name Validation not working
         res.status(200).send({
-          msg: "Product (" + req.body.name + ") already exist ",
+          success: false,
+          data: "Duplicate productName",
+          message: "Product " + req.body.name + " already exist ",
         });
       }
     } else {
@@ -164,13 +167,12 @@ export const createProduct = async (req, res) => {
         brand: req.body.brand,
         variants: req.body.variants,
         deductions: deductions,
-        // questions: categoryHasQuestions ? categoryQuestion.id : undefined,
       });
       product.save();
 
       // push the new product into its brand's products array & save
-      // productBrand.products.push(product);
-      // productBrand.save();
+      productBrand.products.push(product);
+      productBrand.save();
 
       res.status(200).json(product);
     }
@@ -179,20 +181,87 @@ export const createProduct = async (req, res) => {
   }
 };
 
-export const getProductQuestions = async (req, res) => {
+export const deleteProduct = async (req, res) => {
+  console.log("DeleteProduct Controller");
+  const productId = req.params.productId;
+  // console.log(productId);
+
+  const deletedProduct = await Product.findByIdAndDelete(productId);
+  // console.log(deletedProduct);
+
+  const brand = await Brand.findById(deletedProduct.brand);
+  // console.log(brand);
+  brand.products.pull(productId);
+  await brand.save();
+
+  // Delete the corresponding image file from the uploads folder
+  const __dirname = path.resolve();
+  const imagePath = path.join(__dirname, deletedProduct.image);
+  console.log("imagePath", deletedProduct.image);
+
   try {
-    const prodId = req.params.prodId;
-    console.log(prodId);
-    const product = await Product.findById(prodId).populate("questions");
-
-    console.log("productsController getProductQuestions");
-    // console.log(product.questions);
-
-    res.status(200).json({
-      msg: "productsController getProductQuestions",
-      data: product.questions,
+    fs.unlink(imagePath, (err) => {
+      if (err) {
+        if (err.code === "ENOENT") {
+          console.log(`Image ${imagePath} does not exist.`);
+        } else {
+          console.error(`Error deleting image ${imagePath}:`, err);
+        }
+      } else {
+        console.log(`Image ${imagePath} deleted successfully.`);
+      }
     });
+  } catch (err) {
+    console.error(`Error deleting image ${imagePath}:`, err);
+  }
+
+  // try {
+  //   fs.unlink(imagePath, (err) => {
+  //     if (err) {
+  //       console.error("Error deleting image:", err);
+  //       return res.status(201).json({ message: "Error deleting image" });
+  //     }
+  //   });
+  //   // fs.unlink(imagePath);
+  //   // console.log("Image deleted successfully");
+  // } catch (err) {
+  //   if (err.code === "ENOENT") {
+  //     // Handle the case where the file doesn't exist
+  //     console.log(`Image ${imagePath} does not exist.`);
+  //   } else {
+  //     // Handle other errors
+  //     console.error(`Error deleting image ${imagePath}:`, err);
+  //   }
+  // }
+
+  res.status(200).json({ data: deletedProduct });
+};
+
+// update Product's Deductions PRICEDROP value for a single Product
+export const updatePriceDrop = async (req, res) => {
+  console.log("updatePriceDrop Controller");
+  const productId = req.params.productId;
+  console.log(productId);
+  let updatedProductData = req.body;
+  // console.log("updatedProductsData", updatedProductData);
+
+  updatedProductData = {
+    ...updatedProductData,
+    category: updatedProductData.category.id,
+    brand: updatedProductData.brand.id,
+  };
+
+  // console.log("After updatedProductData", updatedProductData);
+
+  try {
+    // Update the product with the complete updated data
+    await Product.findByIdAndUpdate(productId, updatedProductData, {
+      new: true,
+    });
+
+    res.status(200).json({ message: "Product updated successfully" });
   } catch (error) {
-    res.status(404).json({ message: error.message });
+    console.error("Error updating product:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };

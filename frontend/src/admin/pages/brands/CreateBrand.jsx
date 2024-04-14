@@ -5,6 +5,7 @@ import {
   useUploadFileHandlerMutation,
 } from "../../../features/api";
 import { toast } from "react-toastify";
+import { Link } from "react-router-dom";
 
 const CreateBrand = () => {
   const [brand, setBrand] = useState("");
@@ -72,6 +73,13 @@ const CreateBrand = () => {
         <div className="flex">
           <h2>Home </h2>
           <h2 className="pl-1"> / Add Brand</h2>
+        </div>
+        <div>
+          <Link to={"/admin/brands-list"}>
+            <button className="bg-blue-500 px-2 py-1 rounded border border-black">
+              Brands List
+            </button>
+          </Link>
         </div>
       </div>
       <div className="bg-white border rounded-md shadow-lg">

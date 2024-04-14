@@ -67,7 +67,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.get("/", (req, res) => res.send("Server is ready "));
 
 mongoose
-  .connect(process.env.MONGO_URL, {})
+  .connect(process.env.MONGO_URL + "/instantcashpick", {})
   .then(() => {
     app.listen(PORT, () => console.log(`Port is listening @ ${PORT}`));
 

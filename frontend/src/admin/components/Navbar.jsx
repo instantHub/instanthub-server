@@ -7,12 +7,12 @@ import { getUser } from "../../features/userSlice";
 
 const Navbar = (props) => {
   const dispatch = useDispatch();
-  const userId = useSelector((state) => state.global.userId);
-  const { data, isLoading } = useGetUserQuery(userId);
-  if (!isLoading) {
-    // console.log("data", data);
-    dispatch(getUser(data));
-  }
+  // const userId = useSelector((state) => state.global.userId);
+  // const { data, isLoading } = useGetUserQuery(userId);
+  // if (!isLoading) {
+  //   // console.log("data", data);
+  //   dispatch(getUser(data));
+  // }
 
   const { toggleSidebar, isSidebarOpen } = props;
 
@@ -63,7 +63,7 @@ const Navbar = (props) => {
         {/* RIGHT SIDE */}
         <div className="flex items-center">
           <h2 className="px-2">Settings ICON</h2>
-          {!isLoading && <h2 className="text-purple-400 px2">{data.name}</h2>}
+          {/* {!isLoading && <h2 className="text-purple-400 px2">{data.name}</h2>} */}
         </div>
       </nav>
       {/* </nav> */}

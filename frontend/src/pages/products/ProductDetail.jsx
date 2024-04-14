@@ -1,20 +1,26 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useGetProductDetailsQuery } from "../../features/api";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useLocation } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { setGetUpto } from "../../features/deductionSlice";
 
 const ProductDetail = () => {
   const { prodId } = useParams();
   const { data: productDetails, isLoading } = useGetProductDetailsQuery(prodId);
   const [toggle, setToggle] = useState(true);
-  const [variant, setVariant] = useState([]);
+  const [variantSelected, setVariantSelected] = useState([]);
   const [isSelected, setIsSelected] = useState(false);
   const [selectedDiv, setSelectedDiv] = useState();
 
-  const handleToggle = (variant) => {
+  const dispatch = useDispatch();
+
+  const handleToggle = (variantSelected) => {
     setToggle((prevState) => !prevState);
-    setVariant(variant);
+    setVariantSelected(variantSelected);
+    // console.log("calling dispatch");
+    // dispatch(setGetUpto(variantSelected));
     setIsSelected(!isSelected);
-    setSelectedDiv(variant.id);
+    setSelectedDiv(variantSelected.id);
   };
 
   console.log(productDetails);
@@ -23,10 +29,13 @@ const ProductDetail = () => {
     <div className="w-[70%] mx-auto my-36 ">
       {/* <div className="bg-white px-10 pt-10 pb-24 rounded-md shadow-lg"> */}
       <div className="mx-0 mb-6">
-        <h1>
-          Home / Categories /<Link to="/"> Brands</Link> / Products /
-          {!isLoading && <span> {productDetails.name}</span>}
-        </h1>
+        {productDetails && (
+          <h1>
+            Home / {productDetails.category.name} /{" "}
+            <Link to="/"> {productDetails.brand.name}</Link> / Products /
+            <span> {productDetails.name}</span>
+          </h1>
+        )}
         <hr className="text-black mt-1" />
       </div>
       <div className="ring-0 ring-transparent shadow">
@@ -51,46 +60,46 @@ const ProductDetail = () => {
               <div className="flex flex-col gap-24 w-full sm:w-2/3 max-sm:gap-6">
                 <div className="mt-6 flex gap-2 items-center">
                   <h1 className="text-3xl">{productDetails.name}</h1>
-                  {variant.length != 0 && (
-                    <h3 className="text-2xl">({variant.name})</h3>
+                  {variantSelected.length != 0 && (
+                    <h3 className="text-2xl">({variantSelected.name})</h3>
                   )}
                 </div>
 
                 <div className="flex flex-col gap-4">
                   <p>Choose a Variant</p>
 
-                  {variant.length == 0 && (
+                  {variantSelected.length == 0 && (
                     <p className="opacity-40 text-sm">
-                      Select a variant to know the price
+                      Select a variantSelected to know the price
                     </p>
                   )}
 
                   {/* VARIANT PRICE WILL BE SHOWN WHEN CLICKED ON A VARIANT */}
                   <div className="">
                     <h2 className="text-5xl text-yellow-500">
-                      {variant.price}
+                      {variantSelected.price}
                     </h2>
                   </div>
                   {/* END OF VARIANT PRICE */}
 
                   <div className="flex flex-row flex-wrap list-none p-0 my-0 -mx-2">
-                    {productDetails.variants.map((variant) => (
+                    {productDetails.variants.map((variantSelected) => (
                       <>
                         <div
-                          key={variant.id}
+                          key={variantSelected.id}
                           className="p-2 w-1/2 sm:w-40 sm:max-w-full"
-                          onClick={() => handleToggle(variant)}
+                          onClick={() => handleToggle(variantSelected)}
                         >
                           <div
                             className={`${
-                              selectedDiv == variant.id
+                              selectedDiv == variantSelected.id
                                 ? "bg-amber-500 text-white"
                                 : "bg-white"
                             } flex items-center rounded-md cursor-pointer p-2.5 ring-0 ring-transparent shadow`}
                           >
                             <span className="border border-solid border-surface-dark rounded-full w-5 h-5 mr-1.5"></span>
                             <span className="text-sm flex-1 flex justify-center">
-                              {variant.name}
+                              {variantSelected.name}
                             </span>
                           </div>
                           {/* var(--tw-ring-offset-shadow,0 0 #0000),var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow) */}
@@ -99,11 +108,19 @@ const ProductDetail = () => {
                     ))}
                   </div>
 
-                  {variant.length != 0 ? (
+                  {variantSelected.length != 0 ? (
                     <div>
-                      <button className="bg-emerald-600 text-white px-4 py-2 rounded-md">
-                        Get Exact Value
-                      </button>
+                      <Link
+                        // to={`/categories/brands/productDetails/${prodId}/productDeductions`}
+                        to={`/sell/deductions?prodId=${prodId}&variant=${variantSelected.name}`}
+                      >
+                        <button
+                          className="bg-emerald-600 text-white px-4 py-2 rounded-md"
+                          // onClick={}
+                        >
+                          Get Exact Value
+                        </button>
+                      </Link>
                     </div>
                   ) : (
                     <div>
