@@ -10,7 +10,7 @@ export const api = createApi({
   }),
   // reducerPath: "adminApi",
   reducerPath: "API",
-  tagTypes: ["User", "Products", "Conditions", "ConditionLabels"],
+  tagTypes: ["User", "Products", "Conditions", "ConditionLabels", "Orders"],
   endpoints: (build) => ({
     getUser: build.query({
       query: (id) => `api/user/${id}`,
@@ -167,6 +167,21 @@ export const api = createApi({
       }),
       invalidatesTags: ["ConditionLabels"],
     }),
+    getOrdersList: build.query({
+      query: () => `/api/orders`,
+      providesTags: ["Orders"],
+    }),
+    createOrder: build.mutation({
+      query: (data) => ({
+        url: "/api/orders/create-order",
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: data,
+      }),
+      invalidatesTags: ["Orders"],
+    }),
   }),
 });
 
@@ -195,6 +210,8 @@ export const {
   useCreateConditionLabelsMutation,
   useUpdateConditionLabelMutation,
   useDeleteConditionLabelMutation,
+  useGetOrdersListQuery,
+  useCreateOrderMutation,
 } = api;
 
 // useGetAllQuestionsQuery,

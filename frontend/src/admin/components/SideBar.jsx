@@ -44,6 +44,10 @@ const SideBar = (props) => {
       url: "questions",
     },
     {
+      text: "Orders",
+      url: "orders",
+    },
+    {
       text: "Setting",
       url: "Icon",
     },

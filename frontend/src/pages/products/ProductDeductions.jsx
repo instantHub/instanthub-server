@@ -14,7 +14,7 @@ import ProdDeductionsRight from "./ProdDeductionsRight";
 const ProductDeductions = () => {
   // Query Params
   const [searchParams] = useSearchParams();
-  const productId = searchParams.get("prodId");
+  const productId = searchParams.get("productId");
   const selectedVariant = searchParams.get("variant");
 
   //   Fetching Product details
@@ -35,9 +35,14 @@ const ProductDeductions = () => {
   console.log("useSelector", deductionData);
   console.log("useSelector complete", data);
 
-  const handleAge = (age, price) => {
-    setAge({ conditionLabel: age, priceDrop: price });
-    console.log(age, price);
+  const handleAge = async (ageLabel, price) => {
+    setAge({ conditionLabel: ageLabel, priceDrop: price });
+    console.log(ageLabel, price);
+    // Logic to handle continue to the next condition
+    // TODO to Update AGE
+    if (age) {
+      handleContinue();
+    }
   };
 
   const handleLabelSelection = (label, price) => {
@@ -84,7 +89,7 @@ const ProductDeductions = () => {
 
       // Handle if there are no more conditions
       console.log("No more conditions to display.");
-      navigate(`/sell/deductions/finalPrice`);
+      navigate(`/sell/deductions/finalPrice?productId=${productsData.id}`);
     }
   };
 
@@ -150,179 +155,195 @@ const ProductDeductions = () => {
   // console.log("Deductions", deductions);
 
   return (
-    <div className=" mt-4  ">
-      <div className="flex gap-3 justify-center my-auto">
-        <div className="w-[55%] flex flex-col border py-6 rounded my-auto ">
-          <div className="mx-auto pb-10">
-            <h1 className="">Tell Us More About Your Device</h1>
-          </div>
+    <>
+      <div className=" mt-4 ">
+        <div className="flex gap-3 justify-center my-auto">
+          <div className="w-[55%] flex flex-col border py-6 rounded my-auto ">
+            <div className="mx-auto pb-10">
+              <h1 className="">Tell Us More About Your Device</h1>
+            </div>
 
-          {/* Is mobile Switched On YES or NO */}
-          {!checkIsOn && (
-            <div className="px-5 py-2">
-              <h1 className="justify-center text-center pb-4">
-                Is your {productsData && productsData.category.name} Switched
-                On?
-              </h1>
+            {/* Is mobile Switched On YES or NO */}
+            {!checkIsOn && (
+              <div className="px-5 py-2">
+                <h1 className="justify-center text-center pb-4">
+                  Is your {productsData && productsData.category.name} Switched
+                  On?
+                </h1>
 
-              <div className="flex gap-4 justify-center">
-                <div
-                  onClick={() => setCheckIsOn(true)}
-                  className={`flex pr-16 items-center border rounded-md cursor-pointer p-2.5 ring-0 ring-transparent shadow hover:border-[#E27D60]`}
-                >
-                  <span className="border px- border-solid border-surface-dark rounded-full w-5 h-5 mr-1.5"></span>
-                  <span className="text-sm  flex-1 flex justify-center">
-                    Yes
-                  </span>
-                </div>
-                <div
-                  className={`flex pr-16 items-center rounded-md cursor-pointer p-2.5 ring-0 ring-transparent shadow`}
-                >
-                  <span className="border border-solid border-surface-dark rounded-full w-5 h-5 mr-1.5"></span>
-                  <span className="text-sm flex-1 flex justify-center">No</span>
+                <div className="flex gap-4 justify-center">
+                  <div
+                    onClick={() => setCheckIsOn(true)}
+                    className={`flex pr-16 items-center border rounded-md cursor-pointer p-2.5 ring-0 ring-transparent shadow hover:border-[#E27D60]`}
+                  >
+                    <span className="border px- border-solid border-surface-dark rounded-full w-5 h-5 mr-1.5"></span>
+                    <span className="text-sm  flex-1 flex justify-center">
+                      Yes
+                    </span>
+                  </div>
+                  <div
+                    className={`flex pr-16 items-center rounded-md cursor-pointer p-2.5 ring-0 ring-transparent shadow`}
+                  >
+                    <span className="border border-solid border-surface-dark rounded-full w-5 h-5 mr-1.5"></span>
+                    <span className="text-sm flex-1 flex justify-center">
+                      No
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* All conditions Except AGE */}
-          {checkIsOn &&
-            productsData &&
-            deductions &&
-            !deductions[currentConditionIndex].conditionName.includes(
-              "Age"
-            ) && (
-              <div className="flex flex-col">
-                <div className="px-5 py-2 text-center font-extrabold text-lg">
-                  <h1>{deductions[currentConditionIndex].conditionName}</h1>
-                </div>
+            {/* If products data is loading */}
+            {isLoading && (
+              <div className="flex flex-col justify-center items-center h-32">
+                <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-gray-900"></div>
+                <span>Loading...</span>
+              </div>
+            )}
 
-                <div className="grid grid-cols-2 gap-4 lg:grid-cols-5 md:grid-cols-4 sm:grid-cols-3 items-center px-4">
-                  {deductions[currentConditionIndex].conditionLabels.map(
-                    (label) => (
-                      <div
-                        className={`${
-                          // selectedLabels.includes(label.conditionLabel)
-                          selectedLabels.some(
-                            (condLabel) =>
-                              condLabel.conditionLabel == label.conditionLabel
-                          )
-                            ? "border-[#E27D60]"
-                            : ""
-                        } flex flex-col border rounded items-center`}
-                        // onClick={() =>
-                        //   handleLabelSelection(label.conditionLabel)
-                        // }
-                        onClick={() =>
-                          handleLabelSelection(
-                            label.conditionLabel,
-                            label.priceDrop
-                          )
-                        }
-                      >
-                        <div className="p-4">
-                          <img
-                            src={
-                              "http://localhost:8000" + label.conditionLabelImg
-                            }
-                            alt="LabelImg"
-                            className="size-20 max-sm:size-24"
-                          />
-                        </div>
+            {/* All conditions Except AGE */}
+            {checkIsOn &&
+              productsData &&
+              deductions &&
+              !deductions[currentConditionIndex].conditionName.includes(
+                "Age"
+              ) && (
+                <div className="flex flex-col">
+                  <div className="px-5 py-2 text-center font-extrabold text-lg">
+                    <h1>{deductions[currentConditionIndex].conditionName}</h1>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 lg:grid-cols-5 md:grid-cols-4 sm:grid-cols-3 items-center px-4">
+                    {deductions[currentConditionIndex].conditionLabels.map(
+                      (label) => (
                         <div
-                          key={label.conditonLabelId}
                           className={`${
                             // selectedLabels.includes(label.conditionLabel)
                             selectedLabels.some(
                               (condLabel) =>
                                 condLabel.conditionLabel == label.conditionLabel
                             )
-                              ? "bg-[#E27D60] text-white"
-                              : "bg-slate-100 "
-                          } py-2 text-sm text-center w-full`}
+                              ? "border-[#E27D60]"
+                              : ""
+                          } flex flex-col border rounded items-center`}
+                          // onClick={() =>
+                          //   handleLabelSelection(label.conditionLabel)
+                          // }
+                          onClick={() =>
+                            handleLabelSelection(
+                              label.conditionLabel,
+                              label.priceDrop
+                            )
+                          }
                         >
-                          {label.conditionLabel}
+                          <div className="p-4">
+                            <img
+                              src={
+                                "http://localhost:8000" +
+                                label.conditionLabelImg
+                              }
+                              alt="LabelImg"
+                              className="size-20 max-sm:size-24"
+                            />
+                          </div>
+                          <div
+                            key={label.conditonLabelId}
+                            className={`${
+                              // selectedLabels.includes(label.conditionLabel)
+                              selectedLabels.some(
+                                (condLabel) =>
+                                  condLabel.conditionLabel ==
+                                  label.conditionLabel
+                              )
+                                ? "bg-[#E27D60] text-white"
+                                : "bg-slate-100 "
+                            } py-2 text-sm text-center w-full`}
+                          >
+                            {label.conditionLabel}
+                          </div>
                         </div>
-                      </div>
-                    )
-                  )}
-                </div>
+                      )
+                    )}
+                  </div>
 
-                <button
-                  onClick={handleContinue}
-                  className="px-2 py-1 border rounded w-1/2 m-2"
-                >
-                  Continue
-                </button>
-              </div>
-            )}
-
-          {/* AGE selection */}
-          {checkIsOn &&
-            productsData &&
-            deductions &&
-            deductions[currentConditionIndex].conditionName.includes("Age") && (
-              <div className="flex flex-col">
-                <div className="px-5 py-2 text-center font-extrabold text-lg">
-                  <h1>{deductions[currentConditionIndex].conditionName}</h1>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 lg:grid-cols-5 md:grid-cols-4 sm:grid-cols-3 items-center px-4">
-                  {deductions[currentConditionIndex].conditionLabels.map(
-                    (label) => (
-                      <div
-                        className={`${
-                          //   selectedLabels.includes(label.conditionLabel)
-                          selectedLabels.some(
-                            (condLabel) =>
-                              condLabel.conditionLabel == label.conditionLabel
-                          )
-                            ? "border-[#E27D60]"
-                            : ""
-                        } flex flex-col border rounded items-center`}
-                      >
-                        <div className="flex text-sm gap-1">
-                          <input
-                            type="radio"
-                            name="age"
-                            id=""
-                            className="px-4 py-2"
-                            placeholder={label.conditionLabel}
-                            onClick={() =>
-                              handleAge(label.conditionLabel, label.priceDrop)
-                            }
-                            required
-                          />
-                          <label htmlFor="age">{label.conditionLabel} </label>
-                        </div>
-                      </div>
-                    )
-                  )}
-                </div>
-
-                {age ? (
                   <button
                     onClick={handleContinue}
                     className="px-2 py-1 border rounded w-1/2 m-2"
                   >
                     Continue
                   </button>
-                ) : (
-                  <button
-                    className="px-2 py-1 border rounded w-1/2 m-2 bg-gray-400 opacity-35"
-                    disabled
-                  >
-                    Select Age To Continue
-                  </button>
-                )}
-              </div>
-            )}
-        </div>
+                </div>
+              )}
 
-        {/* Right Side Div */}
-        <ProdDeductionsRight />
+            {/* AGE selection */}
+            {checkIsOn &&
+              productsData &&
+              deductions &&
+              deductions[currentConditionIndex].conditionName.includes(
+                "Age"
+              ) && (
+                <div className="flex flex-col">
+                  <div className="px-5 py-2 text-center font-extrabold text-lg">
+                    <h1>{deductions[currentConditionIndex].conditionName}</h1>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 lg:grid-cols-5 md:grid-cols-4 sm:grid-cols-3 items-center px-4">
+                    {deductions[currentConditionIndex].conditionLabels.map(
+                      (label) => (
+                        <div
+                          className={`${
+                            //   selectedLabels.includes(label.conditionLabel)
+                            selectedLabels.some(
+                              (condLabel) =>
+                                condLabel.conditionLabel == label.conditionLabel
+                            )
+                              ? "border-[#E27D60]"
+                              : ""
+                          } flex flex-col border rounded items-center`}
+                        >
+                          <div className="flex text-sm gap-1">
+                            <input
+                              type="radio"
+                              name="age"
+                              id=""
+                              className="px-4 py-2"
+                              placeholder={label.conditionLabel}
+                              onClick={() =>
+                                handleAge(label.conditionLabel, label.priceDrop)
+                              }
+                              required
+                            />
+                            <label htmlFor="age">{label.conditionLabel} </label>
+                          </div>
+                        </div>
+                      )
+                    )}
+                  </div>
+
+                  {age ? (
+                    <button
+                      onClick={handleContinue}
+                      className="px-2 py-1 border rounded w-1/2 m-2"
+                    >
+                      Continue
+                    </button>
+                  ) : (
+                    <button
+                      className="px-2 py-1 border rounded w-1/2 m-2 bg-gray-400 opacity-35"
+                      disabled
+                    >
+                      Select Age To Continue
+                    </button>
+                  )}
+                </div>
+              )}
+          </div>
+
+          {/* Right Side Div */}
+          <ProdDeductionsRight />
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

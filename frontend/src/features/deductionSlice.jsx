@@ -17,12 +17,12 @@ export const deductionSlice = createSlice({
   reducers: {
     setGetUpto: (state, action) => {
       console.log("setGetUpto reducer");
-      console.log(
-        action.payload.productName,
-        action.payload.productImage,
-        action.payload.variantName,
-        action.payload.price
-      );
+      // console.log(
+      //   action.payload.productName,
+      //   action.payload.productImage,
+      //   action.payload.variantName,
+      //   action.payload.price
+      // );
       const { productName, productImage, variantName, price } = action.payload;
       return {
         ...state,

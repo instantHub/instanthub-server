@@ -40,7 +40,10 @@ const ProductDetail = () => {
       </div>
       <div className="ring-0 ring-transparent shadow">
         {isLoading ? (
-          <h1 className="text-5xl text-black opacity-40 mx-auto">Loading...</h1>
+          <div className="flex flex-col justify-center items-center h-32">
+            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-gray-900"></div>
+            <span>Loading...</span>
+          </div>
         ) : (
           <>
             {/* <div className="flex gap-10 "> */}
@@ -112,7 +115,7 @@ const ProductDetail = () => {
                     <div>
                       <Link
                         // to={`/categories/brands/productDetails/${prodId}/productDeductions`}
-                        to={`/sell/deductions?prodId=${prodId}&variant=${variantSelected.name}`}
+                        to={`/sell/deductions?productId=${prodId}&variant=${variantSelected.name}`}
                       >
                         <button
                           className="bg-emerald-600 text-white px-4 py-2 rounded-md"

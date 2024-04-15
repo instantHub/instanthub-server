@@ -32,10 +32,9 @@ import AdminUpdateCondition from "./admin/pages/questions/UpdateCondition";
 import AdminUpdateConditionLabel from "./admin/pages/questions/UpdateConditionLabel";
 import AdminProductsList from "./admin/pages/products/ProductsList";
 import AdminProductQuestions from "./admin/pages/products/ProductQuestionsList";
-// import AdminCreateQuestions from "./admin/pages/questions/CreateQuestions";
 import AdminConditionsList from "./admin/pages/questions/ConditionsList";
 import AdminConditionLabelsList from "./admin/pages/questions/ConditionLabelsList";
-// import AdminUpdateQuestions from "./admin/pages/questions/UpdateQuestions";
+import AdminOrdersList from "./admin/pages/orders/OrdersList";
 
 import Admin from "./admin/Admin";
 import AdminLayout from "./admin/pages/layout/Layout";
@@ -59,19 +58,12 @@ function App() {
           element: <ClientBrands />,
         },
         {
-          // path: "/categories/brands/products/:brandId",
           path: "/categories/brands/products/:brandId",
           element: <ClientProducts />,
         },
         {
           path: "/categories/brands/productDetails/:prodId",
           element: <ClientProductDetail />,
-          // children: [
-          //   {
-          //     path: "productDeductions",
-          //     element: <ClientProductDeductions />,
-          //   },
-          // ],
         },
         {
           path: "/sell/deductions",
@@ -161,6 +153,10 @@ function App() {
         {
           path: "/admin/updateConditionLabel/:conditionLabelId",
           element: <AdminUpdateConditionLabel />,
+        },
+        {
+          path: "/admin/orders",
+          element: <AdminOrdersList />,
         },
       ],
     },

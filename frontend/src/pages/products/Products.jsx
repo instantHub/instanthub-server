@@ -78,7 +78,10 @@ const Products = () => {
         </div>
 
         {productsLoading ? (
-          <h1 className="text-5xl text-black opacity-40 mx-auto">Loading...</h1>
+          <div className="flex flex-col justify-center items-center h-32">
+            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-gray-900"></div>
+            <span>Loading...</span>
+          </div>
         ) : (
           //   <div className="flex flex-wrap justify-evenly gap-6">
           <div className="grid grid-cols-3 sm:grid-cols-6 sm:gap-x-12 sm:gap-y-8 rounded-xl sm:rounded-none ring-0 ring-transparent shadow sm:shadow-none mt-4 sm:mt-0">

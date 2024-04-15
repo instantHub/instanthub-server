@@ -1,31 +1,30 @@
 import mongoose, { mongo } from "mongoose";
-import ConditionLabel from "./conditionLabelModel";
+// import ConditionLabel from "./conditionLabelModel.js";
 
 const orderSchema = mongoose.Schema(
   {
-    product: {
+    productId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Product",
       required: true,
     },
-    orderId: "string",
-    customer: {
-      name: "string",
-      email: "string",
-      phone: "string",
-      address: "string",
+    // orderId: "string",
+    customerName: {
+      type: String,
     },
-    device: {
-      type: "string",
-      brand: "string",
-      model: "string",
-      condition: "string",
-      IMEI: "string",
-      storage: "string",
-      accessories: ["string"],
-      images: ["string"],
+    email: {
+      type: String,
     },
-    condition: [
+    phone: {
+      type: Number,
+    },
+    address: {
+      type: String,
+    },
+    pinCode: {
+      type: Number,
+    },
+    deductions: [
       {
         ConditionLabel: {
           type: String,
