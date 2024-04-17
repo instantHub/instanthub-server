@@ -73,7 +73,7 @@ export const getCategory = async (req, res) => {
   // }
 
   try {
-    const categories = await Category.find();
+    const categories = await Category.find().populate("brands", "name");
     res.status(200).json(categories);
   } catch (error) {
     res
@@ -84,6 +84,19 @@ export const getCategory = async (req, res) => {
 
 export const updateCategory = async (req, res) => {
   console.log("Update Category controller");
+  const catId = req.params.catId;
+  console.log(catId);
+
+  console.log("body", req.body);
+
+  try {
+    const updatedCategory = await Category.findByIdAndUpdate(catId, req.body, {
+      new: true,
+    });
+    return res.status(201).json(updatedCategory);
+  } catch (error) {
+    return res.status(500).json({ message: "Internal server error.", error });
+  }
 };
 
 export const deleteCategory = async (req, res) => {

@@ -9,10 +9,13 @@ import path from "path";
 import helmet from "helmet";
 import morgan from "morgan";
 import multer from "multer";
+import cookieParser from "cookie-parser";
+// testing
+import Admin from "./models/adminModel.js";
+import jwt from "jsonwebtoken";
 
 // Routers import
-import adminRoutes from "./routes/admin.js";
-import userRoutes from "./routes/user.js";
+import adminRoutes from "./routes/adminRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
 import brandRouter from "./routes/brandRoutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
@@ -28,6 +31,7 @@ const PORT = process.env.PORT || 3000;
 
 // configuration
 const app = express();
+
 // app.use(express.json());
 app.use(express.json({ limit: "10mb" })); // Set body size limit to 10mb
 app.use(helmet());
@@ -35,17 +39,32 @@ app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(morgan("common"));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cors());
+// app.use(cors());
+// Testing
+app.use(
+  cors({
+    origin: "http://localhost:5173", // Adjust accordingly
+    credentials: true,
+  })
+);
+app.use(cookieParser());
 
 /* ROUTES */
-app.use("/admin", adminRoutes);
-app.use("/api", userRoutes);
+app.use("/api", adminRoutes);
 app.use("/api/category", categoryRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/brand", brandRouter);
 app.use("/api/products", productRoutes);
 app.use("/api/questions", questionRoutes);
 app.use("/api/orders", orderRoutes);
+
+// Cookie Testing
+// app.get("/contact", (req, res) => {
+//   res.cookie("Test", "Yusuf");
+//   res.send(`Hello Contact page`);
+// });
+
+// Testing END
 
 const __dirname = path.resolve();
 // app.use("/uploads", express.static(path.join(__dirname, "uploads")));

@@ -1,37 +1,47 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import { useRegisterMutation } from "../../../features/adminApiSlice";
-import { setCredentials } from "../../../features/authSlice";
 import { toast } from "react-toastify";
+import { useUpdateAdminMutation } from "../../features/adminApiSlice";
+import { setCredentials } from "../../features/authSlice";
 
-const SignUp = () => {
-  const [signUpData, setSignUpData] = useState();
-  const [name, setName] = useState();
-  const [email, setEmail] = useState();
-  const [password, setPassword] = useState();
-  const [confirmPassword, setConfirmPassword] = useState();
-  const navigate = useNavigate();
+const UpdateAdmin = () => {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [adminId, setAdminId] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
   const dispatch = useDispatch();
-
+  const navigate = useNavigate();
   const { adminInfo } = useSelector((state) => state.auth);
-  const [register] = useRegisterMutation();
-  //   If AdminInfo(logged In) is available navigate to Admin Dashboard
+
+  const [updateAdmin] = useUpdateAdminMutation();
+
+  //   console.log(adminInfo);
+
   useEffect(() => {
     if (adminInfo) {
-      navigate("/admin/dashboard");
+      setName(adminInfo.name);
+      setEmail(adminInfo.email);
+      setAdminId(adminInfo._id);
     }
-  }, [navigate, adminInfo]);
+  }, [adminInfo]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(name, email, typeof password, confirmPassword);
+    console.log(name, email, password, confirmPassword, adminId);
 
     if (password === confirmPassword) {
       try {
-        const res = await register({ name, email, password }).unwrap();
-        dispatch(setCredentials(res));
-        toast.success("Registered in successfull");
+        const res = await updateAdmin({
+          _id: adminId,
+          name,
+          email,
+          password,
+        }).unwrap();
+        dispatch(setCredentials(res.updatedAdmin));
+        toast.success(res.message);
         navigate("/admin/dashboard");
       } catch (err) {
         console.log("catch error");
@@ -43,9 +53,10 @@ const SignUp = () => {
       setConfirmPassword("");
     }
   };
+
   return (
     <div>
-      <div className="mx-auto w-[30%] my-[10%] border rounded shadow-lg p-5">
+      <div className="mx-auto w-[40%] my-[10%] border rounded shadow-lg p-5">
         <form
           action=""
           method="post"
@@ -86,7 +97,6 @@ const SignUp = () => {
               placeholder="Password"
               className="border rounded px-2 py-1"
               onChange={(e) => setPassword(e.target.value)}
-              required
             />
             <label htmlFor="confirmpassword">Confirm Password</label>
             <input
@@ -97,28 +107,20 @@ const SignUp = () => {
               placeholder="Confirm Password"
               className="border rounded px-2 py-1"
               onChange={(e) => setConfirmPassword(e.target.value)}
-              required
             />
 
             <div className="">
               <input
                 type="submit"
-                value="Register"
+                value="Update"
                 className="border rounded px-2 py-1 mt-3 w-[50%] bg-green-600 text-white hover:border-black hover:bg-green-700 cursor-pointer"
               />
             </div>
           </div>
         </form>
-        <div className="text-end -mt-11">
-          <Link to={"/admin/login"}>
-            <button className="text-sm bg-blue-500 px-2 py-1 mt-3 border rounded text-white">
-              Login
-            </button>
-          </Link>
-        </div>
       </div>
     </div>
   );
 };
 
-export default SignUp;
+export default UpdateAdmin;

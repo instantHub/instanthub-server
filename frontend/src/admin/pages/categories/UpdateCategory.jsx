@@ -1,50 +1,46 @@
 import React, { useEffect, useState } from "react";
 import {
-  useGetAllBrandQuery,
+  useGetCategoryQuery,
   useUploadFileHandlerMutation,
-  useUpdateBrandMutation,
+  useUpdateCategoryMutation,
 } from "../../../features/api";
 import { Link, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 
-function UpdateBrand() {
-  const { brandId } = useParams();
+function UpdateCategory() {
+  const { catId } = useParams();
   //   console.log(brandId);
 
-  const { data: brandsData, isLoading: brandsLoading } = useGetAllBrandQuery();
+  const { data: categoriesData, isLoading: categoriesLoading } =
+    useGetCategoryQuery();
   const [newImgSelected, setNewImgSelected] = useState(false);
   const [uploadProductImage, { isLoading: uploadLoading }] =
     useUploadFileHandlerMutation();
-  const [
-    updateBrand,
-    {
-      isLoading: updateConditionLabelLoading,
-      isError: updateConditionLabelError,
-    },
-  ] = useUpdateBrandMutation();
+  const [updateCategory] = useUpdateCategoryMutation();
 
   const [formData, setFormData] = useState({
-    category: "",
     name: "",
     image: "",
   });
 
-  let brandToUpdate;
-  if (!brandsLoading) {
-    brandToUpdate = brandsData.filter((brand) => brand.id == brandId);
+  let categoryToUpdate;
+  if (!categoriesLoading) {
+    categoryToUpdate = categoriesData.filter(
+      (category) => category.id == catId
+    );
   }
+  console.log(categoryToUpdate);
 
   useEffect(() => {
-    if (brandsData) {
-      console.log("useEffect", brandToUpdate);
+    if (categoriesData) {
+      console.log("useEffect", categoryToUpdate);
       setFormData((prevFormData) => ({
         ...prevFormData,
-        category: brandToUpdate[0].category.id,
-        name: brandToUpdate[0].name,
-        image: brandToUpdate[0].image,
+        name: categoryToUpdate[0].name,
+        image: categoryToUpdate[0].image,
       }));
     }
-  }, [brandsData]);
+  }, [categoriesData]);
 
   console.log(formData);
 
@@ -77,16 +73,16 @@ function UpdateBrand() {
     console.log("after image", formData);
 
     try {
-      const updatedBrand = await updateBrand({
-        brandId: brandId,
+      const updatedCategory = await updateCategory({
+        catId: catId,
         data: formData,
       }).unwrap();
-      console.log("Brand updated", updatedBrand);
-      toast.success("Brand updated successfully..!");
+      console.log("Category updated", updatedCategory);
+      toast.success("Category updated successfully..!");
       // Handle success
     } catch (error) {
       console.error("Error updating condition:", error);
-      toast.error("Brand update failed..!");
+      toast.error("Category update failed..!");
     }
 
     // Send formData to backend or perform any other action
@@ -98,17 +94,17 @@ function UpdateBrand() {
       <div className="flex mt-[5%] w-[80%] mx-auto">
         <div className="grow">
           <div className="flex justify-between items-center">
-            <h1 className="bold text-[1.4rem] mb-2">Update Brand</h1>
+            <h1 className="bold text-[1.4rem] mb-2">Update Category</h1>
             <div className="flex items-center gap-1">
               <h2>Home </h2>
-              <h2 className="pl-1"> / Update Brand</h2>
+              <h2 className="pl-1"> / Update Category</h2>
               {/* <div className="py-3 px-2"> */}
-              <Link to="/admin/brands-list">
+              <Link to="/admin/categories-list">
                 <button
                   type="button"
                   className="border  mx-auto border-gray-950 bg-blue-500 rounded-md p-1 cursor-pointer hover:bg-white"
                 >
-                  Brands List
+                  Categories List
                 </button>
               </Link>
               {/* </div> */}
@@ -118,25 +114,23 @@ function UpdateBrand() {
             <form onSubmit={handleSubmit} className="flex flex-col gap-4 p-5 ">
               <div className="flex gap-2 items-center">
                 <span className="text-xl opacity-75">Update </span>
-                {!brandsLoading && (
-                  <h1 className="text-2xl ">
-                    {brandToUpdate[0].category.name}{" "}
-                  </h1>
+                {!categoriesLoading && (
+                  <h1 className="text-2xl ">{categoryToUpdate[0].name} </h1>
                 )}
-                <span className="text-xl opacity-75">Brand</span>
+                <span className="text-xl opacity-75">Category</span>
               </div>
               <hr />
 
               <div className="grid grid-cols-2 gap-2 w-full max-lg:grid-cols-1">
-                {!brandsLoading && (
+                {!categoriesLoading && (
                   <div className="flex flex-col gap-2">
                     <div className="flex items-center gap-4">
-                      <label htmlFor="conditioName">Brand Name</label>
+                      <label htmlFor="conditioName">Category Name</label>
                       <h1
                         name="conditioName"
                         className="text-[1.7rem] text-red-700"
                       >
-                        {brandToUpdate[0].name}
+                        {categoryToUpdate[0].name}
                       </h1>
                     </div>
                     <div className="flex items-center">
@@ -180,12 +174,12 @@ function UpdateBrand() {
                 )}
               </div>
 
-              <div className="py-3 px-2">
+              <div className="py-3 px-2 text-center">
                 <button
                   type="submit"
-                  className="border w-[80%] mx-auto border-black bg-blue-500 rounded-md p-1 cursor-pointer hover:bg-white"
+                  className="border border-black bg-green-600 rounded-md px-4 py-1 cursor-pointer hover:bg-white"
                 >
-                  Submit
+                  Update
                 </button>
               </div>
             </form>
@@ -196,4 +190,4 @@ function UpdateBrand() {
   );
 }
 
-export default UpdateBrand;
+export default UpdateCategory;

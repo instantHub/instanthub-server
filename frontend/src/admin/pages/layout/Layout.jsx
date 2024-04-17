@@ -6,7 +6,7 @@ import SideBar from "../../components/SideBar";
 
 const Layout = () => {
   // const
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -18,8 +18,10 @@ const Layout = () => {
         {/* <SideBar user={data || {}} isSidebarOpen={isSidebarOpen} /> */}
         <SideBar isSidebarOpen={isSidebarOpen} />
       </div>
-      <div className={`${isSidebarOpen ? "ml-[10%]" : ""} `}>
-        <Navbar toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
+      {/* <div className={`${isSidebarOpen ? "ml-[10%]" : ""} `}> */}
+      <div className={` ml-[10%] `}>
+        {/* <Navbar toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} /> */}
+        <Navbar  isSidebarOpen={isSidebarOpen} />
         <Outlet />
       </div>
     </div>

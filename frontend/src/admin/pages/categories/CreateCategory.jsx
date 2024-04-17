@@ -3,7 +3,7 @@ import {
   useCreateCategoryMutation,
   useUploadFileHandlerMutation,
 } from "../../../features/api";
-import axios from "axios";
+import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const CreateCategory = () => {
@@ -96,6 +96,13 @@ const CreateCategory = () => {
         <div className="flex">
           <h2>Home </h2>
           <h2 className="pl-1"> / Add Category</h2>
+        </div>
+        <div>
+          <Link to={"/admin/categories-list"}>
+            <button className="bg-blue-500 px-2 py-1 rounded border border-black">
+              Categories List
+            </button>
+          </Link>
         </div>
       </div>
       <div className="bg-white border rounded-md shadow-lg">

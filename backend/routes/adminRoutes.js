@@ -1,0 +1,21 @@
+import express from "express";
+import {
+  authAdmin,
+  getAdmin,
+  getAdminProfile,
+  logout,
+  registerAdmin,
+  updateAdmin,
+} from "../controllers/adminController.js";
+import { protect } from "../middleware/authMiddleware.js";
+
+const router = express.Router();
+
+router.get("/", getAdmin);
+router.post("/register", registerAdmin);
+router.post("/auth", authAdmin);
+router.post("/logout", logout);
+router.get("/admin-profile", protect, getAdminProfile);
+router.put("/update-admin", protect, updateAdmin);
+
+export default router;

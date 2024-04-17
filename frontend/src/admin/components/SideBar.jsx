@@ -9,7 +9,7 @@ const SideBar = (props) => {
   const sideBarLinks = [
     {
       text: "Dashboard",
-      url: "",
+      url: "dashboard",
     },
     {
       text: "Products",

@@ -6,7 +6,6 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
-import ElectronicsComponent from "./pages/brands/ElectronicsComponent";
 // Client side
 import ClientLayout from "./components/Layout";
 import ClientHome from "./pages/home/Home";
@@ -18,6 +17,10 @@ import ClientProductDeductions from "./pages/products/ProductDeductions";
 import ClientProductFinalPrice from "./pages/products/ProductFinalPrice";
 
 // Admin side
+import PrivateRoute from "./admin/components/PrivateRoute";
+import AdminSignIn from "./admin/pages/signIn & signup/SignIn";
+import AdminSignUp from "./admin/pages/signIn & signup/SignUp";
+import UpdateAdminProfile from "./admin/components/UpdateAdmin";
 import AdminDashboard from "./admin/pages/dashboard/Dashboard";
 import AdminProducts from "./admin/pages/products/Products";
 import AdminCreateProducts from "./admin/pages/products/CreateProducts";
@@ -25,8 +28,10 @@ import AdminBrands from "./admin/pages/brands/Brands";
 import AdminBrandsList from "./admin/pages/brands/BrandsList";
 import AdminUpdateBrand from "./admin/pages/brands/UpdateBrand";
 import AdminCreateBrand from "./admin/pages/brands/CreateBrand";
-import AdminCategories from "./admin/pages/categories/Categories";
+import AdminCategories from "./admin/pages/categories/CategoriesList";
 import AdminCreateCategory from "./admin/pages/categories/CreateCategory";
+import AdminCategoriesList from "./admin/pages/categories/CategoriesList";
+import AdminUpdateCategory from "./admin/pages/categories/UpdateCategory";
 import AdminCreateConditions from "./admin/pages/questions/CreateCondtions";
 import AdminUpdateCondition from "./admin/pages/questions/UpdateCondition";
 import AdminUpdateConditionLabel from "./admin/pages/questions/UpdateConditionLabel";
@@ -81,85 +86,189 @@ function App() {
         },
       ],
     },
-
     {
-      path: "/admin",
-      element: <Admin />,
+      path: "/admin/login",
+      element: <AdminSignIn />,
+    },
+    {
+      path: "/admin/signup",
+      // element: <AdminSignUp />, // Undo for new admin registration
+      element: <Navigate to="/admin/login" replace />,
+    },
+    {
+      path: "",
+      element: <PrivateRoute />,
       children: [
         {
-          index: true,
-          element: <Navigate to="/admin/dashboard" replace />,
-        },
-        {
-          path: "/admin/dashboard",
-          element: <AdminDashboard />,
-        },
-        {
-          path: "/admin/products",
-          element: <AdminProducts />,
-        },
-        {
-          path: "/admin/productsList",
-          element: <AdminProductsList />,
-        },
-        {
-          path: "/admin/add-products",
-          element: <AdminCreateProducts />,
-        },
-        {
-          path: "/admin/products/product-questions/:productId",
-          element: <AdminProductQuestions />,
-        },
-        {
-          path: "/admin/categories",
-          element: <AdminCategories />,
-        },
-        {
-          path: "/admin/add-category",
-          element: <AdminCreateCategory />,
-        },
-        {
-          path: "/admin/brands",
-          element: <AdminBrands />,
-        },
-        {
-          path: "/admin/add-brands",
-          element: <AdminCreateBrand />,
-        },
-        {
-          path: "/admin/brands-list",
-          element: <AdminBrandsList />,
-        },
-        {
-          path: "/admin/update-brand/:brandId",
-          element: <AdminUpdateBrand />,
-        },
-        {
-          path: "/admin/questions",
-          element: <AdminCreateConditions />,
-        },
-        {
-          path: "/admin/conditionsList",
-          element: <AdminConditionsList />,
-        },
-        {
-          path: "/admin/conditionLabelsList",
-          element: <AdminConditionLabelsList />,
-        },
-        {
-          path: "/admin/updateCondition/:conditionId",
-          element: <AdminUpdateCondition />,
-        },
-        {
-          path: "/admin/updateConditionLabel/:conditionLabelId",
-          element: <AdminUpdateConditionLabel />,
-        },
-        {
-          path: "/admin/orders",
-          element: <AdminOrdersList />,
+          path: "/admin",
+          element: <Admin />,
+          children: [
+            {
+              index: true,
+              element: <Navigate to="/admin/dashboard" replace />,
+            },
+            {
+              path: "/admin/dashboard",
+              element: <AdminDashboard />,
+            },
+            {
+              path: "/admin/update-profile",
+              element: <UpdateAdminProfile />,
+            },
+            {
+              path: "/admin/products",
+              element: <AdminProducts />,
+            },
+            {
+              path: "/admin/productsList",
+              element: <AdminProductsList />,
+            },
+            {
+              path: "/admin/add-products",
+              element: <AdminCreateProducts />,
+            },
+            {
+              path: "/admin/products/product-questions/:productId",
+              element: <AdminProductQuestions />,
+            },
+            {
+              path: "/admin/categories",
+              element: <AdminCategories />,
+            },
+            {
+              path: "/admin/add-category",
+              element: <AdminCreateCategory />,
+            },
+            {
+              path: "/admin/categories-list",
+              element: <AdminCategoriesList />,
+            },
+            {
+              path: "/admin/update-category/:catId",
+              element: <AdminUpdateCategory />,
+            },
+            {
+              path: "/admin/brands",
+              element: <AdminBrands />,
+            },
+            {
+              path: "/admin/add-brands",
+              element: <AdminCreateBrand />,
+            },
+            {
+              path: "/admin/brands-list",
+              element: <AdminBrandsList />,
+            },
+            {
+              path: "/admin/update-brand/:brandId",
+              element: <AdminUpdateBrand />,
+            },
+            {
+              path: "/admin/questions",
+              element: <AdminCreateConditions />,
+            },
+            {
+              path: "/admin/conditionsList",
+              element: <AdminConditionsList />,
+            },
+            {
+              path: "/admin/conditionLabelsList",
+              element: <AdminConditionLabelsList />,
+            },
+            {
+              path: "/admin/updateCondition/:conditionId",
+              element: <AdminUpdateCondition />,
+            },
+            {
+              path: "/admin/updateConditionLabel/:conditionLabelId",
+              element: <AdminUpdateConditionLabel />,
+            },
+            {
+              path: "/admin/orders",
+              element: <AdminOrdersList />,
+            },
+          ],
         },
       ],
     },
+    // {
+    //   path: "/admin",
+    //   element: <Admin />,
+    //   children: [
+    //     {
+    //       index: true,
+    //       element: <Navigate to="/admin/dashboard" replace />,
+    //     },
+    //     {
+    //       path: "/admin/dashboard",
+    //       element: <AdminDashboard />,
+    //     },
+    //     {
+    //       path: "/admin/products",
+    //       element: <AdminProducts />,
+    //     },
+    //     {
+    //       path: "/admin/productsList",
+    //       element: <AdminProductsList />,
+    //     },
+    //     {
+    //       path: "/admin/add-products",
+    //       element: <AdminCreateProducts />,
+    //     },
+    //     {
+    //       path: "/admin/products/product-questions/:productId",
+    //       element: <AdminProductQuestions />,
+    //     },
+    //     {
+    //       path: "/admin/categories",
+    //       element: <AdminCategories />,
+    //     },
+    //     {
+    //       path: "/admin/add-category",
+    //       element: <AdminCreateCategory />,
+    //     },
+    //     {
+    //       path: "/admin/brands",
+    //       element: <AdminBrands />,
+    //     },
+    //     {
+    //       path: "/admin/add-brands",
+    //       element: <AdminCreateBrand />,
+    //     },
+    //     {
+    //       path: "/admin/brands-list",
+    //       element: <AdminBrandsList />,
+    //     },
+    //     {
+    //       path: "/admin/update-brand/:brandId",
+    //       element: <AdminUpdateBrand />,
+    //     },
+    //     {
+    //       path: "/admin/questions",
+    //       element: <AdminCreateConditions />,
+    //     },
+    //     {
+    //       path: "/admin/conditionsList",
+    //       element: <AdminConditionsList />,
+    //     },
+    //     {
+    //       path: "/admin/conditionLabelsList",
+    //       element: <AdminConditionLabelsList />,
+    //     },
+    //     {
+    //       path: "/admin/updateCondition/:conditionId",
+    //       element: <AdminUpdateCondition />,
+    //     },
+    //     {
+    //       path: "/admin/updateConditionLabel/:conditionLabelId",
+    //       element: <AdminUpdateConditionLabel />,
+    //     },
+    //     {
+    //       path: "/admin/orders",
+    //       element: <AdminOrdersList />,
+    //     },
+    //   ],
+    // },
   ]);
   return (
     <>

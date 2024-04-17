@@ -6,6 +6,7 @@ import {
   updateBrand,
   deleteBrand,
 } from "../controllers/brandController.js";
+import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 

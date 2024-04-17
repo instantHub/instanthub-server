@@ -12,10 +12,6 @@ export const api = createApi({
   reducerPath: "API",
   tagTypes: ["User", "Products", "Conditions", "ConditionLabels", "Orders"],
   endpoints: (build) => ({
-    getUser: build.query({
-      query: (id) => `api/user/${id}`,
-      providesTags: ["User"],
-    }),
     getCategory: build.query({
       // query: () => "/api/category?_sort=name&_order=desc",
       query: () => "/api/category",
@@ -28,6 +24,13 @@ export const api = createApi({
           "Content-Type": "application/json",
         },
         body: catData,
+      }),
+    }),
+    updateCategory: build.mutation({
+      query: ({ catId, data }) => ({
+        url: `/api/category/update-category/${catId}`,
+        method: "PUT",
+        body: data,
       }),
     }),
     uploadFileHandler: build.mutation({
@@ -57,6 +60,7 @@ export const api = createApi({
       query: ({ brandId, data }) => ({
         url: `/api/brand/update-brand/${brandId}`,
         method: "PUT",
+        // credentials: "include",
         body: data,
       }),
     }),
@@ -186,9 +190,9 @@ export const api = createApi({
 });
 
 export const {
-  useGetUserQuery,
   useGetCategoryQuery,
   useCreateCategoryMutation,
+  useUpdateCategoryMutation,
   useUploadFileHandlerMutation,
   useGetAllBrandQuery,
   useGetBrandQuery,

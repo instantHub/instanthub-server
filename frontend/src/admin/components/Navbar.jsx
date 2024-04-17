@@ -1,25 +1,43 @@
 import React, { useDebugValue, useEffect, useState } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { setMode } from "../../features/globalSlice";
-import { useGetUserQuery } from "../../features/api";
-import { getUser } from "../../features/userSlice";
+import {
+  useAdminLogoutMutation,
+  useAdminProfileQuery,
+} from "../../features/adminApiSlice";
+import { useNavigate } from "react-router-dom";
+import { logout } from "../../features/authSlice";
+import { toast } from "react-toastify";
 
 const Navbar = (props) => {
   const dispatch = useDispatch();
-  // const userId = useSelector((state) => state.global.userId);
-  // const { data, isLoading } = useGetUserQuery(userId);
-  // if (!isLoading) {
-  //   // console.log("data", data);
-  //   dispatch(getUser(data));
-  // }
+  const { adminInfo } = useSelector((state) => state.auth);
+  const { adminProfile, isLoading } = useAdminProfileQuery();
+  // console.log("adminInfo", adminInfo);
+
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const toggleDropdown = () => {
+    setIsDropdownOpen(!isDropdownOpen);
+  };
 
   const { toggleSidebar, isSidebarOpen } = props;
+
+  const [adminLogout] = useAdminLogoutMutation();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      const res = await adminLogout();
+      dispatch(logout());
+      toast.success("Logged out successfully");
+      navigate("/admin/login");
+    } catch (error) {}
+  };
 
   return (
     <>
       {/* Appbar */}
-      {/* <nav className="w-[100%] flex-1 static bg-gray-200 p-4 shadow-none"> */}
       {/* Toolbar */}
       <nav className="flex justify-between  bg-gray-200 p-4 w-full">
         {/* LEFT SIDE */}
@@ -63,7 +81,42 @@ const Navbar = (props) => {
         {/* RIGHT SIDE */}
         <div className="flex items-center">
           <h2 className="px-2">Settings ICON</h2>
-          {/* {!isLoading && <h2 className="text-purple-400 px2">{data.name}</h2>} */}
+          {adminInfo && (
+            <div className="flex items-center justify-between flex-wrap">
+              <div className="flex items-center flex-shrink-0 text-white mr-6">
+                <button
+                  onClick={toggleDropdown}
+                  className="ml-4 text-black hover:text-white focus:outline-none"
+                >
+                  {adminInfo.name}
+                </button>
+              </div>
+              {isDropdownOpen && (
+                <div className="absolute mt-32 w- bg-white rounded-lg shadow-lg">
+                  <div className="py-1">
+                    <Link to={"/admin/update-profile"}>
+                      <h1 className="block px-4 py-2 text-gray-800 hover:bg-gray-300">
+                        Profile
+                      </h1>
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="block px-4 py-2 text-gray-800 hover:bg-gray-300"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* <button
+            onClick={handleLogout}
+            className="px-2 py-1 text-sm bg-white border rounded border-red-600 hover:bg-red-500 hover:text-white"
+          >
+            Logout
+          </button> */}
         </div>
       </nav>
       {/* </nav> */}
