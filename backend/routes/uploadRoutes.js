@@ -1,13 +1,24 @@
 import path from "path";
 import express from "express";
 import multer from "multer";
+import uploadCategoryRoutes from "./uploads/uploadCategoryRoutes.js";
 
 const router = express.Router();
 
+// Function to dynamically set the destination directory
+const getDestination = (req, file, cb) => {
+  const uploadDir = req.body.uploadDir; // Assuming you pass uploadDir as a parameter in the request body
+  console.log("test", req.body.uploadDir);
+  cb(null, `uploads/${uploadDir}/`);
+};
+
 const storage = multer.diskStorage({
   destination(req, file, cb) {
+    console.log("destination", req.body);
     cb(null, "uploads/");
   },
+  // destination: getDestination,
+
   filename(req, file, cb) {
     cb(
       null,
@@ -21,6 +32,8 @@ const storage = multer.diskStorage({
 });
 
 function fileFilter(req, file, cb) {
+  console.log("fileFilter", req.body);
+
   const filetypes = /jpe?g|png|webp/;
   const mimetypes = /image\/jpe?g|image\/png|image\/webp/;
 
@@ -38,7 +51,29 @@ const upload = multer({ storage, fileFilter });
 const uploadSingleImage = upload.single("image");
 
 router.post("/", (req, res) => {
+  console.log("upload router.post", req.body);
+
+  // TESTING
+  // Check if uploadURL is "category"
+  if (req.body.uploadURL === "category") {
+    console.log("route matched");
+    // If it is, route to uploadCategoryRoutes middleware
+    return uploadCategoryRoutes(req, res);
+  }
+  // else {
+  //   res.status(201).json({ message: "Provide a valid route" });
+  // }
+
+  // TESTING ENDS
+
   uploadSingleImage(req, res, (err) => {
+    console.log("uploadSingleImage", req.body);
+    // // Check if uploadURL is "category"
+    // if (req.body.uploadURL === "category") {
+    //   console.log("route matched");
+    //   // If it is, route to uploadCategoryRoutes middleware
+    //   return uploadCategoryRoutes(req, res);
+    // }
     if (err) {
       return res.status(400).send({ message: err.message });
     }

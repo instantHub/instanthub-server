@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import {
   useGetCategoryQuery,
   useGetAllBrandQuery,
-  useDeleteBrandMutation,
+  useDeleteCategoryMutation,
 } from "../../../features/api";
 import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const CategoriesList = () => {
   const { data: brandsData, isLoading: brandsLoading } = useGetAllBrandQuery();
 
   const { data: categoryData, isLoading: categoryDataLoading } =
     useGetCategoryQuery();
-  const [deleteBrand, { isLoading: deleteLoading }] = useDeleteBrandMutation();
+  const [deleteCategory] = useDeleteCategoryMutation();
 
   if (!categoryDataLoading) {
     console.log(categoryData);
@@ -24,9 +24,10 @@ const CategoriesList = () => {
     setSelectedCondition(e.target.value);
   };
 
-  const handleDelete = async (brandId) => {
-    console.log("handledelete", brandId);
-    await deleteBrand(brandId);
+  const handleDelete = async (catId) => {
+    console.log("deleteCategory", catId);
+    const deletedCategory = await deleteCategory(catId);
+    toast.success(deletedCategory.message);
   };
 
   return (
@@ -55,23 +56,25 @@ const CategoriesList = () => {
                   key={`${category._id}-${index}`}
                   className={index % 2 === 0 ? "bg-gray-200" : "bg-white"}
                 >
-                  {/* {categoryData &&
-                    categoryData.map((cat) => {
-                      cat.id == brand.category && (
-                        <td className="px-4 py-2">{cat.name}</td>
-                      );
-                    })} */}
-
                   <td className="px-4 py-2">{category.name}</td>
-                  {/* {category.brands.map((brand) => {
-                    <td className="px-4 py-2">{category.brand.name}</td>;
-                  })} */}
-
-                  <td className="px-4 py-2 grid grid-cols-2">
-                    {category.brands.map((brand) => (
-                      <h3>{brand.name}</h3>
-                    ))}
-                  </td>
+                  {/* Brands list */}
+                  {category.brands.length != 0 ? (
+                    <td className="px-4 py-2 grid grid-cols-2 text-sm">
+                      {category.brands.map((brand) => (
+                        <h3
+                          key={`${category}-${brand.name}-${brand.id}`}
+                          className="py-1"
+                        >
+                          {brand.name}
+                        </h3>
+                      ))}
+                    </td>
+                  ) : (
+                    <td className="px-4 py-2 text-xs text-red-700 opacity-70">
+                      Brands <br />
+                      not available
+                    </td>
+                  )}
 
                   <td className="px-4 py-2">
                     <img

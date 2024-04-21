@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   useGetCategoryQuery,
   useCreateBrandMutation,
   useUploadFileHandlerMutation,
+  useUploadBrandImageMutation,
 } from "../../../features/api";
 import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
@@ -13,15 +14,19 @@ const CreateBrand = () => {
   const [imageSelected, setImageSelected] = useState("");
   const [categorySelected, setCategorySelected] = useState();
   const [createBrand, { isLoading: brandLoading }] = useCreateBrandMutation();
-  const [uploadBrandImage, { isLoading: uploadLoading }] =
-    useUploadFileHandlerMutation();
+  const [uploadBrandImage, { isLoading: uploadLoadingNew }] =
+    useUploadBrandImageMutation();
   // const [brandsData, setCategories] = useState([]);
   const { data: categories, isLoading } = useGetCategoryQuery();
+
+  // Create a ref to store the reference to the file input element
+  const fileInputRef = useRef(null);
 
   // File handler
   const uploadFileHandler = async () => {
     const formData = new FormData();
     formData.append("image", imageSelected);
+    formData.append("uploadDir", "brands/");
 
     try {
       const res = await uploadBrandImage(formData).unwrap();
@@ -57,6 +62,10 @@ const CreateBrand = () => {
       // setBrand("");
       // setUniqueURL("");
       // setImageSelected("");
+      // Clear the value of the file input
+      fileInputRef.current.value = "";
+      // Mark the file input as required again
+      fileInputRef.current.required = true;
     } catch (error) {
       console.log("Error: ", error);
     }
@@ -163,6 +172,7 @@ const CreateBrand = () => {
                     type="file"
                     id="image"
                     name="image"
+                    ref={fileInputRef}
                     accept="image/*"
                     className="w-full border border-gray-300 p-2 rounded-md"
                     onChange={(e) => setImageSelected(e.target.files[0])}

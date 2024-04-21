@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import {
   useGetConditionsQuery,
   useGetCategoryQuery,
@@ -9,7 +8,6 @@ import {
 import { Link } from "react-router-dom";
 
 const ConditionLabelsTable = () => {
-  //   const [questions, setQuestions] = useState([]);
   const { data: conditionsData, isLoading: conditionsLoading } =
     useGetConditionsQuery();
   const { data: conditionLabelsData, isLoading: conditionLabelsLoading } =
@@ -18,6 +16,10 @@ const ConditionLabelsTable = () => {
     useDeleteConditionLabelMutation();
   const { data: categories, isLoading: categoriesLoading } =
     useGetCategoryQuery();
+
+  if (conditionLabelsData) {
+    console.log("conditionLabelsData", conditionLabelsData);
+  }
 
   const [selectedCondition, setSelectedCondition] = useState(null);
 
@@ -51,7 +53,6 @@ const ConditionLabelsTable = () => {
           {!conditionsLoading &&
             conditionsData.map(
               (condition) => (
-                //   question.map((question) => (
                 <option
                   key={condition.category.id}
                   value={condition.conditionName}
@@ -74,41 +75,14 @@ const ConditionLabelsTable = () => {
             <th className="px-4 py-2 text-white bg-gray-800">
               Condition Label Image
             </th>
-            {/* <th className="px-4 py-2 text-white bg-gray-800">Options</th> */}
             <th className="px-4 py-2 text-white bg-gray-800">Edit & Delete</th>
           </tr>
         </thead>
-        {/* <tbody>
-          {!questionsLoading &&
-            questions.map((question) =>
-              question.conditions.map(
-                (condition) =>
-                  condition.conditionName === selectedCondition &&
-                  condition.questions.map((q, index) => (
-                    <tr
-                      key={`${question._id}-${condition.conditionName}-${index}`}
-                      className={index % 2 === 0 ? "bg-gray-200" : "bg-white"}
-                    >
-                      <td className="px-4 py-2">{question.category.name}</td>
-                      <td className="px-4 py-2">{q.questionName}</td>
-                      <td className="px-4 py-2">{q.priceDrop}</td>
-                      <td className="px-4 py-2">{q.options.join(", ")}</td>
-                      <td className="px-4 py-2">
-                        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                          Edit
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-              )
-            )}
-        </tbody> */}
 
         <tbody className="text-center">
           {!conditionLabelsLoading &&
             conditionLabelsData.map(
               (conditionLabel, index) => (
-                //   question.map((question) => (
                 <tr className={index % 2 === 0 ? "bg-gray-200" : "bg-white"}>
                   <td className=" py-2">{conditionLabel.category.name}</td>
                   <td className=" py-2">

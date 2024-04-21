@@ -12,26 +12,31 @@ const Products = () => {
   const { data: getCategories, isLoading: categoryLoading } =
     useGetCategoryQuery();
 
-  // const {
-  //   data: productsData,
-  //   isLoading: productsLoading,
-  //   isSuccess: productsLoaded,
-  //   isError,
-  // } = useGetProductsQuery(brandId);
+  const [search, setSearch] = useState("");
+
+  // Get Products by Brand
   const {
-    data: products,
+    data: productsData,
     isLoading: productsLoading,
     isSuccess: productsLoaded,
     isError,
-  } = useGetAllProductsQuery();
-  const [toggle, setToggle] = useState(false);
+  } = useGetProductsQuery({ brandId, search });
 
-  let productsData = undefined;
+  // Get all Products
+  // const {
+  //   data: products,
+  //   isLoading: productsLoading,
+  //   isSuccess: productsLoaded,
+  //   isError,
+  // } = useGetAllProductsQuery(search);
+  // console.log("products", products);
 
-  if (!productsLoading) {
-    productsData = products.filter((product) => product.brand.id == brandId);
-    console.log("productsData", productsData);
-  }
+  // let productsData = undefined;
+
+  // if (!productsLoading) {
+  //   productsData = products.filter((product) => product.brand.id == brandId);
+  //   console.log("productsData", productsData);
+  // }
 
   // Finding Category of the Product
   let category = { name: "", id: "" };
@@ -49,7 +54,7 @@ const Products = () => {
   );
 
   if (!brandLoading) {
-    console.log("brandData", brandData);
+    // console.log("brandData", brandData);
   }
   // Finding Brand of the Product
   let brand = { name: "", id: "" };
@@ -65,6 +70,24 @@ const Products = () => {
   return (
     <>
       <div className="mt-20 w-4/5 mx-auto">
+        <div className=" my-4 flex justify-end gap-2 items-center">
+          <div>
+            <input
+              type="search"
+              name=""
+              id=""
+              placeholder="Search a product"
+              className="px-2 text-sm py-1 border rounded"
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <div>
+            <button className="bg-green-600 px-2 rounded text-sm py-1 text-white">
+              Search
+            </button>
+          </div>
+        </div>
+
         <div className="mx-0 mb-6">
           <h1>
             <Link to={"/"}>Home</Link> /
@@ -141,7 +164,7 @@ const Products = () => {
                 </>
               ))
             ) : (
-              <h1>No Data Available</h1>
+              <h1>No Mobiles Available</h1>
             )}
           </div>
         )}

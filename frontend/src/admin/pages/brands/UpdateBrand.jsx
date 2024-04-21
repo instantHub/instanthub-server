@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   useGetAllBrandQuery,
   useUploadFileHandlerMutation,
   useUpdateBrandMutation,
+  useUploadBrandImageMutation,
 } from "../../../features/api";
 import { Link, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -14,7 +15,7 @@ function UpdateBrand() {
   const { data: brandsData, isLoading: brandsLoading } = useGetAllBrandQuery();
   const [newImgSelected, setNewImgSelected] = useState(false);
   const [uploadProductImage, { isLoading: uploadLoading }] =
-    useUploadFileHandlerMutation();
+    useUploadBrandImageMutation();
   const [
     updateBrand,
     {
@@ -22,6 +23,9 @@ function UpdateBrand() {
       isError: updateConditionLabelError,
     },
   ] = useUpdateBrandMutation();
+
+  // Create a ref to store the reference to the file input element
+  const fileInputRef = useRef(null);
 
   const [formData, setFormData] = useState({
     category: "",
@@ -83,6 +87,10 @@ function UpdateBrand() {
       }).unwrap();
       console.log("Brand updated", updatedBrand);
       toast.success("Brand updated successfully..!");
+      // Clear the value of the file input
+      fileInputRef.current.value = "";
+      // Mark the file input as required again
+      fileInputRef.current.required = true;
       // Handle success
     } catch (error) {
       console.error("Error updating condition:", error);
@@ -165,6 +173,7 @@ function UpdateBrand() {
                         <input
                           type="file"
                           name=""
+                          ref={fileInputRef}
                           id=""
                           onChange={(e) => {
                             setFormData({

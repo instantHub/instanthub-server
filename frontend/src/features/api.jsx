@@ -10,11 +10,28 @@ export const api = createApi({
   }),
   // reducerPath: "adminApi",
   reducerPath: "API",
-  tagTypes: ["User", "Products", "Conditions", "ConditionLabels", "Orders"],
+  tagTypes: [
+    "User",
+    "CreateBrands",
+    "Brands",
+    "Categories",
+    "Products",
+    "Conditions",
+    "ConditionLabels",
+    "Orders",
+  ],
   endpoints: (build) => ({
     getCategory: build.query({
       // query: () => "/api/category?_sort=name&_order=desc",
       query: () => "/api/category",
+      providesTags: ["Categories"],
+    }),
+    uploadCategoryImage: build.mutation({
+      query: (data) => ({
+        url: "/api/upload/categories",
+        method: "POST",
+        body: data,
+      }),
     }),
     createCategory: build.mutation({
       query: (catData) => ({
@@ -25,6 +42,7 @@ export const api = createApi({
         },
         body: catData,
       }),
+      invalidatesTags: ["Categories"],
     }),
     updateCategory: build.mutation({
       query: ({ catId, data }) => ({
@@ -32,6 +50,15 @@ export const api = createApi({
         method: "PUT",
         body: data,
       }),
+      invalidatesTags: ["Categories"],
+    }),
+    deleteCategory: build.mutation({
+      query: (catId) => ({
+        url: `/api/category/delete-category/${catId}`,
+        method: "DELETE",
+        // body: data,
+      }),
+      invalidatesTags: ["Categories"],
     }),
     uploadFileHandler: build.mutation({
       query: (data) => ({
@@ -40,11 +67,21 @@ export const api = createApi({
         body: data,
       }),
     }),
+    uploadBrandImage: build.mutation({
+      query: (data) => ({
+        url: "/api/upload/brands",
+        method: "POST",
+        body: data,
+      }),
+    }),
     getAllBrand: build.query({
       query: () => `/api/brand`,
+      providesTags: ["Brands"],
     }),
     getBrand: build.query({
       query: (catId) => `/api/brand/${catId}`,
+      // providesTags: ["Brands"],
+      providesTags: ["CreateBrands", "Brands"],
     }),
     createBrand: build.mutation({
       query: (data) => ({
@@ -55,6 +92,7 @@ export const api = createApi({
         },
         body: data,
       }),
+      invalidatesTags: ["Brands"],
     }),
     updateBrand: build.mutation({
       query: ({ brandId, data }) => ({
@@ -63,6 +101,7 @@ export const api = createApi({
         // credentials: "include",
         body: data,
       }),
+      invalidatesTags: ["Brands"],
     }),
     deleteBrand: build.mutation({
       query: (brandId) => ({
@@ -70,14 +109,41 @@ export const api = createApi({
         method: "DELETE",
         // body: data,
       }),
-      invalidatesTags: ["ConditionLabels"],
+      invalidatesTags: ["Brands"],
     }),
+    // getAllProducts: build.query({
+    //   query: ({ search, limit }) => ({
+    //     url: `/api/products?search=${search}`,
+    //     method: "GET",
+    //     // params: search,
+    //   }),
+    //   providesTags: ["Products"],
+    // }),
+    // getAllProducts: build.query({
+    //   query: ({ search, limit }) => {
+    //     const params = { search };
+    //     if (limit) {
+    //       params.limit = limit;
+    //     }
+    //     return {
+    //       url: `/api/products`,
+    //       method: "GET",
+    //       params,
+    //     };
+    //   },
+    //   providesTags: ["Products"],
+    // }),
     getAllProducts: build.query({
-      query: () => `/api/products`,
-      providesTags: ["Products"],
+      query: ({ page, limit, search }) => ({
+        url: `/api/products`,
+        method: "GET",
+        params: { page, limit, search },
+      }),
     }),
+
     getProducts: build.query({
-      query: (brandId) => `/api/products/${brandId}`,
+      query: ({ brandId, search }) =>
+        `/api/products/${brandId}?search=${search}`,
     }),
     getProductDetails: build.query({
       query: (prodId) => `/api/products/product-details/${prodId}`,
@@ -89,6 +155,16 @@ export const api = createApi({
       query: (data) => ({
         url: "/api/products/add-product",
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: data,
+      }),
+    }),
+    updateProduct: build.mutation({
+      query: ({ productId, data }) => ({
+        url: `/api/products/update-product/${productId}`,
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
@@ -132,6 +208,7 @@ export const api = createApi({
         method: "PUT",
         body: data,
       }),
+      invalidatesTags: ["Conditions"],
     }),
     deleteCondition: build.mutation({
       query: ({ category, conditionId }) => ({
@@ -139,7 +216,7 @@ export const api = createApi({
         method: "DELETE",
         // body: data,
       }),
-      invalidatesTags: ["ConditionLabels"],
+      invalidatesTags: ["Conditions"],
     }),
     getConditionLabels: build.query({
       query: () => `/api/questions/conditionlabels`,
@@ -162,6 +239,7 @@ export const api = createApi({
         method: "PUT",
         body: data,
       }),
+      invalidatesTags: ["ConditionLabels"],
     }),
     deleteConditionLabel: build.mutation({
       query: ({ category, conditionLabelId }) => ({
@@ -186,20 +264,46 @@ export const api = createApi({
       }),
       invalidatesTags: ["Orders"],
     }),
+    uploadCustomerProofImage: build.mutation({
+      query: (data) => ({
+        url: "/api/upload/customer-proof",
+        method: "POST",
+        body: data,
+      }),
+    }),
+    orderReceived: build.mutation({
+      query: (data) => ({
+        url: `/api/orders/order-received`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["Orders"],
+    }),
+    deleteOrder: build.mutation({
+      query: (orderId) => ({
+        url: `/api/orders/delete-order/${orderId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Orders"],
+    }),
   }),
 });
 
 export const {
   useGetCategoryQuery,
+  useUploadCategoryImageMutation,
   useCreateCategoryMutation,
   useUpdateCategoryMutation,
+  useDeleteCategoryMutation,
   useUploadFileHandlerMutation,
+  useUploadBrandImageMutation,
   useGetAllBrandQuery,
   useGetBrandQuery,
   useCreateBrandMutation,
   useUpdateBrandMutation,
   useDeleteBrandMutation,
   useCreateProductMutation,
+  useUpdateProductMutation,
   useGetAllProductsQuery,
   useGetProductsQuery,
   useGetProductDetailsQuery,
@@ -216,6 +320,9 @@ export const {
   useDeleteConditionLabelMutation,
   useGetOrdersListQuery,
   useCreateOrderMutation,
+  useUploadCustomerProofImageMutation,
+  useOrderReceivedMutation,
+  useDeleteOrderMutation,
 } = api;
 
 // useGetAllQuestionsQuery,

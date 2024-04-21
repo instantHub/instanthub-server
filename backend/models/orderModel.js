@@ -3,12 +3,19 @@ import mongoose, { mongo } from "mongoose";
 
 const orderSchema = mongoose.Schema(
   {
+    orderId: {
+      type: String,
+      required: true,
+    },
     productId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Product",
       required: true,
     },
-    // orderId: "string",
+    variant: {
+      variantName: { type: String },
+      price: { type: Number },
+    },
     customerName: {
       type: String,
     },
@@ -38,6 +45,9 @@ const orderSchema = mongoose.Schema(
       type: Number,
     },
     status: {
+      type: String,
+    },
+    customerProof: {
       type: String,
     },
   },

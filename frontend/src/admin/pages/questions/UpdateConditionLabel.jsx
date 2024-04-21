@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   useGetConditionLabelsQuery,
   useUpdateConditionMutation,
@@ -24,6 +24,9 @@ function UpdateConditionLabel() {
       isError: updateConditionLabelError,
     },
   ] = useUpdateConditionLabelMutation();
+
+  // Create a ref to store the reference to the file input element
+  const fileInputRef = useRef(null);
 
   const [formData, setFormData] = useState({
     category: "",
@@ -91,6 +94,10 @@ function UpdateConditionLabel() {
       }).unwrap();
       console.log("ConditionLabel updated", updatedConditionLabel);
       toast.success("conditionLabel updated successfully..!");
+      // Clear the value of the file input
+      fileInputRef.current.value = "";
+      // Mark the file input as required again
+      fileInputRef.current.required = true;
       // Handle success
     } catch (error) {
       console.error("Error updating condition:", error);
@@ -178,6 +185,7 @@ function UpdateConditionLabel() {
                         <input
                           type="file"
                           name=""
+                          ref={fileInputRef}
                           id=""
                           onChange={(e) => {
                             setFormData({

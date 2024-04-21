@@ -8,7 +8,7 @@ const ProductFinalPrice = () => {
   const selectedProdDetails = useSelector((state) => state.deductions);
   const [formData, setFormData] = useState();
   const [offerPrice, setOfferPrice] = useState();
-  // console.log(selectedProdDetails);
+  console.log(selectedProdDetails);
 
   const [searchParams] = useSearchParams();
   const productId = searchParams.get("productId");
@@ -34,7 +34,7 @@ const ProductFinalPrice = () => {
     value = value.replace(/\D/g, "");
 
     // Restrict the length to 10 digits
-    if (value.length <= 5) {
+    if (value.length <= 6) {
       setFormData({ ...formData, pinCode: Number(e.target.value) });
     } else {
       toast.error("PinCode cannot be more than 5 digits");
@@ -76,9 +76,11 @@ const ProductFinalPrice = () => {
     setFormData({
       ...formData,
       productId,
+      variant: selectedProdDetails.getUpTo,
       deductions: selectedProdDetails.deductions,
       offerPrice:
-        selectedProdDetails.getUpTo.price - selectedProdDetails.toBeDeducted,
+        Number(selectedProdDetails.getUpTo.price) -
+        Number(selectedProdDetails.toBeDeducted),
       status: "pending",
     });
     setOfferPrice(
@@ -115,6 +117,9 @@ const ProductFinalPrice = () => {
               {/* {formData.offerPrice && formData.offerPrice} */}
               {offerPrice}
               /-
+              {Number(selectedProdDetails.getUpTo.price)}
+              {" - "}
+              {Number(selectedProdDetails.toBeDeducted)}
             </span>
           </h1>
           <h1 className="text-center">

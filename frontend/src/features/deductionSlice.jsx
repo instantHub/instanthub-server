@@ -3,6 +3,8 @@ import { createSlice } from "@reduxjs/toolkit";
 const initialState = {
   productName: "",
   productImage: "",
+  productCategory: "",
+  productAge: {},
   getUpTo: {
     variantName: "",
     price: undefined,
@@ -23,11 +25,13 @@ export const deductionSlice = createSlice({
       //   action.payload.variantName,
       //   action.payload.price
       // );
-      const { productName, productImage, variantName, price } = action.payload;
+      const { productName, productImage, productCategory, variantName, price } =
+        action.payload;
       return {
         ...state,
         productName,
         productImage,
+        productCategory,
         getUpTo: {
           variantName,
           price,
@@ -45,10 +49,20 @@ export const deductionSlice = createSlice({
       if (!isExisting) {
         return {
           ...state,
-          toBeDeducted: state.toBeDeducted + action.payload.priceDrop,
+          toBeDeducted: state.toBeDeducted + Number(action.payload.priceDrop),
           deductions: [...state.deductions, action.payload],
         };
       }
+    },
+    addProductAge: (state, action) => {
+      console.log("addProductAge reducer");
+      return {
+        ...state,
+        productAge: {
+          conditionLabel: action.payload.conditionLabel,
+          priceDrop: action.payload.priceDrop,
+        },
+      };
     },
     removeDeductions: (state, action) => {
       console.log("removeDeductions reducer");
@@ -67,7 +81,7 @@ export const deductionSlice = createSlice({
 
         return {
           ...state,
-          toBeDeducted: state.toBeDeducted - action.payload.priceDrop,
+          toBeDeducted: state.toBeDeducted - Number(action.payload.priceDrop),
           deductions: updatedDeductions,
         };
       }
@@ -76,12 +90,18 @@ export const deductionSlice = createSlice({
       return {
         ...state,
         toBeDeducted: 0,
+        productAge: {},
         deductions: [],
       };
     },
   },
 });
 
-export const { setGetUpto, addDeductions, clearDeductions, removeDeductions } =
-  deductionSlice.actions;
+export const {
+  setGetUpto,
+  addDeductions,
+  addProductAge,
+  clearDeductions,
+  removeDeductions,
+} = deductionSlice.actions;
 export default deductionSlice.reducer;

@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   useCreateCategoryMutation,
   useUploadFileHandlerMutation,
+  useUploadCategoryImageMutation,
 } from "../../../features/api";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -11,16 +12,13 @@ const CreateCategory = () => {
   const [uniqueURL, setUniqueURL] = useState("");
   const [imageSelected, setImageSelected] = useState("");
   const [createCategory, { isLoading }] = useCreateCategoryMutation();
+  // const [uploadCategoryImage, { isLoading: uploadLoading }] =
+  //   useUploadFileHandlerMutation();
   const [uploadCategoryImage, { isLoading: uploadLoading }] =
-    useUploadFileHandlerMutation();
+    useUploadCategoryImageMutation();
 
-  //   const [categoryData, setCategoryData] = useState({
-  //     // name: "",
-  //     // uniqueURL: "",
-  //     // image: "",
-  //   });
-
-  //   let categoryData = {};
+  // Create a ref to store the reference to the file input element
+  const fileInputRef = useRef(null);
 
   const inputValidation = () => {
     if (
@@ -38,6 +36,7 @@ const CreateCategory = () => {
   const uploadFileHandler = async () => {
     const formData = new FormData();
     formData.append("image", imageSelected);
+    // formData.append("uploadURL", "category");
 
     try {
       const res = await uploadCategoryImage(formData).unwrap();
@@ -76,6 +75,10 @@ const CreateCategory = () => {
         setCategory("");
         setUniqueURL("");
         setImageSelected("");
+        // Clear the value of the file input
+        fileInputRef.current.value = "";
+        // Mark the file input as required again
+        fileInputRef.current.required = true;
       } catch (error) {
         console.log("Error: ", error);
       }
@@ -156,6 +159,7 @@ const CreateCategory = () => {
                     type="file"
                     id="image"
                     name="image"
+                    ref={fileInputRef}
                     accept="image/*"
                     onChange={(e) => setImageSelected(e.target.files[0])}
                     className="w-full border border-gray-300 p-2 rounded-md"

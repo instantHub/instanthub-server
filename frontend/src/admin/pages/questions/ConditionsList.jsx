@@ -16,113 +16,165 @@ const ConditionsTable = () => {
   const [deleteCondition, { isLoading: deleteLoading }] =
     useDeleteConditionMutation();
 
-  const [selectedCondition, setSelectedCondition] = useState(null);
+  const [selectedCondition, setSelectedCondition] = useState();
+  const [isOpen, setIsOpen] = useState(false);
 
-  const handleConditionChange = (e) => {
-    setSelectedCondition(e.target.value);
+  const openModal = (categoryId, categoryName, conditionId, conditionName) => {
+    console.log(categoryId, categoryName, conditionId, conditionName);
+    setSelectedCondition({
+      categoryId,
+      categoryName,
+      conditionId,
+      conditionName,
+    });
+    setIsOpen(true);
   };
+
+  const closeModal = () => {
+    setIsOpen(false);
+  };
+
+  // const handleConditionChange = (e) => {
+  //   setSelectedCondition(e.target.value);
+  // };
 
   const handleDelete = async (category, conditionId) => {
     console.log(category, conditionId);
     await deleteCondition({ category, conditionId });
+    closeModal();
   };
 
   return (
     //ConditionsListList
-    <div className="p-4 bg-black">
-      <h2 className="text-white text-lg font-bold mb-4">Conditions Table</h2>
-      <div className="mb-4">
-        <label htmlFor="condition" className="text-white mr-2">
-          Select Category:
-        </label>
-        <select
-          id="condition"
-          onChange={handleConditionChange}
-          value={selectedCondition}
-          className="p-2 rounded bg-gray-300 text-gray-800"
-        >
-          <option value="">Select</option>
+    <>
+      <div className="p-4 bg-black">
+        <h2 className="text-white text-lg font-bold mb-4">Conditions Table</h2>
+        {/* <div className="mb-4">
+          <label htmlFor="condition" className="text-white mr-2">
+            Select Condition:
+          </label>
+          <select
+            id="condition"
+            onChange={handleConditionChange}
+            value={selectedCondition}
+            className="p-2 rounded bg-gray-300 text-gray-800"
+          >
+            <option value="">Select</option>
 
-          {!conditionsLoading &&
-            conditions.map(
-              (condition) => (
-                //   question.map((question) => (
-                <option key={condition.category} value={condition.category}>
-                  {condition.conditionName}
-                </option>
-              )
-              //   ))
-            )}
-        </select>
+            {!conditionsLoading &&
+              conditions.map(
+                (condition) => (
+                  //   question.map((question) => (
+                  <option key={condition.category} value={condition.category}>
+                    {condition.conditionName}
+                  </option>
+                )
+                //   ))
+              )}
+          </select>
+        </div> */}
+        <table className="w-full">
+          <thead>
+            <tr>
+              <th className="px-4 py-2 text-white bg-gray-800">Category</th>
+              <th className="px-4 py-2 text-white bg-gray-800">Condition</th>
+              <th className="px-4 py-2 text-white bg-gray-800">
+                Edit & Delete
+              </th>
+            </tr>
+          </thead>
+
+          <tbody className="text-center">
+            {!conditionsLoading &&
+              conditions.map(
+                (condition, index) => (
+                  //   question.map((question) => (
+                  <tr
+                    key={index}
+                    className={index % 2 === 0 ? "bg-gray-200" : "bg-white"}
+                  >
+                    <td className=" py-2">{condition.category.name}</td>
+                    <td className=" py-2">{condition.conditionName}</td>
+                    <td className="text-white py-2">
+                      <div className="flex gap-2 justify-center">
+                        <Link to={`/admin/updateCondition/${condition.id}`}>
+                          <button className="bg-blue-600 px-3 py-1 rounded-md">
+                            Edit
+                          </button>
+                        </Link>
+                        <button
+                          className="bg-red-600 px-3 py-1 rounded-md"
+                          // onClick={() =>
+                          //   handleDelete(condition.category.id, condition.id)
+                          // }
+                          onClick={() =>
+                            openModal(
+                              condition.category.id,
+                              condition.category.name,
+                              condition.id,
+                              condition.conditionName
+                            )
+                          }
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                )
+                //   ))
+              )}
+          </tbody>
+        </table>
       </div>
-      <table className="w-full">
-        <thead>
-          <tr>
-            <th className="px-4 py-2 text-white bg-gray-800">Category</th>
-            <th className="px-4 py-2 text-white bg-gray-800">Condition</th>
-            {/* <th className="px-4 py-2 text-white bg-gray-800">Price Drop</th> */}
-            {/* <th className="px-4 py-2 text-white bg-gray-800">Options</th> */}
-            <th className="px-4 py-2 text-white bg-gray-800">Edit & Delete</th>
-          </tr>
-        </thead>
-        {/* <tbody>
-          {!questionsLoading &&
-            questions.map((question) =>
-              question.conditions.map(
-                (condition) =>
-                  condition.conditionName === selectedCondition &&
-                  condition.questions.map((q, index) => (
-                    <tr
-                      key={`${question._id}-${condition.conditionName}-${index}`}
-                      className={index % 2 === 0 ? "bg-gray-200" : "bg-white"}
-                    >
-                      <td className="px-4 py-2">{question.category.name}</td>
-                      <td className="px-4 py-2">{q.questionName}</td>
-                      <td className="px-4 py-2">{q.priceDrop}</td>
-                      <td className="px-4 py-2">{q.options.join(", ")}</td>
-                      <td className="px-4 py-2">
-                        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                          Edit
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-              )
-            )}
-        </tbody> */}
+      {isOpen && (
+        <td>
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="bg-white p-8 rounded-lg shadow-lg w-2/4">
+              <div className="flex justify-center">
+                <h2 className="text-xl font-semibold mb-4 text-center">
+                  Sure want to delete this Condition?
+                </h2>
+              </div>
+              <div className="flex flex-col items-center">
+                <div className="flex gap-4 items-center">
+                  <span>Category</span>
+                  <h1 className="text-lg font-semibold">
+                    {selectedCondition.categoryName}
+                  </h1>
+                </div>
+                <div className="flex gap-4 items-center">
+                  <span>Condition</span>
+                  <h1 className="text-lg font-semibold">
+                    {selectedCondition.conditionName}
+                  </h1>
+                </div>
+              </div>
+              <div className="flex justify-around mt-8">
+                <button
+                  onClick={() =>
+                    handleDelete(
+                      selectedCondition.categoryId,
+                      selectedCondition.conditionId
+                    )
+                  }
+                  className="bg-red-600 text-white px-4 py-1 rounded"
+                >
+                  Yes
+                </button>
 
-        <tbody className="text-center">
-          {!conditionsLoading &&
-            conditions.map(
-              (condition, index) => (
-                //   question.map((question) => (
-                <tr className={index % 2 === 0 ? "bg-gray-200" : "bg-white"}>
-                  <td className=" py-2">{condition.category.name}</td>
-                  <td className=" py-2">{condition.conditionName}</td>
-                  <td className="text-white py-2">
-                    <div className="flex gap-2 justify-center">
-                      <Link to={`/admin/updateCondition/${condition.id}`}>
-                        <button className="bg-blue-600 px-3 py-1 rounded-md">
-                          Edit
-                        </button>
-                      </Link>
-                      <button
-                        className="bg-red-600 px-3 py-1 rounded-md"
-                        onClick={() =>
-                          handleDelete(condition.category.id, condition.id)
-                        }
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              )
-              //   ))
-            )}
-        </tbody>
-      </table>
-    </div>
+                <button
+                  onClick={closeModal}
+                  className="bg-green-700 text-white px-4 py-1 rounded"
+                >
+                  No
+                </button>
+              </div>
+            </div>
+          </div>
+        </td>
+      )}
+    </>
   );
 };
 

@@ -9,11 +9,11 @@ import {
 // Client side
 import ClientLayout from "./components/Layout";
 import ClientHome from "./pages/home/Home";
-import ClientNavbar from "./components/navbar/Navbar";
+import ClientNavbar from "./components/Navbar";
 import ClientBrands from "./pages/brands/Brands";
 import ClientProducts from "./pages/products/Products";
 import ClientProductDetail from "./pages/products/ProductDetail";
-import ClientProductDeductions from "./pages/products/ProductDeductions";
+import ClientProductDeductions from "./pages/products/ProductQuestions";
 import ClientProductFinalPrice from "./pages/products/ProductFinalPrice";
 
 // Admin side
@@ -24,6 +24,7 @@ import UpdateAdminProfile from "./admin/components/UpdateAdmin";
 import AdminDashboard from "./admin/pages/dashboard/Dashboard";
 import AdminProducts from "./admin/pages/products/Products";
 import AdminCreateProducts from "./admin/pages/products/CreateProducts";
+import AdminUpdateProduct from "./admin/pages/products/UpdateProduct";
 import AdminBrands from "./admin/pages/brands/Brands";
 import AdminBrandsList from "./admin/pages/brands/BrandsList";
 import AdminUpdateBrand from "./admin/pages/brands/UpdateBrand";
@@ -126,6 +127,10 @@ function App() {
             {
               path: "/admin/add-products",
               element: <AdminCreateProducts />,
+            },
+            {
+              path: "/admin/update-product/:productId",
+              element: <AdminUpdateProduct />,
             },
             {
               path: "/admin/products/product-questions/:productId",

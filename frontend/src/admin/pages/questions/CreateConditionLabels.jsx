@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   useGetConditionsQuery,
   useGetCategoryQuery,
@@ -17,6 +17,16 @@ const YourComponent = () => {
     useUploadFileHandlerMutation();
   const [createConditionLabels, { isLoading: clLoading }] =
     useCreateConditionLabelsMutation();
+
+  if (categoryData) {
+    // console.log("cat", categoryData);
+  }
+  if (conditionsData) {
+    // console.log("con from conditionlabels", conditionsData);
+  }
+
+  // Create a ref to store the reference to the file input element
+  const fileInputRef = useRef(null);
 
   const [imageSelected, setImageSelected] = useState();
 
@@ -67,6 +77,10 @@ const YourComponent = () => {
       // productId = product.id;
       console.log("conditionLabel created", conditionLabel);
       toast.success("conditionLabel created successfully..!");
+      // Clear the value of the file input
+      fileInputRef.current.value = "";
+      // Mark the file input as required again
+      fileInputRef.current.required = true;
     } catch (error) {
       console.log(
         "Error while creating conditionLabel using API call: ",
@@ -183,6 +197,7 @@ const YourComponent = () => {
                 <input
                   type="file"
                   name="image"
+                  ref={fileInputRef}
                   onChange={(e) => {
                     setFormData({
                       ...formData,

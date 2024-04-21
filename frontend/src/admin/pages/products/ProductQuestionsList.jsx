@@ -2,30 +2,32 @@ import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
   useGetAllProductsQuery,
+  useGetProductDetailsQuery,
   useUpdatePriceDropMutation,
 } from "../../../features/api";
 import { toast } from "react-toastify";
 
 const ProductQuestionsList = () => {
   const { productId } = useParams();
-  const { data: getAllProducts, isLoading: productsLoading } =
-    useGetAllProductsQuery();
+  // const { data: productDetail, isLoading: productsLoading } =
+  //   useGetAllProductsQuery({ page: 1, limit: 10, search: "" });
+
+  const { data: productDetail, isLoading: productsLoading } =
+    useGetProductDetailsQuery(productId);
+
   const [productData, setProductData] = useState();
   const [updatePriceDrop, { isLoading: updateLoading }] =
     useUpdatePriceDropMutation();
 
   useEffect(() => {
-    if (getAllProducts) {
-      // Filter the products array to find the product with matching productId
-      const matchedProduct = getAllProducts.find(
-        (product) => product.id === productId
-      );
+    if (productDetail) {
+      console.log("productDetail", productDetail);
 
       // Set the matched product to the component state
-      setProductData(matchedProduct);
-      console.log("useeffect");
+      setProductData(productDetail);
+      console.log("useEffect");
     }
-  }, [getAllProducts]);
+  }, [productDetail]);
 
   if (productData) {
     console.log("productData", productData);

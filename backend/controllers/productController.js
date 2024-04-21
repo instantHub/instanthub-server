@@ -6,32 +6,84 @@ import ConditionLabel from "../models/conditionLabelModel.js";
 import path from "path";
 import fs from "fs";
 
+// export const getAllProducts = async (req, res) => {
+//   console.log("getAllProducts Controller");
+//   // const { product, category, filter } = req.query;
+//   const search = req.query.search || "";
+//   const limit = req.query.limit || "";
+//   console.log("search", search);
+//   console.log("limit", limit);
+
+//   console.log("req.params", req.query);
+
+//   const query = {
+//     name: { $regex: search, $options: "i" },
+//   };
+
+//   try {
+//     const products = await Product.find(query)
+//       .limit(limit)
+//       .populate("category", "name")
+//       .populate("brand", "name");
+//     // console.log(products);
+
+//     res.status(200).json(products);
+//   } catch (error) {
+//     res.status(404).json({ message: error.message });
+//   }
+// };
+
 export const getAllProducts = async (req, res) => {
+  console.log("getAllProducts Controller");
+
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const search = req.query.search || "";
+
   try {
-    const products = await Product.find()
+    // Escape special characters in the search term
+    const escapedSearch = search.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
+    const regex = new RegExp(escapedSearch, "i");
+    const query = {
+      name: { $regex: search, $options: "i" },
+    };
+    const skip = (page - 1) * limit;
+
+    const products = await Product.find(query)
+      .skip(skip)
+      .limit(limit)
       .populate("category", "name")
       .populate("brand", "name");
-    // console.log(products);
 
-    res.status(200).json(products);
+    const totalProducts = await Product.countDocuments(query);
+
+    res.status(200).json({
+      page,
+      limit,
+      totalProducts,
+      totalPages: Math.ceil(totalProducts / limit),
+      products,
+    });
   } catch (error) {
-    res.status(404).json({ message: error.message });
+    res.status(500).json({ message: error.message });
   }
 };
 
 export const getProductsByBrand = async (req, res) => {
+  console.log("GetProductsByBrand Controller");
   try {
+    const search = req.query.search || "";
+    // console.log(search);
+
+    const query = {
+      name: { $regex: search, $options: "i" },
+    };
+
     const brandId = req.params.brandId;
     console.log(brandId);
 
-    const brandWithProducts = await Brand.findById(brandId).populate(
-      "products"
-    );
-
-    console.log("productsController GetProducts");
-    // console.log(brandWithProducts);
-
-    const products = brandWithProducts.products;
+    // Find products matching the search query
+    const products = await Product.find(query).where("brand").equals(brandId);
 
     res.status(200).json(products);
   } catch (error) {
@@ -40,6 +92,7 @@ export const getProductsByBrand = async (req, res) => {
 };
 
 export const getProductDetails = async (req, res) => {
+  console.log("productsController GetProductDetails");
   try {
     const prodId = req.params.prodId;
     console.log(prodId);
@@ -47,7 +100,6 @@ export const getProductDetails = async (req, res) => {
       .populate("category", "name")
       .populate("brand", "name");
 
-    console.log("productsController GetProductDetails");
     console.log(product);
 
     res.status(200).json(product);
@@ -57,6 +109,7 @@ export const getProductDetails = async (req, res) => {
 };
 
 export const createProduct = async (req, res) => {
+  console.log("createProduct Controller");
   try {
     const products = await Product.find({ brand: req.body.brand });
     const productBrand = await Brand.findById(req.body.brand);
@@ -175,6 +228,67 @@ export const createProduct = async (req, res) => {
       productBrand.save();
 
       res.status(200).json(product);
+    }
+  } catch (error) {
+    res.status(404).json({ message: error.message });
+  }
+};
+
+export const updateProduct = async (req, res) => {
+  console.log("updateProduct Controller");
+  // const prodId = req.params.prodId;
+  const productId = req.params.productId;
+  console.log("productId", req.params);
+  // console.log(req.body);
+
+  try {
+    // const products = await Product.find({ brand: req.body.brand });
+    // Query to find products with the given brand excluding the product with the specified productId
+    const products = await Product.find({
+      brand: req.body.brand,
+      _id: { $ne: productId }, // Exclude the product with the specified productId
+    });
+    console.log(products);
+
+    if (products.length > 0) {
+      let duplicate = false;
+
+      products.map((product) => {
+        // console.log(typeof product.name);
+        if (product.name.toLowerCase() === req.body.name.toLowerCase()) {
+          duplicate = true;
+        }
+      });
+      console.log(duplicate);
+
+      if (duplicate == false) {
+        let updatedProduct = await Product.findByIdAndUpdate(productId, {
+          name: req.body.name,
+          uniqueURL: req.body.uniqueURL,
+          image: req.body.image,
+          variants: req.body.variants,
+        });
+        updatedProduct.save();
+
+        res.status(200).json(updatedProduct);
+      } else if (duplicate == true) {
+        // TODO Task, Unique Name Validation not working
+        res.status(200).send({
+          success: false,
+          data: "Duplicate productName",
+          message: "Product name " + req.body.name + " already exists",
+        });
+      }
+    } else {
+      let updatedProduct = await Product.findByIdAndUpdate(productId, {
+        name: req.body.name,
+        uniqueURL: req.body.uniqueURL,
+        image: req.body.image,
+        variants: req.body.variants,
+      });
+      updatedProduct.save();
+
+      res.status(200).json(updatedProduct);
     }
   } catch (error) {
     res.status(404).json({ message: error.message });

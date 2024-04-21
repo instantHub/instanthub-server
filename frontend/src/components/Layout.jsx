@@ -1,7 +1,7 @@
 import React from "react";
-import Slider from "./slider/Slider";
+import Slider from "./Slider";
 import { Link, Outlet } from "react-router-dom";
-import Navbar from "./navbar/Navbar";
+import Navbar from "./Navbar";
 import Footer from "./Footer";
 
 const Layout = () => {

@@ -24,6 +24,13 @@ function Condtions() {
     conditionNames: [{ name: "" }],
   });
 
+  // if (categoryData) {
+  //   console.log("cat", categoryData);
+  // }
+  // if (conditionsData) {
+  //   console.log("con", conditionsData);
+  // }
+
   // Function to handle changes in the form fields
   const handleChange = (event, index, field, arrayName) => {
     const { value } = event.target;
@@ -172,6 +179,8 @@ function Condtions() {
               </form>
             </div>
           </div>
+
+          {/* condition List */}
           <div className="my-auto ml-[5%]">
             <ul className="">
               {!conditionsLoading &&
