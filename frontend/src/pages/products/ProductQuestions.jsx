@@ -242,7 +242,7 @@ const ProductDeductions = () => {
                               (condLabel) =>
                                 condLabel.conditionLabel == label.conditionLabel
                             )
-                              ? "border-[#E27D60]"
+                              ? "border-[#E27D60] border-red-600"
                               : ""
                           } flex flex-col border rounded items-center`}
                           // onClick={() =>
@@ -258,7 +258,7 @@ const ProductDeductions = () => {
                           <div className="p-4">
                             <img
                               src={
-                                "http://localhost:8000" +
+                                import.meta.env.VITE_APP_BASE_URL +
                                 label.conditionLabelImg
                               }
                               alt="LabelImg"
@@ -274,7 +274,7 @@ const ProductDeductions = () => {
                                   condLabel.conditionLabel ==
                                   label.conditionLabel
                               )
-                                ? "bg-[#E27D60] text-white"
+                                ? "bg-[#E27D60] text-white bg-cyan-500"
                                 : "bg-slate-100 "
                             } py-2 text-sm text-center w-full`}
                           >

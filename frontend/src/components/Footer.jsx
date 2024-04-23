@@ -1,10 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { FaFacebookF, FaInstagram, FaWhatsapp } from "react-icons/fa";
 
 const Footer = () => {
   return (
     // JSX
-    <div className=" w-full sm:pt-10 mt-2 pb-4 bg-[#E27D60] px-4 py-2">
+    <div className=" w-full sm:pt-10 mt-2 pb-4 bg-[#E27D60] bg-cyan-500 px-4 py-2">
       <div className="mx-auto max-w-screen-xl flex gap-4 justify-evenly max-md:gap-1">
         <div className="px-4 sm:px-0 flex flex-col">
           <div>
@@ -12,10 +13,16 @@ const Footer = () => {
           </div>
           <div>
             <span className="text-xs text-white">Follow Us On</span>
-            <ul className="flex gap-1 text-sm">
-              <li>Ins</li>
-              <li>Face</li>
-              <li>You</li>
+            <ul className="flex gap-3 text-md my-3">
+              <li>
+                <FaFacebookF />
+              </li>
+              <li>
+                <FaInstagram />
+              </li>
+              <li>
+                <FaWhatsapp />
+              </li>
             </ul>
           </div>
         </div>

@@ -4,7 +4,7 @@
   "description": "",
   "type": "module",
   "main": "index.js",
-  "proxy": "http://localhost:8000",
+  "proxy": "${import.meta.env.VITE_APP_BASE_URL}",
   "scripts": {
     "start": "node backend/server.js",
     "server": "nodemon backend/server.js"

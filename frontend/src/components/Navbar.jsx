@@ -14,9 +14,9 @@ const Navbar = () => {
 
   return (
     <>
-      {/* <nav className="bg-[#E27D60] bg-blue-600 text-white p-4 rounded-xl mt-4 mx-4 sticky top-2 border-b border-[#E27D60] shadow-xl"> */}
-      <nav className="bg-gradient-to-r from-blue-500  to-cyan-700 text-white p-4 rounded-xl mt-4 mx-4 sticky top-2 border-b border-[#E27D60] shadow-xl">
-      {/* <nav className="bg-gradient-to-r from-red-700 via-yellow-400 to-orange-600 text-white p-4 rounded-xl mt-4 mx-4 sticky top-2 border-b border-[#E27D60] shadow-xl"> */}
+      <nav className="bg-[#E27D60] bg-cyan-500 text-white p-4 rounded-xl mt-4 mx-4 sticky top-2 border-b border-[#E27D60] shadow-xl">
+      {/* <nav className="bg-gradient-to-r from-cyan-400  to-yellow-700 text-white p-4 rounded-xl mt-4 mx-4 sticky top-2 border-b border-[#E27D60] shadow-xl"> */}
+        {/* <nav className="bg-gradient-to-r from-red-700 via-yellow-400 to-orange-600 text-white p-4 rounded-xl mt-4 mx-4 sticky top-2 border-b border-[#E27D60] shadow-xl"> */}
         <div className="max-w-full mx-auto px-4">
           <div className="flex items-center">
             {/* <div className="grid grid-cols-3 items-center"> */}

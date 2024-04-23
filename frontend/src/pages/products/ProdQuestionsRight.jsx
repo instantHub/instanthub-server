@@ -13,7 +13,9 @@ const ProdDeductionsRight = () => {
         <div className="flex items-center justify-center gap-3 p-2">
           <div>
             <img
-              src={"http://localhost:8000" + productsData.productImage}
+              src={
+                import.meta.env.VITE_APP_BASE_URL + productsData.productImage
+              }
               alt="ProductImg"
               className="size-20"
             />{" "}

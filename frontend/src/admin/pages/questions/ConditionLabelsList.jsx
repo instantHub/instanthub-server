@@ -34,13 +34,11 @@ const ConditionLabelsTable = () => {
 
   return (
     //ConditionLabelsTable based on the Condition selected
-    <div className="p-4 bg-black">
-      <h2 className="text-white text-lg font-bold mb-4">
-        ConditionLabels Table
-      </h2>
+    <div className="p-4">
+      <h2 className=" text-lg font-bold mb-4">ConditionLabels Table</h2>
       <div className="mb-4">
-        <label htmlFor="condition" className="text-white mr-2">
-          Select Category:
+        <label htmlFor="condition" className=" mr-2">
+          Select Label:
         </label>
         <select
           id="condition"
@@ -92,7 +90,7 @@ const ConditionLabelsTable = () => {
                   <td className=" py-2">
                     <img
                       src={
-                        "http://localhost:8000" +
+                        import.meta.env.VITE_APP_BASE_URL +
                         conditionLabel.conditionLabelImg
                       }
                       alt="CAT"

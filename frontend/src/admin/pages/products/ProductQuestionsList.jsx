@@ -126,7 +126,7 @@ const ProductQuestionsList = () => {
                         <div>
                           <img
                             src={
-                              "http://localhost:8000" +
+                              import.meta.env.VITE_APP_BASE_URL +
                               conditionLabel.conditionLabelImg
                             }
                             alt="conditionLabelImg"

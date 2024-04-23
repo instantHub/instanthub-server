@@ -4,8 +4,8 @@ import {
   useGetCategoryQuery,
   useGetBrandQuery,
   useGetAllBrandQuery,
-  useUploadFileHandlerMutation,
   useCreateProductMutation,
+  useUploadProductImageMutation,
 } from "../../../features/api";
 import { toast } from "react-toastify";
 
@@ -16,7 +16,7 @@ const CreateProducts = () => {
   const [prodName, setProdName] = useState("");
   const [uniqueURL, setUniqueURL] = useState("");
   const [uploadProductImage, { isLoading: uploadLoading }] =
-    useUploadFileHandlerMutation();
+    useUploadProductImageMutation();
   const [createProduct, { isLoading: productCreationLoading }] =
     useCreateProductMutation();
   const { data: categoryData, isLoading: categoryLoading } =

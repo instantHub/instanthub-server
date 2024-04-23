@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import {
   useGetAllBrandQuery,
-  useUploadFileHandlerMutation,
   useUpdateBrandMutation,
   useUploadBrandImageMutation,
 } from "../../../features/api";
@@ -14,7 +13,7 @@ function UpdateBrand() {
 
   const { data: brandsData, isLoading: brandsLoading } = useGetAllBrandQuery();
   const [newImgSelected, setNewImgSelected] = useState(false);
-  const [uploadProductImage, { isLoading: uploadLoading }] =
+  const [uploadBrandImage, { isLoading: uploadLoading }] =
     useUploadBrandImageMutation();
   const [
     updateBrand,
@@ -59,7 +58,7 @@ function UpdateBrand() {
     imageData.append("image", formData.image);
 
     try {
-      const res = await uploadProductImage(imageData).unwrap();
+      const res = await uploadBrandImage(imageData).unwrap();
 
       return res.image;
     } catch (error) {
@@ -166,7 +165,9 @@ function UpdateBrand() {
                       </div>
                       <div className="flex items-center grow-0">
                         <img
-                          src={"http://localhost:8000" + formData.image}
+                          src={
+                            import.meta.env.VITE_APP_BASE_URL + formData.image
+                          }
                           alt="ConditionLabel"
                           className="w-[100px] h-[100px] mx-auto "
                         />

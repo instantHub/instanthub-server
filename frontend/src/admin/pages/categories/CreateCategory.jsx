@@ -12,8 +12,7 @@ const CreateCategory = () => {
   const [uniqueURL, setUniqueURL] = useState("");
   const [imageSelected, setImageSelected] = useState("");
   const [createCategory, { isLoading }] = useCreateCategoryMutation();
-  // const [uploadCategoryImage, { isLoading: uploadLoading }] =
-  //   useUploadFileHandlerMutation();
+
   const [uploadCategoryImage, { isLoading: uploadLoading }] =
     useUploadCategoryImageMutation();
 

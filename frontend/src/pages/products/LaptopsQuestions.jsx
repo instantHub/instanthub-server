@@ -167,7 +167,7 @@ const LaptopsQuestions = (props) => {
                           <div className="p-4">
                             <img
                               src={
-                                "http://localhost:8000" +
+                                import.meta.env.VITE_APP_BASE_URL +
                                 label.conditionLabelImg
                               }
                               alt="LabelImg"

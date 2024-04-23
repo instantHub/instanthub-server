@@ -31,17 +31,17 @@ const BrandsList = () => {
 
   return (
     //Products based on the Category selected
-    <div className="p-4 bg-black">
-      <h2 className="text-white text-lg font-bold mb-4">Brands Table</h2>
+    <div className="p-4">
+      <h2 className="text-black text-lg font-bold mb-4">Brands Table</h2>
       <div className="mb-4">
-        <label htmlFor="condition" className="text-white mr-2">
+        <label htmlFor="condition" className=" mr-2">
           Select Category:
         </label>
         <select
           id="condition"
           onChange={handleConditionChange}
           value={selectedCondition}
-          className="p-2 rounded bg-gray-300 text-gray-800"
+          className="p-2 rounded bg-gray-700 text-white"
         >
           <option value="">Select</option>
           {!categoryDataLoading &&
@@ -80,7 +80,7 @@ const BrandsList = () => {
 
                   <td className="px-4 py-2">
                     <img
-                      src={"http://localhost:8000" + brand.image}
+                      src={import.meta.env.VITE_APP_BASE_URL + brand.image}
                       alt="BrandImg"
                       className="w-[60px] h-[60px] mx-auto "
                     />
@@ -122,7 +122,7 @@ const BrandsList = () => {
 
                   <td className="px-4 py-2">
                     <img
-                      src={"http://localhost:8000" + brand.image}
+                      src={import.meta.env.VITE_APP_BASE_URL + brand.image}
                       alt="CAT"
                       className="w-[60px] h-[60px] mx-auto "
                     />

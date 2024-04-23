@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useRef } from "react";
 import CreateSeries from "../../components/CreateSeries";
 import {
-  useUploadFileHandlerMutation,
+  useUploadConditionLabelsImageMutation,
   useUpdateProductMutation,
   useGetProductDetailsQuery,
+  useUploadProductImageMutation,
 } from "../../../features/api";
 import { toast } from "react-toastify";
 import { useParams } from "react-router-dom";
@@ -18,7 +19,7 @@ const UpdateProduct = () => {
   const [uniqueURL, setUniqueURL] = useState("");
 
   const [uploadProductImage, { isLoading: uploadLoading }] =
-    useUploadFileHandlerMutation();
+    useUploadProductImageMutation();
   const { data: productData, isLoading: productDataLoading } =
     useGetProductDetailsQuery(productId);
   const [updateProduct] = useUpdateProductMutation();
@@ -206,7 +207,7 @@ const UpdateProduct = () => {
                     </div>
                     <div className="flex items-center grow-0">
                       <img
-                        src={"http://localhost:8000" + imageSelected}
+                        src={import.meta.env.VITE_APP_BASE_URL + imageSelected}
                         alt="ConditionLabel"
                         className="w-[100px] h-[100px] mx-auto "
                       />

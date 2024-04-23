@@ -3,6 +3,7 @@ import { useGetProductDetailsQuery } from "../../features/api";
 import { useParams, Link, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { setGetUpto } from "../../features/deductionSlice";
+import { FaAngleRight, FaIndianRupeeSign } from "react-icons/fa6";
 
 const ProductDetail = () => {
   const { prodId } = useParams();
@@ -52,7 +53,9 @@ const ProductDetail = () => {
               <div className="sm:flex items-center justify-center mr-5 w-full sm:max-w-xs max-sm:size-32 sm:w-1/3 h-20 sm:h-96 max-sm:mx-auto">
                 <div className="flex items-center justify-center h-full w-full">
                   <img
-                    src={"http://localhost:8000" + productDetails.image}
+                    src={
+                      import.meta.env.VITE_APP_BASE_URL + productDetails.image
+                    }
                     alt="CAT"
                     className="size-48 max-sm:size-32"
                   />{" "}
@@ -79,9 +82,14 @@ const ProductDetail = () => {
 
                   {/* VARIANT PRICE WILL BE SHOWN WHEN CLICKED ON A VARIANT */}
                   <div className="">
-                    <h2 className="text-5xl text-yellow-500">
-                      {variantSelected.price}
-                    </h2>
+                    <div className="flex items-center">
+                      {variantSelected.price ? (
+                        <FaIndianRupeeSign className="text-4xl" />
+                      ) : null}
+                      <h2 className="text-5xl text-yellow-500">
+                        {variantSelected.price}
+                      </h2>
+                    </div>
                   </div>
                   {/* END OF VARIANT PRICE */}
 
@@ -112,18 +120,21 @@ const ProductDetail = () => {
                   </div>
 
                   {variantSelected.length != 0 ? (
-                    <div>
+                    <div className="flex items-center w-fit bg-emerald-600 text-white px-4 py-2 rounded-md ">
                       <Link
                         // to={`/categories/brands/productDetails/${prodId}/productDeductions`}
                         to={`/sell/deductions?productId=${prodId}&variant=${variantSelected.name}`}
                       >
+                        {/* <div className="flex items-center w-fit bg-emerald-600 text-white px-4 py-2 rounded-md "> */}
                         <button
-                          className="bg-emerald-600 text-white px-4 py-2 rounded-md"
-                          // onClick={}
+
+                        // onClick={}
                         >
                           Get Exact Value
                         </button>
+                        {/* </div> */}
                       </Link>
+                      <FaAngleRight />
                     </div>
                   ) : (
                     <div>

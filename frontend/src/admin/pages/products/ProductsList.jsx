@@ -55,7 +55,7 @@ const ProductsList = () => {
 
   return (
     //Products based on the Category selected
-    <div className="p-4 bg-orange-400">
+    <div className="p-4 ">
       {/* Search */}
       <div className=" my-4 flex gap-2 items-center">
         <div>
@@ -64,7 +64,7 @@ const ProductsList = () => {
             name=""
             id=""
             placeholder="Search a product"
-            className="px-2 text-sm py-1 rounded"
+            className="px-2 text-sm py-1 rounded border"
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
@@ -75,16 +75,16 @@ const ProductsList = () => {
         </div>
       </div>
 
-      <h2 className="text-white text-lg font-bold mb-4">Products Table</h2>
+      <h2 className="text-black text-lg font-bold mb-4">Products Table</h2>
       <div className="mb-4">
-        <label htmlFor="condition" className="text-white mr-2">
+        <label htmlFor="condition" className=" mr-2">
           Select Category:
         </label>
         <select
           id="condition"
           onChange={handleConditionChange}
           value={selectedCondition}
-          className="p-2 rounded bg-gray-300 text-gray-800"
+          className="p-2 rounded bg-gray-700 text-white"
         >
           <option value="">Select</option>
           {!categoryDataLoading &&
@@ -147,7 +147,7 @@ const ProductsList = () => {
                   </td>
                   <td className="px-4 py-2">
                     <img
-                      src={"http://localhost:8000" + product.image}
+                      src={import.meta.env.VITE_APP_BASE_URL + product.image}
                       alt="CAT"
                       className="w-[60px] h-[60px] mx-auto "
                     />

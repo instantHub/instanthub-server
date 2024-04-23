@@ -47,8 +47,8 @@ const ConditionsTable = () => {
   return (
     //ConditionsListList
     <>
-      <div className="p-4 bg-black">
-        <h2 className="text-white text-lg font-bold mb-4">Conditions Table</h2>
+      <div className="p-4">
+        <h2 className=" text-lg font-bold mb-4">Conditions Table</h2>
         {/* <div className="mb-4">
           <label htmlFor="condition" className="text-white mr-2">
             Select Condition:

@@ -32,8 +32,8 @@ const CategoriesList = () => {
 
   return (
     //Products based on the Category selected
-    <div className="p-4 bg-black">
-      <h2 className="text-white text-lg font-bold mb-4">Categories Table</h2>
+    <div className="p-4 ">
+      <h2 className="text-black text-lg font-bold mb-4">Categories Table</h2>
 
       <table className="w-full">
         <thead>
@@ -78,7 +78,7 @@ const CategoriesList = () => {
 
                   <td className="px-4 py-2">
                     <img
-                      src={"http://localhost:8000" + category.image}
+                      src={import.meta.env.VITE_APP_BASE_URL + category.image}
                       alt="CAT"
                       className="w-[60px] h-[60px] mx-auto "
                     />

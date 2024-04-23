@@ -6,6 +6,7 @@ import {
   useGetAllProductsQuery,
 } from "../../features/api";
 import { useParams, Link } from "react-router-dom";
+import { BsSearch } from "react-icons/bs";
 
 const Products = () => {
   const { brandId } = useParams();
@@ -71,18 +72,19 @@ const Products = () => {
     <>
       <div className="mt-20 w-4/5 mx-auto">
         <div className=" my-4 flex justify-end gap-2 items-center">
-          <div>
+          <div className="flex pl-4 items-center border rounded">
+            <BsSearch className="text-black" />
             <input
               type="search"
               name=""
               id=""
               placeholder="Search a product"
-              className="px-2 text-sm py-1 border rounded"
+              className="px-2 text-sm py-1 outline-none"
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
           <div>
-            <button className="bg-green-600 px-2 rounded text-sm py-1 text-white">
+            <button className="bg-green-600 pl-1 pr-2 rounded text-sm py-1 text-white">
               Search
             </button>
           </div>
@@ -125,15 +127,16 @@ const Products = () => {
                         // className="w-28 p-4 cursor-pointer rounded-lg shadow-sm hover:shadow-xl transition ease-in-out duration-500"
                         className="flex flex-col items-center justify-center cursor-pointer w-full h-full bg-white p-2 sm:p-4 sm:min-w-full rounded-0 sm:rounded-xl sm:ring-0 sm:ring-transparent sm:shadow sm:max-h-56 sm:max-w-44 hover:shadow-xl transition ease-in-out duration-500"
                       >
-                        <div className="flex horizontal items-start justify-between">
+                        <div className="flex horizontal  w-28 h-28 items-start justify-between">
                           <img
-                            src={"http://localhost:8000" + product.image}
+                            src={
+                              import.meta.env.VITE_APP_BASE_URL + product.image
+                            }
                             alt="CAT"
-                            className=""
+                            className="w-28 h-28"
                           />
                         </div>
-
-                        <span className="text-center flex-1 line-clamp-3 flex horizontal items-center justify-center h-9 sm:h-full sm:w-full sm:max-h-12">
+                        <span className="text-center mt-2 flex-1 line-clamp-3 flex horizontal items-center justify-center h-9 sm:h-full sm:w-full sm:max-h-12">
                           <div className="text-[14.5px] font-[500] leading-7">
                             {product.name}
                           </div>
@@ -164,7 +167,7 @@ const Products = () => {
                 </>
               ))
             ) : (
-              <h1>No Mobiles Available</h1>
+              <h1>Not Available</h1>
             )}
           </div>
         )}

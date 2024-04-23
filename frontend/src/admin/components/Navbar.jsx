@@ -39,48 +39,12 @@ const Navbar = (props) => {
     <>
       {/* Appbar */}
       {/* Toolbar */}
-      <nav className="flex justify-between  bg-gray-200 p-4 w-full">
+      <nav className="flex justify-end  bg-gray-200 p-4 w-full">
         {/* LEFT SIDE */}
         {/* FlexBetween 1*/}
-        <div className="flex items-center">
-          <button onClick={toggleSidebar} className=" focus:outline-none">
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              {isSidebarOpen ? (
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              ) : (
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M4 6h16M4 12h16m-7 6h7"
-                ></path>
-              )}
-            </svg>
-          </button>
-          {/* FlexBetween 2*/}
-          <div className="ml-2">
-            <input
-              type="search"
-              name=""
-              placeholder="search..."
-              className="bg-gray-100 rounded-lg gap-[3rem] py-[0.1rem] px-[1.5rem] border"
-            />
-          </div>
-        </div>
+
         {/* RIGHT SIDE */}
         <div className="flex items-center">
-          <h2 className="px-2">Settings ICON</h2>
           {adminInfo && (
             <div className="flex items-center justify-between flex-wrap">
               <div className="flex items-center flex-shrink-0 text-white mr-6">
@@ -110,13 +74,6 @@ const Navbar = (props) => {
               )}
             </div>
           )}
-
-          {/* <button
-            onClick={handleLogout}
-            className="px-2 py-1 text-sm bg-white border rounded border-red-600 hover:bg-red-500 hover:text-white"
-          >
-            Logout
-          </button> */}
         </div>
       </nav>
       {/* </nav> */}
@@ -126,3 +83,47 @@ const Navbar = (props) => {
 };
 
 export default Navbar;
+
+{
+  {
+    /* LEFT SIDE */
+  }
+  /* <div className="flex items-center">
+<button onClick={toggleSidebar} className=" focus:outline-none">
+  <svg
+    className="w-6 h-6"
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    {isSidebarOpen ? (
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M6 18L18 6M6 6l12 12"
+      />
+    ) : (
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+        d="M4 6h16M4 12h16m-7 6h7"
+      ></path>
+    )}
+  </svg>
+</button>
+{/* FlexBetween 2*/
+}
+{
+  /* <div className="ml-2">
+  <input
+    type="search"
+    name=""
+    placeholder="search..."
+    className="bg-gray-100 rounded-lg gap-[3rem] py-[0.1rem] px-[1.5rem] border"
+  />
+</div> */
+}
+// </div>

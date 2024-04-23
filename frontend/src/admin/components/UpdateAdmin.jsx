@@ -56,14 +56,14 @@ const UpdateAdmin = () => {
 
   return (
     <div>
-      <div className="mx-auto w-[40%] my-[10%] border rounded shadow-lg p-5">
+      <div className="mx-auto w-[40%] max-2sm:w-[90%] my-[10%] border rounded shadow-lg p-5">
         <form
           action=""
           method="post"
           onSubmit={handleSubmit}
           className="flex flex-col gap-4"
         >
-          <h1 className="text-lg font-semibold">Create a New Admin</h1>
+          <h1 className="text-lg font-semibold">Update Admin</h1>
           <hr />
           <div className="flex flex-col gap-2 mx-10">
             <label htmlFor="adminname">Enter Admin Name</label>

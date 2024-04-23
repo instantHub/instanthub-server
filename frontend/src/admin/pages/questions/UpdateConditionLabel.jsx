@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import {
   useGetConditionLabelsQuery,
   useUpdateConditionMutation,
-  useUploadFileHandlerMutation,
+  useUploadConditionLabelsImageMutation,
   useUpdateConditionLabelMutation,
 } from "../../../features/api";
 import { Link, useParams } from "react-router-dom";
@@ -15,8 +15,8 @@ function UpdateConditionLabel() {
   const { data: conditionLabelsData, isLoading: conditionLabelsLoading } =
     useGetConditionLabelsQuery();
   const [newImgSelected, setNewImgSelected] = useState(false);
-  const [uploadProductImage, { isLoading: uploadLoading }] =
-    useUploadFileHandlerMutation();
+  const [uploadConditionLabelsImage, { isLoading: uploadLoading }] =
+    useUploadConditionLabelsImageMutation();
   const [
     updateConditionLabel,
     {
@@ -62,7 +62,7 @@ function UpdateConditionLabel() {
     imageData.append("image", formData.conditionLabelImg);
 
     try {
-      const res = await uploadProductImage(imageData).unwrap();
+      const res = await uploadConditionLabelsImage(imageData).unwrap();
 
       return res.image;
     } catch (error) {
@@ -177,7 +177,8 @@ function UpdateConditionLabel() {
                       <div className="flex items-center grow-0">
                         <img
                           src={
-                            "http://localhost:8000" + formData.conditionLabelImg
+                            import.meta.env.VITE_APP_BASE_URL +
+                            formData.conditionLabelImg
                           }
                           alt="ConditionLabel"
                           className="w-[100px] h-[100px] mx-auto "

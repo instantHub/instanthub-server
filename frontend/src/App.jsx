@@ -40,6 +40,9 @@ import AdminProductsList from "./admin/pages/products/ProductsList";
 import AdminProductQuestions from "./admin/pages/products/ProductQuestionsList";
 import AdminConditionsList from "./admin/pages/questions/ConditionsList";
 import AdminConditionLabelsList from "./admin/pages/questions/ConditionLabelsList";
+import AdminCreateSlider from "./admin/pages/sliders/CreateSlider";
+import AdminSlidersList from "./admin/pages/sliders/SlidersList";
+import AdminUpdateSlider from "./admin/pages/sliders/UpdateSlider";
 import AdminOrdersList from "./admin/pages/orders/OrdersList";
 
 import Admin from "./admin/Admin";
@@ -187,6 +190,18 @@ function App() {
             {
               path: "/admin/updateConditionLabel/:conditionLabelId",
               element: <AdminUpdateConditionLabel />,
+            },
+            {
+              path: "/admin/add-sliders",
+              element: <AdminCreateSlider />,
+            },
+            {
+              path: "/admin/sliders-list",
+              element: <AdminSlidersList />,
+            },
+            {
+              path: "/admin/update-sliders/:sliderId",
+              element: <AdminUpdateSlider />,
             },
             {
               path: "/admin/orders",

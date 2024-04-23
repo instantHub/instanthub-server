@@ -4,6 +4,7 @@ import {
   useGetCategoryQuery,
   useUploadFileHandlerMutation,
   useCreateConditionLabelsMutation,
+  useUploadConditionLabelsImageMutation,
 } from "../../../features/api";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -13,8 +14,8 @@ const YourComponent = () => {
     useGetCategoryQuery();
   const { data: conditionsData, isLoading: conditionsLoading } =
     useGetConditionsQuery();
-  const [uploadProductImage, { isLoading: uploadLoading }] =
-    useUploadFileHandlerMutation();
+  const [uploadConditionLabelsImage, { isLoading: uploadLoading }] =
+    useUploadConditionLabelsImageMutation();
   const [createConditionLabels, { isLoading: clLoading }] =
     useCreateConditionLabelsMutation();
 
@@ -53,7 +54,7 @@ const YourComponent = () => {
     imageData.append("image", formData.conditionLabelImg);
 
     try {
-      const res = await uploadProductImage(imageData).unwrap();
+      const res = await uploadConditionLabelsImage(imageData).unwrap();
 
       return res.image;
     } catch (error) {

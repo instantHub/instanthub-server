@@ -48,13 +48,17 @@ const SideBar = (props) => {
       url: "orders",
     },
     {
+      text: "Sliders",
+      url: "add-sliders",
+    },
+    {
       text: "Setting",
-      url: "Icon",
+      url: "update-profile",
     },
   ];
 
   const { pathname } = useLocation();
-  const [active, setActive] = useState("");
+  const [active, setActive] = useState(false);
   const navigate = useNavigate();
 
   const handleActive = () => {
@@ -69,16 +73,17 @@ const SideBar = (props) => {
     <div
       className={`${
         isSidebarOpen ? "block" : "hidden"
-      }  w-[10%] h-full bg-gray-200 fixed`}
+      }  md-[15%] lg:w-[10%] h-full bg-gray-900 text-white fixed`}
     >
       <ul className="flex flex-col my-28 items-center">
         {sideBarLinks.map(({ text, url }, i) => {
           return (
             <li className={`my-4 `} key={i}>
-              <button onClick={handleActive}>
+              {/* <button onClick={handleActive}> */}
+              <button className="text-xl">
                 <Link
                   to={`/admin/${url}`}
-                  className={`${active ? "bg-white" : ""} `}
+                  // className={`${active ? "bg-white" : ""} `}
                 >
                   {text}
                 </Link>
