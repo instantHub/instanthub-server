@@ -142,7 +142,7 @@ const SearchBar = () => {
   }, []); // Empty dependency array to run effect only once on mount
 
   return (
-    <div className="bg-white  border rounded-full mx-4 md:w-80 sm:w-64 2sm:w-3/4 3sm:w-3/4">
+    <div className="bg-white grow border rounded mx-4 md:w-80 sm:w-64 2sm:w-3/4 3sm:w-3/4">
       <div className="flex pl-4 items-center">
         <BsSearch className="text-black" />
         <input
@@ -150,7 +150,7 @@ const SearchBar = () => {
           name="search"
           value={search}
           id="search"
-          className="text-black pl-2 pr-5 py-2 w-full rounded-full md:w-72 sm:w-64 2sm:w-3/4 3sm:w-3/4 focus:bg-transparent outline-none"
+          className="text-black grow pl-2 pr-5 py-2 w-full rounded-full md:w-72 sm:w-64 2sm:w-3/4 3sm:w-3/4 focus:bg-transparent outline-none"
           placeholder={`Search for Mobiles, Laptops etc.. `}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -158,7 +158,7 @@ const SearchBar = () => {
 
       {search && (
         <div
-          className="absolute bg-blue-100 text-black flex flex-col p-4 rounded max-h-[150px] overflow-y-auto scrollbar md:w-72 sm:w-64 2sm:w-3/4 3sm:w-3/4"
+          className="absolute bg-white text-black flex flex-col p-4 rounded max-h-[150px] overflow-y-auto scrollbar md:w-72 sm:w-64 2sm:w-3/4 3sm:w-3/4"
           // style={{ maxHeight: "200px", overflowY: "scroll" }}
           ref={productListRef}
           onScroll={handleScroll}

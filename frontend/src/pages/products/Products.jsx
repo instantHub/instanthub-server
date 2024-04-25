@@ -4,14 +4,21 @@ import {
   useGetProductsQuery,
   useGetCategoryQuery,
   useGetAllProductsQuery,
+  useGetBrandSeriesQuery,
 } from "../../features/api";
 import { useParams, Link } from "react-router-dom";
 import { BsSearch } from "react-icons/bs";
+import ProductSeries from "../series/ProductSeries";
+import { FaAngleRight } from "react-icons/fa6";
 
 const Products = () => {
   const { brandId } = useParams();
   const { data: getCategories, isLoading: categoryLoading } =
     useGetCategoryQuery();
+  const { data: brandSeries, isLoading: seriesLoading } =
+    useGetBrandSeriesQuery(brandId);
+  const [showSeries, setShowSeries] = useState(false);
+  const [seriesSelected, setSeriesSelected] = useState("");
 
   const [search, setSearch] = useState("");
 
@@ -67,10 +74,60 @@ const Products = () => {
     });
     // console.log("brandname", brand.name);
   }
+  console.log("showSeries", showSeries);
+  const handleSeries = (seriesId) => {
+    setShowSeries(!showSeries);
+    setSeriesSelected(seriesId);
+    console.log(seriesId);
+  };
 
   return (
     <>
-      <div className="mt-20 w-4/5 mx-auto">
+      {/* <ProductSeries brandId={brandId} /> */}
+
+      {/*  */}
+      <div className="mt-10">
+        <div className="mx-10 grid grid-cols-6 max-md:grid-cols-4 max-sm:grid-cols-3 sm:gap-x-12 sm:gap-y-8 rounded-xl sm:rounded-none ring-0 ring-transparent shadow sm:shadow-none mt-4 sm:mt-0">
+          {!seriesLoading && brandSeries.length !== 0
+            ? brandSeries.map((series, i) => (
+                <>
+                  <div
+                    key={i}
+                    className="col-span-1 max-h-44 sm:max-h-56 sm:rounded-lg border-b border-r border-solid sm:border-0"
+                  >
+                    <button
+                      onClick={() => handleSeries(series.id)}
+                      // value={series.id}
+                      // to={`/categories/brands/productDetails/${series.id}`}
+                      key={i}
+                      className="w-full h-full"
+                    >
+                      <div
+                        key={i}
+                        className={`${
+                          showSeries && series.id === seriesSelected
+                            ? "bg-cyan-200"
+                            : "bg-gray-200"
+                        } flex flex-col items-center justify-center cursor-pointer w-full h-full  p-2 sm:p-4 sm:min-w-full rounded-0 sm:rounded-xl sm:ring-0 sm:ring-transparent sm:shadow sm:max-h-56 sm:max-w-44 hover:shadow-xl transition ease-in-out duration-500`}
+                      >
+                        <span className="text-center mt-2 flex-1 line-clamp-3 flex horizontal items-center justify-center h-9 sm:h-full sm:w-full sm:max-h-12">
+                          <div className="text-[14.5px] font-[500] leading-7">
+                            {series.name}
+                          </div>
+                        </span>
+                      </div>
+                    </button>
+                  </div>
+                </>
+              ))
+            : null}
+        </div>
+      </div>
+
+      {/*  */}
+
+      <div className="mt-10 w-4/5 mx-auto">
+        {/* Search Bar */}
         <div className=" my-4 flex justify-end gap-2 items-center">
           <div className="flex pl-4 items-center border rounded">
             <BsSearch className="text-black" />
@@ -91,14 +148,17 @@ const Products = () => {
         </div>
 
         <div className="mx-0 mb-6">
-          <h1>
-            <Link to={"/"}>Home</Link> /
-            <Link to={`/categories/brands/${category.id}`}>
-              {" "}
-              {category.name}s
-            </Link>{" "}
-            / {brand.name}
-          </h1>
+          <div className="flex items-center gap-1">
+            <h1 className="flex items-center opacity-60 gap-1">
+              <Link to={"/"}>Home</Link>
+              <FaAngleRight />
+              <Link to={`/categories/brands/${category.id}`}>
+                {category.name}
+              </Link>
+              <FaAngleRight />
+            </h1>
+            {brand.name}
+          </div>
           <hr className="text-black mt-1" />
         </div>
 
@@ -108,44 +168,45 @@ const Products = () => {
             <span>Loading...</span>
           </div>
         ) : (
-          //   <div className="flex flex-wrap justify-evenly gap-6">
-          <div className="grid grid-cols-3 sm:grid-cols-6 sm:gap-x-12 sm:gap-y-8 rounded-xl sm:rounded-none ring-0 ring-transparent shadow sm:shadow-none mt-4 sm:mt-0">
+          <div className="grid grid-cols-6 max-md:grid-cols-4 max-sm:grid-cols-3 sm:gap-x-12 sm:gap-y-8 rounded-xl sm:rounded-none ring-0 ring-transparent shadow sm:shadow-none mt-4 sm:mt-0">
             {!productsData.length == 0 ? (
-              productsData.map((product, i) => (
-                <>
-                  <div
-                    key={i}
-                    className="col-span-1 max-h-44 sm:max-h-56 sm:rounded-lg border-b border-r border-solid sm:border-0"
-                  >
-                    <Link
-                      to={`/categories/brands/productDetails/${product.id}`}
+              !showSeries ? (
+                productsData.map((product, i) => (
+                  <>
+                    <div
                       key={i}
-                      className="w-full h-full"
+                      className="col-span-1 max-h-44 sm:max-h-56 sm:rounded-lg border-b border-r border-solid sm:border-0"
                     >
-                      <div
+                      <Link
+                        to={`/categories/brands/productDetails/${product.id}`}
                         key={i}
-                        // className="w-28 p-4 cursor-pointer rounded-lg shadow-sm hover:shadow-xl transition ease-in-out duration-500"
-                        className="flex flex-col items-center justify-center cursor-pointer w-full h-full bg-white p-2 sm:p-4 sm:min-w-full rounded-0 sm:rounded-xl sm:ring-0 sm:ring-transparent sm:shadow sm:max-h-56 sm:max-w-44 hover:shadow-xl transition ease-in-out duration-500"
+                        className="w-full h-full"
                       >
-                        <div className="flex horizontal  w-28 h-28 items-start justify-between">
-                          <img
-                            src={
-                              import.meta.env.VITE_APP_BASE_URL + product.image
-                            }
-                            alt="CAT"
-                            className="w-28 h-28"
-                          />
-                        </div>
-                        <span className="text-center mt-2 flex-1 line-clamp-3 flex horizontal items-center justify-center h-9 sm:h-full sm:w-full sm:max-h-12">
-                          <div className="text-[14.5px] font-[500] leading-7">
-                            {product.name}
+                        <div
+                          key={i}
+                          // className="w-28 p-4 cursor-pointer rounded-lg shadow-sm hover:shadow-xl transition ease-in-out duration-500"
+                          className="flex flex-col items-center justify-center cursor-pointer w-full h-full bg-white p-2 sm:p-4 sm:min-w-full rounded-0 sm:rounded-xl sm:ring-0 sm:ring-transparent sm:shadow sm:max-h-56 sm:max-w-44 hover:shadow-xl transition ease-in-out duration-500"
+                        >
+                          <div className="flex horizontal  w-28 h-28 items-start justify-between">
+                            <img
+                              src={
+                                import.meta.env.VITE_APP_BASE_URL +
+                                product.image
+                              }
+                              alt="CAT"
+                              className="w-28 h-28"
+                            />
                           </div>
-                        </span>
-                      </div>
-                    </Link>
+                          <span className="text-center mt-2 flex-1 line-clamp-3 flex horizontal items-center justify-center h-9 sm:h-full sm:w-full sm:max-h-12">
+                            <div className="text-[14.5px] font-[500] leading-7">
+                              {product.name}
+                            </div>
+                          </span>
+                        </div>
+                      </Link>
 
-                    {/* VARIANTS */}
-                    {/* <div>
+                      {/* VARIANTS */}
+                      {/* <div>
                       <ul>
                         {!product.variants.length == 0 ? (
                           <p>
@@ -163,47 +224,56 @@ const Products = () => {
                         )}
                       </ul>
                     </div> */}
-                  </div>
-                </>
-              ))
+                    </div>
+                  </>
+                ))
+              ) : (
+                // productsData.map((product, i) => (
+                productsData
+                  .filter((product) => product.series === seriesSelected)
+                  .map((product, i) => (
+                    <>
+                      <div
+                        key={i}
+                        className="col-span-1 max-h-44 sm:max-h-56 sm:rounded-lg border-b border-r border-solid sm:border-0"
+                      >
+                        <Link
+                          to={`/categories/brands/productDetails/${product.id}`}
+                          key={i}
+                          className="w-full h-full"
+                        >
+                          <div
+                            key={i}
+                            // className="w-28 p-4 cursor-pointer rounded-lg shadow-sm hover:shadow-xl transition ease-in-out duration-500"
+                            className="flex flex-col items-center justify-center cursor-pointer w-full h-full bg-white p-2 sm:p-4 sm:min-w-full rounded-0 sm:rounded-xl sm:ring-0 sm:ring-transparent sm:shadow sm:max-h-56 sm:max-w-44 hover:shadow-xl transition ease-in-out duration-500"
+                          >
+                            <div className="flex horizontal  w-28 h-28 items-start justify-between">
+                              <img
+                                src={
+                                  import.meta.env.VITE_APP_BASE_URL +
+                                  product.image
+                                }
+                                alt="CAT"
+                                className="w-28 h-28"
+                              />
+                            </div>
+                            <span className="text-center mt-2 flex-1 line-clamp-3 flex horizontal items-center justify-center h-9 sm:h-full sm:w-full sm:max-h-12">
+                              <div className="text-[14.5px] font-[500] leading-7">
+                                {product.name}
+                              </div>
+                            </span>
+                          </div>
+                        </Link>
+                      </div>
+                    </>
+                  ))
+              )
             ) : (
               <h1>Not Available</h1>
             )}
           </div>
         )}
       </div>
-
-      {/* VARIANTS */}
-      {/* <div>
-        <h1>VARIANTS</h1>
-        <ul>
-          {productsLoading ? (
-            <h1 className="text-5xl text-black opacity-40 mx-auto">
-              Loading...
-            </h1>
-          ) : (
-            productsData.map((product) => (
-              <>
-                {!product.variants.length == 0 ? (
-                  <p>
-                    <p>{product.name}</p>
-                    {product.variants.map((variant) => (
-                      <>
-                        <div className="flex gap-2">
-                          <p>{variant.name}</p>
-                          <p>{variant.price}</p>
-                        </div>
-                      </>
-                    ))}
-                  </p>
-                ) : (
-                  <p></p>
-                )}
-              </>
-            ))
-          )}
-        </ul>
-      </div> */}
     </>
   );
 };

@@ -6,10 +6,27 @@ export const getSeries = async (req, res) => {
   console.log("getSeries Controller");
 
   try {
-    // const seriesList = await Series.find();
+    const seriesList = await Series.find()
+      .populate("category", "name")
+      .populate("brand", "name");
     // console.log(seriesList);
-    // res.status(200).json(seriesList);
-    res.status(200).json("Series");
+    res.status(200).json(seriesList);
+  } catch (error) {
+    res.status(404).json({ message: error.message });
+  }
+};
+
+export const getSeriesByBrand = async (req, res) => {
+  console.log("getSeriesByBrand Controller");
+  const { brandId } = req.params;
+  console.log(brandId);
+
+  try {
+    const brandSeries = await Series.find({ brand: brandId });
+    //   .populate("category", "name")
+    //   .populate("brand", "name");
+    console.log(brandSeries);
+    res.status(200).json(brandSeries);
   } catch (error) {
     res.status(404).json({ message: error.message });
   }
@@ -20,28 +37,102 @@ export const createSeries = async (req, res) => {
   console.log(req.body);
 
   try {
-    let series = await Series.create(req.body);
-    series.save();
-    res.status(200).json({ success: true, data: series });
-    // res.status(200).json("create series");Þ
+    const series = await Series.find({
+      brand: req.body.brand,
+      category: req.body.category,
+    });
+
+    if (series.length > 0) {
+      let duplicate = false;
+
+      series.map((s) => {
+        // console.log(typeof product.name);
+        if (s.name.toLowerCase() === req.body.name.toLowerCase()) {
+          duplicate = true;
+        }
+      });
+      console.log(duplicate);
+
+      if (duplicate == false) {
+        const seriesCreated = await Series.create(req.body);
+        seriesCreated.save();
+        res.status(200).json({ success: true, data: seriesCreated });
+      } else if (duplicate == true) {
+        // TODO Task, Unique Name Validation not working
+        res.status(200).send({
+          success: false,
+          data: "Duplicate SeriesName",
+          message: "Series " + req.body.name + " already exist ",
+        });
+      }
+    } else {
+      const seriesCreated = await Series.create(req.body);
+      seriesCreated.save();
+      res.status(200).json({ success: true, data: seriesCreated });
+    }
+
+    // res.status(200).json("create series");
   } catch (error) {
     res.status(404).json({ message: error.message });
   }
 };
 
 export const updateSeries = async (req, res) => {
-  console.log("updateSlider Controller");
-  const { sliderId } = req.params;
-  console.log(sliderId);
+  console.log("updateSeries Controller");
+  const { seriesId } = req.params;
+  console.log(seriesId);
   console.log(req.body);
 
   try {
-    let slider = await Slider.findByIdAndUpdate(sliderId, req.body, {
-      new: true,
+    const series = await Series.find({
+      brand: req.body.brand,
+      category: req.body.category,
+      _id: { $ne: seriesId }, // Exclude the series with the specified seriesId
     });
-    slider.save();
-    res.status(200).json({ success: true, data: slider });
-    // res.status(200).json("create slider");Þ
+
+    if (series.length > 0) {
+      let duplicate = false;
+
+      series.map((s) => {
+        // console.log(typeof product.name);
+        if (s.name.toLowerCase() === req.body.name.toLowerCase()) {
+          duplicate = true;
+        }
+      });
+      console.log(duplicate);
+
+      if (duplicate == false) {
+        const updatedSeries = await Series.findByIdAndUpdate(
+          seriesId,
+          {
+            name: req.body.name,
+          },
+          { new: true }
+        );
+        updatedSeries.save();
+        res.status(200).json({ success: true, data: updatedSeries });
+      } else if (duplicate == true) {
+        // TODO Task, Unique Name Validation not working
+        res.status(200).send({
+          success: false,
+          data: "Duplicate SeriesName",
+          message:
+            "Cannot Update Series Name To " +
+            req.body.name +
+            ", as this name already exist ",
+        });
+      }
+    } else {
+      const updatedSeries = await Series.findByIdAndUpdate(
+        seriesId,
+        {
+          name: req.body.name,
+        },
+        { new: true }
+      );
+      updatedSeries.save();
+      res.status(200).json({ success: true, data: updatedSeries });
+    }
   } catch (error) {
     res.status(404).json({ message: error.message });
   }
@@ -49,44 +140,18 @@ export const updateSeries = async (req, res) => {
 
 // DELETE Slider
 export const deleteSeries = async (req, res) => {
-  console.log("deleteSlider controller");
-  const sliderId = req.params.sliderId;
-  console.log(sliderId);
+  console.log("deleteSeries controller");
+  const seriesId = req.params.seriesId;
+  console.log(seriesId);
 
   try {
     // 1. Delete brand
-    const deletedSlider = await Slider.findByIdAndDelete(sliderId);
-    console.log("deleteOrder", deletedSlider);
-
-    // 2. Delete image from uploads/ of the deleted Brand
-    deleteImage(deletedSlider.image);
-
-    // Delete the corresponding image file from the uploads folder
-    function deleteImage(image) {
-      const __dirname = path.resolve();
-      const imagePath = path.join(__dirname, image);
-      console.log("imagePath", image);
-
-      try {
-        fs.unlink(imagePath, (err) => {
-          if (err) {
-            if (err.code === "ENOENT") {
-              console.log(`Image ${imagePath} does not exist.`);
-            } else {
-              console.error(`Error deleting image ${imagePath}:`, err);
-            }
-          } else {
-            console.log(`Image ${imagePath} deleted successfully.`);
-          }
-        });
-      } catch (err) {
-        console.error(`Error deleting image ${imagePath}:`, err);
-      }
-    }
+    const deletedSeries = await Series.findByIdAndDelete(seriesId);
+    // console.log("deletedSeries", deletedSeries);
 
     return res
       .status(201)
-      .json({ data: deletedSlider, message: "Slider deleted successfully" });
+      .json({ data: deletedSlider, message: "Series deleted successfully" });
   } catch (error) {
     return res
       .status(500)

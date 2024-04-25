@@ -6,6 +6,8 @@ import {
 } from "../../../features/api";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
+import { FaEdit } from "react-icons/fa";
+import { MdDeleteForever } from "react-icons/md";
 
 const CategoriesList = () => {
   const { data: brandsData, isLoading: brandsLoading } = useGetAllBrandQuery();
@@ -83,10 +85,10 @@ const CategoriesList = () => {
                       className="w-[60px] h-[60px] mx-auto "
                     />
                   </td>
-                  <td className="px-4 py-2">
+                  <td className="flex justify-center px-4 py-2">
                     <Link to={`/admin/update-category/${category.id}`}>
-                      <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                        Edit
+                      <button className="bg-blue-500 flex items-center gap-1 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                        Edit <FaEdit/>
                       </button>
                     </Link>
                   </td>
@@ -95,7 +97,7 @@ const CategoriesList = () => {
                       onClick={() => handleDelete(category.id)}
                       className="bg-red-600 text-white px-3 py-1 rounded-md"
                     >
-                      Delete
+                      <MdDeleteForever className="text-2xl"/>
                     </button>
                   </td>
                 </tr>

@@ -1,6 +1,8 @@
 import React from "react";
 import Slider from "../../components/Slider";
 import Categories from "../categories/Categories";
+import Testimonials from "../../components/Testimonials";
+import TestimonialCarousel from "../../components/TestimonialsCorousel";
 
 const Home = () => {
   const images = [
@@ -19,6 +21,8 @@ const Home = () => {
       {/* <Slider images={images} /> */}
       <Slider />
       <Categories />
+      {/* <Testimonials /> */}
+      <TestimonialCarousel />
     </>
   );
 };

@@ -31,11 +31,25 @@ const ProductDetail = () => {
       {/* <div className="bg-white px-10 pt-10 pb-24 rounded-md shadow-lg"> */}
       <div className="mx-0 mb-6">
         {productDetails && (
-          <h1>
-            Home / {productDetails.category.name} /{" "}
-            <Link to="/"> {productDetails.brand.name}</Link> / Products /
-            <span> {productDetails.name}</span>
-          </h1>
+          <div className="flex items-center gap-1">
+            <h1 className="flex items-center opacity-60 gap-1">
+              <Link to={"/"}>Home</Link>
+              <FaAngleRight />
+              <Link to={`/categories/brands/${productDetails.category.id}`}>
+                {productDetails.category.name}
+              </Link>
+              <FaAngleRight />
+              <Link
+                to={`/categories/brands/products/${productDetails.brand.id}`}
+              >
+                {productDetails.brand.name}
+              </Link>
+              <FaAngleRight />
+              <span>Products</span>
+              <FaAngleRight />
+            </h1>
+            <span>{productDetails.name}</span>
+          </div>
         )}
         <hr className="text-black mt-1" />
       </div>

@@ -110,6 +110,8 @@ export const getProductDetails = async (req, res) => {
 
 export const createProduct = async (req, res) => {
   console.log("createProduct Controller");
+  console.log(req.body);
+  console.log(req.body.series);
   try {
     const products = await Product.find({ brand: req.body.brand });
     const productBrand = await Brand.findById(req.body.brand);
@@ -159,7 +161,7 @@ export const createProduct = async (req, res) => {
             })),
         }));
 
-        console.log(deductions);
+        console.log("deductions", deductions);
 
         let product = await Product.create({
           name: req.body.name,
@@ -169,6 +171,7 @@ export const createProduct = async (req, res) => {
           brand: req.body.brand,
           variants: req.body.variants,
           deductions: deductions,
+          ...(req.body.series !== null && { series: req.body.series }),
         });
         product.save();
 

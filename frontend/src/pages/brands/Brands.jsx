@@ -3,6 +3,7 @@ import brands from "../../data/brands.json";
 import { useParams } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { useGetCategoryQuery, useGetBrandQuery } from "../../features/api";
+import { FaAngleRight } from "react-icons/fa";
 
 const Brands = () => {
   const { catId } = useParams();
@@ -32,9 +33,16 @@ const Brands = () => {
       <div className="mt-20 w-4/5 mx-auto">
         <div className="mx-0 mb-6">
           {!isLoading && (
-            <h1>
-              <Link to={"/"}>Home</Link> / {category.name}s
-            </h1>
+            <div className="flex items-center gap-1">
+              <h1 className="flex items-center opacity-60 gap-1">
+                <Link to={"/"}>Home</Link>
+                <FaAngleRight />
+              </h1>
+              <span>{category.name}</span>
+            </div>
+            // <h1>
+            //   <Link to={"/"}>Home</Link> / {category.name}s
+            // </h1>
           )}
           <hr className="text-black mt-1" />
         </div>

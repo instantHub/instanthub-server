@@ -21,11 +21,11 @@ const AllBrandsList = () => {
   }
   return (
     <div>
-      <div className="my-4">
-        <h1 className="text-xl flex gap-2 items-center border-b-[1px] border-b-cyan-300 w-fit">
+      <div className="my-10">
+        <h1 className="text-2xl flex gap-2 items-center border-b-[1px] border-b-cyan-300 w-fit">
           Explore{" "}
           {!brandsLoading && (
-            <span className="text-2xl font-semibold text-cyan-500">
+            <span className="text-4xl font-semibold text-cyan-500">
               {brandsData.length}
             </span>
           )}{" "}
@@ -64,8 +64,8 @@ const AllBrandsList = () => {
           //     )}
           //   </div>
 
-          <div className="flex justify-center items-center h-full">
-            <div className="grid flex-wrap grid-cols-6 justify-center gap-2 w-[80%]">
+          <div className="flex justify-center flex-wrap items-center h-full">
+            <div className="grid  grid-cols-6 justify-center gap-2 w-[80%] max-lg:grid-cols-4 max-sm:grid-cols-2 max-md:grid-cols-3">
               {!brandsData.length == 0 ? (
                 <>
                   {brandsData

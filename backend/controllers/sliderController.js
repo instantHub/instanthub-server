@@ -55,7 +55,7 @@ export const deleteSlider = async (req, res) => {
   try {
     // 1. Delete brand
     const deletedSlider = await Slider.findByIdAndDelete(sliderId);
-    console.log("deleteOrder", deletedSlider);
+    console.log("deletedSlider", deletedSlider);
 
     // 2. Delete image from uploads/ of the deleted Brand
     deleteImage(deletedSlider.image);

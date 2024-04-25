@@ -2,6 +2,14 @@ import mongoose from "mongoose";
 
 const seriesSchema = mongoose.Schema(
   {
+    category: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
+    },
+    brand: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Brand",
+    },
     name: {
       type: String,
       required: true,

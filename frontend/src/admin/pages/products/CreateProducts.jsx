@@ -6,6 +6,7 @@ import {
   useGetAllBrandQuery,
   useCreateProductMutation,
   useUploadProductImageMutation,
+  useGetAllSeriesQuery,
 } from "../../../features/api";
 import { toast } from "react-toastify";
 
@@ -15,6 +16,7 @@ const CreateProducts = () => {
   const [imageSelected, setImageSelected] = useState("");
   const [prodName, setProdName] = useState("");
   const [uniqueURL, setUniqueURL] = useState("");
+  const { data: seriesData, isLoading: seriesLoading } = useGetAllSeriesQuery();
   const [uploadProductImage, { isLoading: uploadLoading }] =
     useUploadProductImageMutation();
   const [createProduct, { isLoading: productCreationLoading }] =
@@ -23,8 +25,16 @@ const CreateProducts = () => {
     useGetCategoryQuery();
   const { data: BrandData, isLoading: BrandLoading } = useGetAllBrandQuery();
 
+  const [selectedSeries, setSelectedSeries] = useState("");
+  const [seriesYes, setSeriesYes] = useState(false);
+
   // Create a ref to store the reference to the file input element
   const fileInputRef = useRef(null);
+
+  if (!seriesLoading) {
+    // console.log("series from products", seriesData);
+  }
+  console.log("selected series from products", selectedSeries, seriesYes);
 
   let productId = undefined;
 
@@ -84,6 +94,7 @@ const CreateProducts = () => {
       image: imageURL,
       category: selectedCategory,
       brand: selectedBrand,
+      series: seriesYes ? selectedSeries : null,
       variants: variants,
     };
 
@@ -123,7 +134,12 @@ const CreateProducts = () => {
     }
   };
 
-  // useEffect(() => {}, []);
+  // if selectedSeries is empty than series is not selected
+  useEffect(() => {
+    if (selectedSeries === "") {
+      setSeriesYes(false);
+    }
+  }, [selectedSeries]);
 
   return (
     <div className="flex px-[2%] pt-[2%]">
@@ -183,6 +199,7 @@ const CreateProducts = () => {
                 </select>
               </div>
 
+              {/* Select a Brand */}
               <div className="flex flex-col">
                 <label htmlFor="productType">Select Brand :</label>
                 <select
@@ -195,7 +212,7 @@ const CreateProducts = () => {
                   }}
                   required
                 >
-                  <option value="">Select Category</option>
+                  <option value="">Select Brand</option>
                   {!BrandLoading &&
                     BrandData.map((brand) => {
                       // console.log("selectedCategory", selectedCategory);
@@ -204,7 +221,7 @@ const CreateProducts = () => {
                           <option
                             key={brand.id}
                             value={brand.id}
-                            name="category"
+                            name="brand"
                             className=""
                           >
                             {/* {console.log(
@@ -221,6 +238,40 @@ const CreateProducts = () => {
                 </select>
               </div>
 
+              {/* Select a series */}
+              <div className="flex flex-col">
+                <label htmlFor="productType">Select Series :</label>
+                <select
+                  id="productType"
+                  name="productType"
+                  className="border rounded-sm p-2"
+                  value={selectedSeries}
+                  onChange={(e) => {
+                    setSelectedSeries(e.target.value);
+                    setSeriesYes(true);
+                  }}
+                >
+                  <option value="">Select Series</option>
+                  {/* <option value="">General Product</option> */}
+                  {!seriesLoading &&
+                    seriesData.map((series) => {
+                      if (selectedBrand == series.brand.id) {
+                        return (
+                          <option
+                            key={series.id}
+                            value={series.id}
+                            name="series"
+                            className=""
+                          >
+                            {series.name}
+                          </option>
+                        );
+                      }
+                    })}
+                </select>
+              </div>
+
+              {/* Product Name */}
               <div className="flex flex-col">
                 <label htmlFor="productName">Product Name :</label>
                 <input

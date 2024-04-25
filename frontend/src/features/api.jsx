@@ -20,6 +20,7 @@ export const api = createApi({
     "ConditionLabels",
     "Orders",
     "Sliders",
+    "Series",
   ],
   endpoints: (build) => ({
     getCategory: build.query({
@@ -140,16 +141,21 @@ export const api = createApi({
         method: "GET",
         params: { page, limit, search },
       }),
+      providesTags: ["Products"],
     }),
     getProducts: build.query({
-      query: ({ brandId, search }) =>
-        `/api/products/${brandId}?search=${search}`,
+      query: ({ brandId, search }) => ({
+        url: `/api/products/${brandId}?search=${search}`,
+      }),
+      providesTags: ["Products"],
     }),
     getProductDetails: build.query({
       query: (prodId) => `/api/products/product-details/${prodId}`,
+      providesTags: ["Products"],
     }),
     getProductQuestions: build.query({
       query: (prodId) => `/api/products/product/product-questions/${prodId}`,
+      providesTags: ["Products"],
     }),
     createProduct: build.mutation({
       query: (data) => ({
@@ -160,6 +166,7 @@ export const api = createApi({
         },
         body: data,
       }),
+      providesTags: ["Products"],
     }),
     uploadProductImage: build.mutation({
       query: (data) => ({
@@ -177,6 +184,7 @@ export const api = createApi({
         },
         body: data,
       }),
+      invalidatesTags: ["Products"],
     }),
     updatePriceDrop: build.mutation({
       query: ({ productId, data }) => ({
@@ -315,7 +323,6 @@ export const api = createApi({
       }),
       invalidatesTags: ["Sliders"],
     }),
-
     uploadSliderImage: build.mutation({
       query: (data) => ({
         url: "/api/upload/sliders",
@@ -323,7 +330,6 @@ export const api = createApi({
         body: data,
       }),
     }),
-
     updateSlider: build.mutation({
       query: ({ sliderId, data }) => ({
         url: `/api/sliders/update-slider/${sliderId}`,
@@ -335,13 +341,50 @@ export const api = createApi({
       }),
       invalidatesTags: ["Sliders"],
     }),
-
     deleteSlider: build.mutation({
       query: (sliderId) => ({
         url: `/api/sliders/delete-slider/${sliderId}`,
         method: "DELETE",
       }),
       invalidatesTags: ["Sliders"],
+    }),
+    getAllSeries: build.query({
+      query: () => `/api/series`,
+      providesTags: ["Series"],
+    }),
+    getBrandSeries: build.query({
+      query: (brandId) => `/api/series/${brandId}`,
+      // providesTags: ["Brands"],
+      providesTags: ["Series"],
+    }),
+    createSeries: build.mutation({
+      query: (data) => ({
+        url: "/api/series/create-series",
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: data,
+      }),
+      invalidatesTags: ["Series"],
+    }),
+    updateSeries: build.mutation({
+      query: ({ seriesId, data }) => ({
+        url: `/api/series/update-series/${seriesId}`,
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: data,
+      }),
+      invalidatesTags: ["Series"],
+    }),
+    deleteSeries: build.mutation({
+      query: (seriesId) => ({
+        url: `/api/series/delete-series/${seriesId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Series"],
     }),
   }),
 });
@@ -387,6 +430,11 @@ export const {
   useUploadSliderImageMutation,
   useUpdateSliderMutation,
   useDeleteSliderMutation,
+  useGetAllSeriesQuery,
+  useGetBrandSeriesQuery,
+  useCreateSeriesMutation,
+  useUpdateSeriesMutation,
+  useDeleteSeriesMutation,
 } = api;
 
 // useGetAllQuestionsQuery,

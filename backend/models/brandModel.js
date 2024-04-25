@@ -30,26 +30,15 @@ const brandSchema = mongoose.Schema(
         ref: "Product",
       },
     ],
+    series: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Series",
+      },
+    ],
   },
   { timestamps: true }
 );
-
-// let storage = multer.diskStorage({
-//   destination: function (req, file, cb) {
-//     cb(null, path.join(__dirname, "..", IMAGE_PATH));
-//   },
-//   filename: function (req, file, cb) {
-//     cb(null, file.fieldname + "-" + Date.now());
-//   },
-// });
-
-// // static
-// brandSchema.statics.uploadedAvatar = multer({ storage: storage }).single(
-//   "avatar"
-// );
-// brandSchema.statics.imagePath = IMAGE_PATH;
-
-// brandSchema.index({ name: 1, category: 1 }, { unique: true });
 
 // Remove unique constraint on name field
 brandSchema.index({ name: 1 });

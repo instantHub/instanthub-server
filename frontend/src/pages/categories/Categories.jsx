@@ -47,7 +47,7 @@ const Categories = () => {
         )}
       </div>
 
-      <div className="mt-16 mb-10 py-4 bg-cyan-50 px-[10%]">
+      <div className="mt-16 pt-8 pb-16 bg-cyan-50 px-[10%]">
         <AllBrandsList />
       </div>
     </div>

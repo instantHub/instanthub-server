@@ -40,6 +40,12 @@ const PORT = process.env.PORT || 3000;
 // configuration
 const app = express();
 
+const __dirname = path.resolve();
+//  
+// app.use(express.static(path.join(__dirname, "../frontend/dist")));
+app.use(express.static(path.join(__dirname, 'frontend', 'dist')));
+
+
 // app.use(express.json());
 app.use(express.json({ limit: "10mb" })); // Set body size limit to 10mb
 app.use(helmet());
@@ -82,7 +88,7 @@ app.use("/api/series", seriesRoutes);
 
 // Testing END
 
-const __dirname = path.resolve();
+// const __dirname = path.resolve();
 // app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));

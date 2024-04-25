@@ -33,6 +33,9 @@ import AdminCategories from "./admin/pages/categories/CategoriesList";
 import AdminCreateCategory from "./admin/pages/categories/CreateCategory";
 import AdminCategoriesList from "./admin/pages/categories/CategoriesList";
 import AdminUpdateCategory from "./admin/pages/categories/UpdateCategory";
+import AdminCreateSeries from "./admin/pages/series/CreateSeries";
+import AdminUpdateSeries from "./admin/pages/series/UpdateSeries";
+import AdminSeriesList from "./admin/pages/series/SeriesList";
 import AdminCreateConditions from "./admin/pages/questions/CreateCondtions";
 import AdminUpdateCondition from "./admin/pages/questions/UpdateCondition";
 import AdminUpdateConditionLabel from "./admin/pages/questions/UpdateConditionLabel";
@@ -170,6 +173,18 @@ function App() {
             {
               path: "/admin/update-brand/:brandId",
               element: <AdminUpdateBrand />,
+            },
+            {
+              path: "/admin/add-series",
+              element: <AdminCreateSeries />,
+            },
+            {
+              path: "/admin/series-list",
+              element: <AdminSeriesList />,
+            },
+            {
+              path: "/admin/update-series/:seriesId",
+              element: <AdminUpdateSeries />,
             },
             {
               path: "/admin/questions",

@@ -35,10 +35,10 @@ const SideBar = (props) => {
       text: "Add Brands",
       url: "add-brands",
     },
-    // {
-    //   text: "Questions",
-    //   url: "questions",
-    // },
+    {
+      text: "Add Series",
+      url: "add-series",
+    },
     {
       text: "Questions",
       url: "questions",

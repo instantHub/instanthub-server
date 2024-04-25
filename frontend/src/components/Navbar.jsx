@@ -15,7 +15,7 @@ const Navbar = () => {
   return (
     <>
       <nav className="bg-[#E27D60] bg-cyan-500 text-white p-4 rounded-xl mt-4 mx-4 sticky top-2 border-b border-[#E27D60] shadow-xl">
-      {/* <nav className="bg-gradient-to-r from-cyan-400  to-yellow-700 text-white p-4 rounded-xl mt-4 mx-4 sticky top-2 border-b border-[#E27D60] shadow-xl"> */}
+        {/* <nav className="bg-gradient-to-r from-cyan-400  to-yellow-700 text-white p-4 rounded-xl mt-4 mx-4 sticky top-2 border-b border-[#E27D60] shadow-xl"> */}
         {/* <nav className="bg-gradient-to-r from-red-700 via-yellow-400 to-orange-600 text-white p-4 rounded-xl mt-4 mx-4 sticky top-2 border-b border-[#E27D60] shadow-xl"> */}
         <div className="max-w-full mx-auto px-4">
           <div className="flex items-center">
@@ -80,24 +80,24 @@ const Navbar = () => {
           </div>
         </div>
         {isOpen && (
-          <div className="md:hidden mt-2 text-center  float-right">
-            <ul className="flex flex-col bg-white text-black p-4 items-center justify-around space-y-2">
-              <li>
+          <div className="md:hidden mt-2 text-center  float-right absolute right-0">
+            <ul className="flex flex-col bg-white text-black border p-4 items-center justify-around space-y-2 rounded">
+              <li className="px-2 py-1 border border-white rounded hover:border-cyan-500">
                 <a href="#" className="">
                   Home
                 </a>
               </li>
-              <li>
+              <li className="px-2 py-1 rounded hover:bg-cyan-500 hover:text-white">
                 <a href="#" className="">
                   About
                 </a>
               </li>
-              <li>
+              <li className="px-2 py-1 rounded hover:bg-cyan-500 hover:text-white">
                 <a href="#" className="">
                   Services
                 </a>
               </li>
-              <li>
+              <li className="px-2 py-1 rounded hover:bg-cyan-500 hover:text-white">
                 <a href="#" className="">
                   Contact
                 </a>
