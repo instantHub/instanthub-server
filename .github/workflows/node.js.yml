@@ -23,11 +23,11 @@ jobs:
 
       - name: Install dependencies
         run: |
-          npm install
+          /root/.nvm/versions/node/v20.12.2/bin/npm install
           cd frontend
-          npm install
+          /root/.nvm/versions/node/v20.12.2/bin/npm install
 
       - name: Build frontend
         run: |
           cd frontend
-          npm run build
+          /root/.nvm/versions/node/v20.12.2/bin/npm run build
