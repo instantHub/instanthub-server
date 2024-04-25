@@ -6,6 +6,7 @@ import { api } from "../features/api";
 import { adminApiSlice } from "../features/adminApiSlice";
 import deductionSlice from "../features/deductionSlice";
 import laptopDeductionSlice from "../features/laptopDeductionSlice";
+import laptopDeductionsList from "../features/laptopDeductionsList";
 
 export const store = configureStore({
   reducer: {
@@ -13,6 +14,7 @@ export const store = configureStore({
     global: globalSlice,
     deductions: deductionSlice,
     laptopDeductions: laptopDeductionSlice,
+    laptopDeductionsList: laptopDeductionsList,
     [api.reducerPath]: api.reducer,
     [adminApiSlice.reducerPath]: adminApiSlice.reducer,
   },

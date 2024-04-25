@@ -54,18 +54,28 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 // app.use(cors());
 // Testing
+// Set CORS origin dynamically from an environment variable
+// const corsOrigin = process.env.CORS_ORIGIN || 'http://localhost:5173'; // Default to localhost
+const corsOrigin = process.env.CORS_ORIGIN;
+app.use(
+  cors({
+    origin: corsOrigin,
+    credentials: true, // Include this if you need to pass credentials
+  })
+);
+
 // app.use(
 //   cors({
 //     origin: "http://localhost:5173", // Adjust accordingly
 //     credentials: true,
 //   })
 // );
-app.use(
-  cors({
-    origin: "http://93.127.166.173:5173", // Adjust accordingly
-    credentials: true,
-  })
-);
+// app.use(
+//   cors({
+//     origin: "http://93.127.166.173:5173", // Adjust accordingly
+//     credentials: true,
+//   })
+// );
 app.use(cookieParser());
 
 /* ROUTES */
