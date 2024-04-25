@@ -16,6 +16,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Use Node.js ${{ matrix.node-version }}
+
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
@@ -23,11 +25,11 @@ jobs:
 
       - name: Install dependencies
         run: |
-          /root/.nvm/versions/node/v20.12.2/bin/npm install
+          npm install
           cd frontend
-          /root/.nvm/versions/node/v20.12.2/bin/npm install
+          npm install
 
       - name: Build frontend
         run: |
           cd frontend
-          /root/.nvm/versions/node/v20.12.2/bin/npm run build
+          npm run build
