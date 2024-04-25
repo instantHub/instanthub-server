@@ -54,9 +54,15 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 // app.use(cors());
 // Testing
+// app.use(
+//   cors({
+//     origin: "http://localhost:5173", // Adjust accordingly
+//     credentials: true,
+//   })
+// );
 app.use(
   cors({
-    origin: "http://localhost:5173", // Adjust accordingly
+    origin: "http://93.127.166.173:5173", // Adjust accordingly
     credentials: true,
   })
 );
