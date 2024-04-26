@@ -108,19 +108,14 @@ app.use("/api/series", seriesRoutes);
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// if (process.env.NODE_ENV === "production") {
-//   const __dirname = path.resolve();
-//   app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-//   app.use(express.static(path.join(__dirname, "/frontend/dist")));
-//   app.use("*", (req, res) =>
-//     res.sendFile(path.resolve(__dirname, "frontend", "dist", "index.html"))
-//   );
-// } else {
-//   app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-//   app.get("/", (req, res) => {
-//     res.send("Api is running...");
-//   });
-// }
+if (process.env.NODE_ENV === 'production') {
+  //*Set static folder up in production
+  app.use(express.static(path.join(__dirname, "frontend", "dist")));
+
+  // app.use(express.static('client/build'));
+
+  app.get('*', (req,res) => res.sendFile(path.resolve(__dirname, 'frontend', 'dist','index.html')));
+}
 
 app.get("/", (req, res) => res.send("Server is ready "));
 
