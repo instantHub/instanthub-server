@@ -41,28 +41,82 @@ const PORT = process.env.PORT || 3000;
 const app = express();
 
 const __dirname = path.resolve();
-//
-// app.use(express.static(path.join(__dirname, "../frontend/dist")));
-app.use(express.static(path.join(__dirname, "frontend", "dist")));
+
+//  app.use(express.static(path.join(__dirname, "../frontend/dist")));
+//  app.use(express.static(path.join(__dirname, "frontend", "dist")));
 
 // app.use(express.json());
 app.use(express.json({ limit: "10mb" })); // Set body size limit to 10mb
 app.use(helmet());
-app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
+//app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(morgan("common"));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-// app.use(cors());
-// Testing
+//app.use(cors());
+
 // Set CORS origin dynamically from an environment variable
 // const corsOrigin = process.env.CORS_ORIGIN || 'http://localhost:5173'; // Default to localhost
 const corsOrigin = process.env.CORS_ORIGIN;
-app.use(
-  cors({
-    origin: corsOrigin,
-    credentials: true, // Include this if you need to pass credentials
-  })
-);
+//app.use(
+// cors({
+//    origin: corsOrigin,
+//      origin: 'http://localhost:5173'
+//      origin: "https://instant-cash-pick-client.vercel.app",
+//      credentials: true, // Include this if you need to pass credentials
+// })
+//);
+
+//app.use(function (req, res, next) {
+//res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173');
+//res.setHeader('Access-Control-Allow-Origin', 'https://instant-cash-pick-client.vercel.app');
+//res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+//res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+//res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+//res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+// Handle preflight requests
+// if (req.method === 'OPTIONS') {
+// res.setHeader('Access-Control-Allow-Credentials', 'true'); // Note: 'true' as a string
+//return res.status(200).end();
+// }
+//res.setHeader('Access-Control-Allow-Credentials', 'true');
+//next();
+//});
+
+app.use(function (req, res, next) {
+  const allowedOrigins = ["https://instant-cash-pick-client.vercel.app"];
+  const origin = req.headers.origin;
+
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
+
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET, POST, OPTIONS, PUT, PATCH, DELETE"
+  );
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+
+  // Handle preflight requests
+  if (req.method == "OPTIONS") {
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    // Explicitly set the allowed origin instead of using wildcard *
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    return res.status(200).end();
+  }
+
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+  next();
+});
+
+// Middleware to enable CORS
+//app.use((req, res, next) => {
+// res.setHeader('Access-Control-Allow-Origin', 'http://93.127.166.173');
+//res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+//res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+//res.setHeader('Access-Control-Allow-Credentials', true);
+//next();
+//});
 
 // app.use(
 //   cors({
@@ -77,6 +131,9 @@ app.use(
 //   })
 // );
 app.use(cookieParser());
+
+//app.use(express.static(path.join(__dirname, "frontend", "dist")));
+//app.get('*', (req,res) => res.sendFile(path.join(__dirname, 'frontend', 'dist','index.html')));
 
 /* ROUTES */
 app.use("/api", adminRoutes);
@@ -108,16 +165,18 @@ app.use("/api/series", seriesRoutes);
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-if (process.env.NODE_ENV === "production") {
-  //*Set static folder up in production
-  app.use(express.static(path.join(__dirname, "frontend", "dist")));
+//if (process.env.NODE_ENV === 'production') {
+//*Set static folder up in production
+//  app.use(express.static(path.join(__dirname, "frontend", "dist")));
 
-  // app.use(express.static('client/build'));
+// app.use(express.static('frontend/dist'));
 
-  app.get("*", (req, res) =>
-    res.sendFile(path.resolve(__dirname, "frontend", "dist", "index.html"))
-  );
-}
+//app.get('*', (req,res) => res.sendFile(path.join(__dirname, 'frontend', 'dist','index.html')));
+//      app.get('*', (req, res) => {
+//            res.sendFile(path.join(__dirname, 'frontend', 'dist', 'index.html'));
+//      });
+
+//}
 
 app.get("/", (req, res) => res.send("Server is ready "));
 
@@ -130,13 +189,3 @@ mongoose
     // User.insertMany(dataUser);
   })
   .catch((error) => console.log(`${error} connection failed!`));
-
-// app.listen(PORT, () => {
-//   console.log(`Port is listening @ ${PORT}`);
-// });
-
-// Penkek-8megra-xyrcod
-
-// mongodb+srv://qureshiyusuff:NY@qureshi2@cluster0.lerztq0.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
-
-// 49.37.251.250/32

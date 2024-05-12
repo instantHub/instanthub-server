@@ -59,16 +59,30 @@ export const createOrder = async (req, res) => {
 export const orderReceived = async (req, res) => {
   console.log("orderReceived Controller");
   try {
-    const { orderId, customerProof, status } = req.body;
+    // const { orderId, customerProof, status } = req.body;
+    // console.log(
+    //   "orderId, customerProof, status",
+    //   orderId,
+    //   customerProof,
+    //   status
+    // );
+
+    // const updatedOrder = await Order.findByIdAndUpdate(orderId, {
+    //   customerProof,
+    //   status,
+    // });
+    const { orderId, customerProofFront, customerProofBack, status } = req.body;
     console.log(
       "orderId, customerProof, status",
       orderId,
-      customerProof,
+      customerProofFront,
+      customerProofBack,
       status
     );
 
     const updatedOrder = await Order.findByIdAndUpdate(orderId, {
-      customerProof,
+      customerProofFront,
+      customerProofBack,
       status,
     });
     updatedOrder.save();

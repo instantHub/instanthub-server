@@ -1,4 +1,5 @@
 import mongoose, { mongo } from "mongoose";
+import Category from "./categoryModel.js";
 // import ConditionLabel from "./conditionLabelModel.js";
 
 const orderSchema = mongoose.Schema(
@@ -10,6 +11,12 @@ const orderSchema = mongoose.Schema(
     productId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Product",
+      required: true,
+    },
+    category: {
+      // type: mongoose.Schema.Types.ObjectId,
+      // ref: "Category",
+      type: String,
       required: true,
     },
     variant: {
@@ -47,7 +54,10 @@ const orderSchema = mongoose.Schema(
     status: {
       type: String,
     },
-    customerProof: {
+    customerProofFront: {
+      type: String,
+    },
+    customerProofBack: {
       type: String,
     },
   },

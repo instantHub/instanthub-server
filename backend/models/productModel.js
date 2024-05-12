@@ -106,7 +106,7 @@ const productSchema = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Series",
     },
-    deductions: [
+    simpleDeductions: [
       {
         conditionId: {
           type: String,
@@ -129,10 +129,60 @@ const productSchema = mongoose.Schema(
               type: Number,
               default: 0,
             },
+            operation: {
+              type: String,
+            },
           },
         ],
       },
     ],
+    variantDeductions: [
+      {
+        variantId: {
+          type: String,
+        },
+        variantName: {
+          type: String,
+        },
+        deductions: [
+          {
+            conditionId: {
+              type: String,
+            },
+            conditionName: {
+              type: String,
+            },
+            conditionLabels: [
+              {
+                conditionLabelId: {
+                  type: String,
+                },
+                conditionLabel: {
+                  type: String,
+                },
+                conditionLabelImg: {
+                  type: String,
+                },
+                priceDrop: {
+                  type: Number,
+                  default: 0,
+                },
+                operation: {
+                  type: String,
+                },
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    // deductions: {
+    //   type: Array,
+    // },
+    status: {
+      type: String,
+      required: true,
+    },
   },
   { timestamps: true }
 );

@@ -4,6 +4,7 @@ import Condition from "../models/conditionModel.js";
 import ConditionLabel from "../models/conditionLabelModel.js";
 import path from "path";
 import fs from "fs";
+import { log } from "console";
 
 // Get Conditions
 export const getConditions = async (req, res) => {
@@ -26,7 +27,8 @@ export const createCondtions = async (req, res) => {
   try {
     // Fetch existing conditions for the given category
     const existingConditions = await Condition.find({ category });
-    const productsToAddCon = await Product.find({ category });
+    const conditionCategory = await Category.findById(category);
+    console.log("category", conditionCategory);
 
     // Extract existing condition names
     const existingConditionNames = existingConditions.map(
@@ -59,16 +61,43 @@ export const createCondtions = async (req, res) => {
     const newDeductions = newConditions.map((condition) => ({
       conditionId: condition.id,
       conditionName: condition.conditionName,
-      conditionLabel: [], // Initialize with an empty array
+      conditionLabels: [], // Initialize with an empty array
     }));
+    console.log(newDeductions);
 
-    // Update "deductions" field of all the products of this category
-    await Product.updateMany(
-      { category: category }, // Update products of a specific category
-      { $push: { deductions: { $each: newDeductions } } }
-    );
+    const updatedProducts = [];
 
-    return res.status(201).json(newConditions);
+    if (conditionCategory.name === "Mobile") {
+      // Find all products of the specific category
+      const products = await Product.find({ category: category });
+      console.log("products", products);
+
+      for (const product of products) {
+        // Iterate over each variantDeduction of the product
+        product.variantDeductions.forEach((vd) => {
+          // Iterate over each new deduction and push it to the deductions array
+          newDeductions.forEach((newDe) => {
+            vd.deductions.push(newDe);
+          });
+        });
+
+        // Save the updated product
+        const updatedProduct = await product.save();
+
+        // Push the updated product to the array
+        updatedProducts.push(updatedProduct);
+      }
+    } else if (conditionCategory.name !== "Mobile") {
+      // Update "deductions" field of all the products of this category
+      await Product.updateMany(
+        { category: category }, // Update products of a specific category
+        { $push: { simpleDeductions: { $each: newDeductions } } }
+      );
+    }
+
+    console.log("updateProducts", updatedProducts);
+
+    return res.status(201).json({ newConditions, updatedProducts });
   } catch (error) {
     return res.status(500).json({ message: "Internal server error.", error });
   }
@@ -82,6 +111,8 @@ export const updateCondition = async (req, res) => {
     console.log("req.body", req.body);
 
     const conditionFound = await Condition.findById(conditionId);
+    const conditionCategory = await Category.findById(conditionFound.category);
+    console.log("conditionCategory", conditionCategory);
 
     // Find all products of the same category
     const productsToUpdate = await Product.find({
@@ -90,16 +121,38 @@ export const updateCondition = async (req, res) => {
     // console.log("productsToUpdate", productsToUpdate);
 
     // NEW APPROACH TO UPDATE PRODUCTS DEDUCTIONS CONDITION
-    for (const product of productsToUpdate) {
-      product.deductions.forEach((deduction) => {
-        if (deduction.conditionId === conditionId) {
-          deduction.conditionName = req.body.conditionName;
+    if (conditionCategory.name === "Mobile") {
+      // Iterate over each product
+      for (const product of productsToUpdate) {
+        // Iterate over each variantDeduction of the product
+        for (const vd of product.variantDeductions) {
+          // Find the condition to update in the deductions array
+          vd.deductions.forEach((deduction) => {
+            if (deduction.conditionId === conditionId) {
+              deduction.conditionName = req.body.conditionName;
+            }
+          });
         }
-      });
+      }
 
-      // Save the updated product
-      await product.save();
+      // Save the updated products
+      const updatedProducts = await Promise.all(
+        productsToUpdate.map((product) => product.save())
+      );
+    } else if (conditionCategory.name !== "Mobile") {
+      for (const product of productsToUpdate) {
+        product.simpleDeductions.forEach((deduction) => {
+          if (deduction.conditionId === conditionId) {
+            deduction.conditionName = req.body.conditionName;
+          }
+        });
+
+        // Save the updated product
+        await product.save();
+      }
     }
+
+    console.log("productsToUpdate", productsToUpdate);
 
     // Use Mongoose to find the question by ID and update it with the provided updates
     const updatedCondition = await Condition.findByIdAndUpdate(
@@ -121,6 +174,8 @@ export const deleteCondition = async (req, res) => {
   console.log("Delete Condition controller");
   console.log(category, conditionId);
   try {
+    const conditionCategory = await Category.findById(category);
+    console.log("conditionCategory", conditionCategory);
     const deletedCondition = await Condition.findByIdAndDelete(conditionId);
     console.log("deletedCondition", deletedCondition);
 
@@ -144,17 +199,44 @@ export const deleteCondition = async (req, res) => {
     );
 
     // Step 2: Update products to remove the deleted condition
-    await Product.updateMany(
-      {
-        category: category, // Match by category
-        "deductions.conditionId": conditionId, // Match by conditionId
-      },
-      {
-        $pull: {
-          deductions: { conditionId: conditionId }, // Remove the entire deduction object
-        },
+
+    if (conditionCategory.name === "Mobile") {
+      // Find all products of the specific category
+      const products = await Product.find({ category: category });
+      console.log("products", products);
+
+      // Iterate over each product
+      for (const product of products) {
+        // Iterate over each variantDeduction of the product
+        for (const vd of product.variantDeductions) {
+          // Find the index of the condition to delete in the deductions array
+          const index = vd.deductions.findIndex(
+            (d) => d.conditionId === conditionId
+          );
+          if (index !== -1) {
+            // Remove the condition from the deductions array
+            vd.deductions.splice(index, 1);
+          }
+        }
       }
-    );
+
+      // Save the updated products
+      const updatedProducts = await Promise.all(
+        products.map((product) => product.save())
+      );
+    } else if (conditionCategory.name !== "Mobile") {
+      await Product.updateMany(
+        {
+          category: category, // Match by category
+          "simpleDeductions.conditionId": conditionId, // Match by conditionId
+        },
+        {
+          $pull: {
+            simpleDeductions: { conditionId: conditionId }, // Remove the entire deduction object
+          },
+        }
+      );
+    }
 
     // Delete the corresponding image file from the uploads folder
     function deleteImages(conditionLabelImg) {
@@ -200,18 +282,36 @@ export const createCondtionLabel = async (req, res) => {
   console.log("CreateConditionLabel controller");
   const { category, conditionNameId, conditionLabel, conditionLabelImg } =
     req.body;
-  console.log(
-    category,
-    conditionNameId,
-    typeof conditionLabel,
-    conditionLabelImg
-  );
+  console.log(category, conditionNameId, conditionLabel, conditionLabelImg);
   try {
     // Fetch existing ConditionLabel for the given condition
-    const existingConditions = await ConditionLabel.find({
+    const allConditionLabels = await ConditionLabel.find({
       conditionNameId: conditionNameId,
     });
-    // console.log("existingConditions", existingConditions);
+    const cLCategory = await Category.findById(category);
+    console.log("cLCategory", cLCategory);
+    // console.log("allConditionLabels", allConditionLabels);
+
+    // Extract existing condition names
+    const existingConditionLabels = allConditionLabels.map(
+      (cl) =>
+        cl.conditionNameId == conditionNameId &&
+        cl.conditionLabel == conditionLabel
+    );
+    // console.log("existingConditionLabels", existingConditionLabels);
+
+    // Check for duplicate condition names
+    const duplicateConditionLabel = existingConditionLabels.includes(true);
+
+    console.log("duplicateConditionLabel", duplicateConditionLabel);
+
+    // Return if duplicates found
+    if (duplicateConditionLabel) {
+      return res.status(200).json({
+        message: "Duplicate condition names found for this condition.",
+        conditionLabel,
+      });
+    }
 
     // Create new conditions
     const newConditionLabel = await ConditionLabel.create({
@@ -220,25 +320,61 @@ export const createCondtionLabel = async (req, res) => {
       conditionLabel: conditionLabel,
       conditionLabelImg: conditionLabelImg,
     });
+    console.log("created newConditionLabel", newConditionLabel);
 
-    await Product.updateMany(
-      {
-        category: category, // Add any other conditions if needed
-        "deductions.conditionId": conditionNameId, // Match by conditionId
-      },
-      {
-        $push: {
-          "deductions.$.conditionLabels": {
-            conditionLabelId: newConditionLabel._id,
-            conditionLabel: newConditionLabel.conditionLabel,
-            conditionLabelImg: newConditionLabel.conditionLabelImg,
-            // priceDrop: newConditionLabel.priceDrop,
+    // Find all products of the specific category
+    const products = await Product.find({ category: category });
+
+    if (cLCategory.name === "Mobile") {
+      // Update "deductions" field of all products of the specific category
+      const updatedProducts = await Product.updateMany(
+        {
+          category: category,
+          "variantDeductions.variantName": { $exists: true },
+        }, // Find products with variants
+        {
+          $push: {
+            "variantDeductions.$[variant].deductions.$[condition].conditionLabels":
+              {
+                // conditionNameId: conditionNameId,
+                conditionLabelId: newConditionLabel._id,
+                conditionLabel: newConditionLabel.conditionLabel,
+                conditionLabelImg: newConditionLabel.conditionLabelImg,
+                operation: "Subtrack",
+              },
           },
+        }, // Push new condition label to condition labels array
+        {
+          arrayFilters: [
+            { "variant.variantName": { $exists: true } },
+            { "condition.conditionId": conditionNameId },
+          ],
+        } // Array filters to match variant and condition
+      );
+      console.log("updatedProducts", updatedProducts);
+    } else if (cLCategory.name !== "Mobile") {
+      await Product.updateMany(
+        {
+          category: category, // Add any other conditions if needed
+          "simpleDeductions.conditionId": conditionNameId, // Match by conditionId
         },
-      }
-    );
+        {
+          $push: {
+            "simpleDeductions.$.conditionLabels": {
+              conditionLabelId: newConditionLabel._id,
+              conditionLabel: newConditionLabel.conditionLabel,
+              conditionLabelImg: newConditionLabel.conditionLabelImg,
+              operation: "Subtrack",
+              // priceDrop: newConditionLabel.priceDrop,
+            },
+          },
+        }
+      );
+    }
 
-    return res.status(201).json(newConditionLabel);
+    return res.status(201).json({
+      newConditionLabel: newConditionLabel,
+    });
   } catch (error) {
     return res.status(500).json({ message: "Internal server error.", error });
   }
@@ -262,29 +398,61 @@ export const updateConditionLabel = async (req, res) => {
       req.body,
       { new: true }
     );
+    const cLCategory = await Category.findById(category);
+    console.log("cLCategory", cLCategory);
 
     // Update the conditionLabels using the provided category, conditionId, and conditionLabelId
-    await Product.updateMany(
-      {
-        category: category, // Match by category
-        "deductions.conditionId": conditionNameId, // Match by conditionId
-        "deductions.conditionLabels.conditionLabelId": conditionLabelId, // Match by conditionLabelId
-      },
-      {
-        $set: {
-          "deductions.$[outer].conditionLabels.$[inner].conditionLabel":
-            conditionLabel,
-          "deductions.$[outer].conditionLabels.$[inner].conditionLabelImg":
-            conditionLabelImg,
+
+    if (cLCategory.name === "Mobile") {
+      const updatedProducts = await Product.updateMany(
+        {
+          category: category,
+          "variantDeductions.variantName": { $exists: true },
+        }, // Find products with variants
+        {
+          // $addToSet: {
+          $set: {
+            "variantDeductions.$[variant].deductions.$[condition].conditionLabels":
+              {
+                conditionLabel: conditionLabel,
+                conditionLabelImg: conditionLabelImg,
+                operation: "Subtrack",
+              },
+          },
+        }, // Push new condition label to condition labels array
+        {
+          arrayFilters: [
+            { "variant.variantName": { $exists: true } },
+            { "condition.conditionId": conditionNameId },
+          ],
+        } // Array filters to match variant and condition
+      );
+      console.log("updatedProducts", updatedProducts);
+    } else if (cLCategory.name !== "Mobile") {
+      await Product.updateMany(
+        {
+          category: category, // Match by category
+          "simpleDeductions.conditionId": conditionNameId, // Match by conditionId
+          "simpleDeductions.conditionLabels.conditionLabelId": conditionLabelId, // Match by conditionLabelId
         },
-      },
-      {
-        arrayFilters: [
-          { "outer.conditionId": conditionNameId },
-          { "inner.conditionLabelId": conditionLabelId },
-        ],
-      }
-    );
+        {
+          $set: {
+            "simpleDeductions.$[outer].conditionLabels.$[inner].conditionLabel":
+              conditionLabel,
+            "simpleDeductions.$[outer].conditionLabels.$[inner].conditionLabelImg":
+              conditionLabelImg,
+            "simpleDeductions.$[outer].conditionLabels.$[inner].operation":
+              "Subtrack",
+          },
+        },
+        {
+          arrayFilters: [
+            { "outer.conditionId": conditionNameId },
+            { "inner.conditionLabelId": conditionLabelId },
+          ],
+        }
+      );
+    }
 
     return res.status(201).json(updatedConditionLabel);
   } catch (error) {
@@ -304,20 +472,60 @@ export const deleteConditionLabel = async (req, res) => {
     const deletedLabel = await ConditionLabel.findByIdAndDelete(
       conditionLabelId
     );
-    // console.log("deletedLabel", deletedLabel);
+    const cLCategory = await Category.findById(category);
+    console.log("cLCategory", cLCategory);
+    console.log("deletedLabel", deletedLabel);
 
     // Step 2: Update products to remove the deleted conditionLabel
-    await Product.updateMany(
-      {
-        category: category, // Add any other conditions if needed
-        "deductions.conditionLabels.conditionLabelId": conditionLabelId, // Match by conditionLabelId
-      },
-      {
-        $pull: {
-          "deductions.$[].conditionLabels": { conditionLabelId },
+
+    if (cLCategory.name === "Mobile") {
+      // const updatedProducts = await Product.updateMany(
+      //   {
+      //     category: category,
+      //     "variantDeductions.variantName": { $exists: true },
+      //   }, // Find products with variants
+      //   {
+      //     $pull: {
+      //       "variantDeductions.$[].deductions.$[].conditionLabels": {
+      //         conditionLabelId,
+      //       },
+      //     },
+      //   } // Pull condition label from condition labels array
+      // );
+
+      const updatedProducts = await Product.updateMany(
+        {
+          category: category,
+          "variantDeductions.variantName": { $exists: true },
+        }, // Find products with variants
+        {
+          $pull: {
+            "variantDeductions.$[].deductions.$[].conditionLabels": {
+              conditionLabelId,
+            },
+          },
+        }, // Pull condition label from condition labels array
+        {
+          arrayFilters: [
+            { "variant.variantName": { $exists: true } },
+            { "condition.conditionLabels.conditionLabelId": conditionLabelId },
+          ],
+        } // Array filters to match conditionLabelIdToDelete
+      );
+      console.log("updatedProducts", updatedProducts);
+    } else if (cLCategory.name !== "Mobile") {
+      await Product.updateMany(
+        {
+          category: category, // Add any other conditions if needed
+          "simpleDeductions.conditionLabels.conditionLabelId": conditionLabelId, // Match by conditionLabelId
         },
-      }
-    );
+        {
+          $pull: {
+            "simpleDeductions.$[].conditionLabels": { conditionLabelId },
+          },
+        }
+      );
+    }
 
     // Delete the corresponding image file from the uploads folder
     const __dirname = path.resolve();
@@ -339,15 +547,6 @@ export const deleteConditionLabel = async (req, res) => {
     } catch (err) {
       console.error(`Error deleting image ${imagePath}:`, err);
     }
-
-    // fs.unlink(imagePath, (err) => {
-    //   // fs.unlink(deletedLabel.conditionLabelImg, (err) => {
-    //   if (err) {
-    //     console.error("Error deleting image:", err);
-    //     return res.status(500).json({ message: "Error deleting image" });
-    //   }
-    //   console.log("Image deleted successfully");
-    // });
 
     return res.status(201).json(deletedLabel);
   } catch (error) {
