@@ -83,7 +83,8 @@ const corsOrigin = process.env.CORS_ORIGIN;
 //});
 
 app.use(function (req, res, next) {
-  const allowedOrigins = ["https://instant-cash-pick-client.vercel.app"];
+  // const allowedOrigins = ["https://instant-cash-pick-client.vercel.app"];
+  const allowedOrigins = ["https://instantpick.in"];
   const origin = req.headers.origin;
 
   if (allowedOrigins.includes(origin)) {

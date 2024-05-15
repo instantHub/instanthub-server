@@ -38,18 +38,30 @@ const orderSchema = mongoose.Schema(
     pinCode: {
       type: Number,
     },
+    accessoriesNotAvailable: {
+      type: Array,
+    },
     deductions: [
       {
-        ConditionLabel: {
+        conditionLabel: {
           type: String,
         },
         priceDrop: {
           type: Number,
         },
+        operation: {
+          type: String,
+        },
       },
     ],
     offerPrice: {
       type: Number,
+    },
+    schedulePickUp: {
+      type: String,
+    },
+    pickedUpOn: {
+      type: String,
     },
     status: {
       type: String,
@@ -58,6 +70,12 @@ const orderSchema = mongoose.Schema(
       type: String,
     },
     customerProofBack: {
+      type: String,
+    },
+    customerOptional1: {
+      type: String,
+    },
+    customerOptional2: {
       type: String,
     },
   },

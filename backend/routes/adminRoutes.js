@@ -15,7 +15,9 @@ router.get("/", getAdmin);
 router.post("/register", registerAdmin);
 router.post("/auth", authAdmin);
 router.post("/logout", logout);
-router.get("/admin-profile", protect, getAdminProfile);
-router.put("/update-admin", protect, updateAdmin);
+// router.get("/admin-profile", protect, getAdminProfile);
+// router.put("/update-admin", protect, updateAdmin);
+router.get("/admin-profile", getAdminProfile);
+router.put("/update-admin", updateAdmin);
 
 export default router;

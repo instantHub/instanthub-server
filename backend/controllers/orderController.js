@@ -30,7 +30,9 @@ export const createOrder = async (req, res) => {
     // } = req.body;
 
     console.log(req.body);
-
+    const totalOrders = await Order.find();
+    console.log("totalOrders", totalOrders.length);
+    // console.log("totalOrders", totalOrders.count);
     // Generating Order ID
     const today = new Date(); // Current date
     const year = today.getFullYear().toString().slice(-2); // Last two digits of the year
@@ -39,8 +41,9 @@ export const createOrder = async (req, res) => {
     const CN = req.body.customerName.slice(0, 2);
     const PH = req.body.phone.toString().slice(-3);
     const random = Math.floor(Math.random() * 1000); // Random number between 0 and 999
+    const orderCount = totalOrders.length + 1;
 
-    const orderId = `ORD${year}${month}${day}${CN}${PH}${random}`; // Concatenate date and random number
+    const orderId = `ORD${year}${month}${day}${CN}${PH}00${orderCount}`; // Concatenate date and random number
 
     console.log("OrderID", orderId);
     const orderData = { ...req.body, orderId };
@@ -71,20 +74,52 @@ export const orderReceived = async (req, res) => {
     //   customerProof,
     //   status,
     // });
-    const { orderId, customerProofFront, customerProofBack, status } = req.body;
+    console.log(req.body);
+    const {
+      orderId,
+      customerProofFront,
+      customerProofBack,
+      customerOptional1,
+      customerOptional2,
+      pickedUpOn,
+      status,
+    } = req.body;
+
     console.log(
       "orderId, customerProof, status",
       orderId,
       customerProofFront,
       customerProofBack,
+      customerOptional1,
+      customerOptional2,
+      pickedUpOn,
       status
     );
 
-    const updatedOrder = await Order.findByIdAndUpdate(orderId, {
+    const updateObject = {
       customerProofFront,
       customerProofBack,
+      pickedUpOn,
       status,
+    };
+
+    if (customerOptional1 !== null) {
+      updateObject.customerOptional1 = customerOptional1;
+    }
+
+    if (customerOptional2 !== null) {
+      updateObject.customerOptional2 = customerOptional2;
+    }
+
+    const updatedOrder = await Order.findByIdAndUpdate(orderId, updateObject, {
+      new: true,
     });
+
+    // const updatedOrder = await Order.findByIdAndUpdate(orderId, {
+    //   customerProofFront,
+    //   customerProofBack,
+    //   status,
+    // });
     updatedOrder.save();
 
     res.status(200).json({

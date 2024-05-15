@@ -411,19 +411,28 @@ export const updateConditionLabel = async (req, res) => {
         }, // Find products with variants
         {
           // $addToSet: {
+          // $set: {
+          //   // "variantDeductions.$[variant].deductions.$[condition].conditionLabels.$[label]":
+          //   "variantDeductions.$[variant].deductions.$[condition].conditionLabels.$[label]":
+          //     {
+          //       conditionLabel: conditionLabel,
+          //       conditionLabelImg: conditionLabelImg,
+          //       operation: "Subtrack",
+          //     },
+          // },
+
           $set: {
-            "variantDeductions.$[variant].deductions.$[condition].conditionLabels":
-              {
-                conditionLabel: conditionLabel,
-                conditionLabelImg: conditionLabelImg,
-                operation: "Subtrack",
-              },
+            "variantDeductions.$[variant].deductions.$[condition].conditionLabels.$[label].conditionLabel":
+              conditionLabel,
+            "variantDeductions.$[variant].deductions.$[condition].conditionLabels.$[label].conditionLabelImg":
+              conditionLabelImg,
           },
         }, // Push new condition label to condition labels array
         {
           arrayFilters: [
             { "variant.variantName": { $exists: true } },
             { "condition.conditionId": conditionNameId },
+            { "label.conditionLabelId": conditionLabelId },
           ],
         } // Array filters to match variant and condition
       );
@@ -441,8 +450,8 @@ export const updateConditionLabel = async (req, res) => {
               conditionLabel,
             "simpleDeductions.$[outer].conditionLabels.$[inner].conditionLabelImg":
               conditionLabelImg,
-            "simpleDeductions.$[outer].conditionLabels.$[inner].operation":
-              "Subtrack",
+            // "simpleDeductions.$[outer].conditionLabels.$[inner].operation":
+            //   "Subtrack",
           },
         },
         {

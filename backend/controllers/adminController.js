@@ -20,7 +20,7 @@ export const registerAdmin = async (req, res) => {
   });
 
   if (admin) {
-    generateToken(res, admin._id);
+    // generateToken(res, admin._id);
     res.status(201).json(admin);
   } else {
     res.status(401).json({ msg: "Invalid admin data" });
@@ -36,7 +36,7 @@ export const authAdmin = async (req, res) => {
   const admin = await Admin.findOne({ email });
 
   if (admin && (await admin.matchPasswords(password))) {
-    generateToken(res, admin);
+    // generateToken(res, admin);
     // generateToken(res, admin._id);
     // TODO cookies are being sent but not getting stored in browser
     res.status(201).json(admin);
