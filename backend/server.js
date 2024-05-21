@@ -30,6 +30,7 @@ import questionRoutes from "./routes/questionRoutes.js";
 import sliderRoutes from "./routes/sliderRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import seriesRoutes from "./routes/seriesRoutes.js";
+import otpRoutes from "./routes/otpRoutes.js";
 
 // data imports
 import User from "./models/user.js";
@@ -94,6 +95,7 @@ app.use("/api/upload/sliders", uploadSliderRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/upload/customer-proof", uploadCustomerProofRoutes);
 app.use("/api/series", seriesRoutes);
+app.use("/api/otp", otpRoutes);
 
 // Cookie Testing
 // app.get("/contact", (req, res) => {

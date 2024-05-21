@@ -23,6 +23,10 @@ const orderSchema = mongoose.Schema(
       variantName: { type: String },
       price: { type: Number },
     },
+    deviceInfo: {
+      serialNumber: { type: String },
+      imeiNumber: { type: String },
+    },
     customerName: {
       type: String,
     },
@@ -32,13 +36,21 @@ const orderSchema = mongoose.Schema(
     phone: {
       type: Number,
     },
-    address: {
-      type: String,
+    addressDetails: {
+      address: {
+        type: String,
+      },
+      state: {
+        type: String,
+      },
+      city: {
+        type: String,
+      },
+      pinCode: {
+        type: Number,
+      },
     },
-    pinCode: {
-      type: Number,
-    },
-    accessoriesNotAvailable: {
+    accessoriesAvailable: {
       type: Array,
     },
     deductions: [
@@ -54,14 +66,17 @@ const orderSchema = mongoose.Schema(
         },
       },
     ],
-    offerPrice: {
-      type: Number,
-    },
+
     schedulePickUp: {
       type: String,
     },
-    pickedUpOn: {
-      type: String,
+    pickedUpDetails: {
+      agentName: {
+        type: String,
+      },
+      pickedUpDate: {
+        type: String,
+      },
     },
     status: {
       type: String,
@@ -77,6 +92,12 @@ const orderSchema = mongoose.Schema(
     },
     customerOptional2: {
       type: String,
+    },
+    offerPrice: {
+      type: Number,
+    },
+    finalPrice: {
+      type: Number,
     },
   },
   { timestamps: true }
