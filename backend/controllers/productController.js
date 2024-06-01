@@ -524,6 +524,7 @@ const createDeductions = async (
       variantDeductions.push({
         conditionId: condition.id,
         conditionName: condition.conditionName,
+        page: condition.page,
         conditionLabels,
       });
     }
@@ -548,6 +549,7 @@ const createOthersDeductions = async (
   deductions = conditionsList.map((condition) => ({
     conditionId: condition.id,
     conditionName: condition.conditionName,
+    page: condition.page,
     conditionLabels: conditionLabelsList
       .filter((label) => label.conditionNameId == condition.id)
       .map((label) => ({
@@ -683,6 +685,7 @@ const addNewDeduction = async (
       variantDeductions.push({
         conditionId: condition.id,
         conditionName: condition.conditionName,
+        page: condition.page,
         conditionLabels,
       });
     }

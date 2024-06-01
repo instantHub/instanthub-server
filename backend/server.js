@@ -32,6 +32,8 @@ import orderRoutes from "./routes/orderRoutes.js";
 import seriesRoutes from "./routes/seriesRoutes.js";
 import otpRoutes from "./routes/otpRoutes.js";
 
+import { generateSitemap, getDynamicUrls } from "./generateSiteMap.js";
+
 // data imports
 import User from "./models/user.js";
 import { dataUser } from "./data/index.js";
@@ -120,6 +122,21 @@ if (process.env.NODE_ENV === "production") {
     res.sendFile(path.resolve(__dirname, "frontend", "dist", "index.html"))
   );
 }
+
+app.get("/sitemap.xml", async (req, res) => {
+  try {
+    const urls = await getDynamicUrls();
+    // console.log("URLS", urls);
+
+    const sitemap = generateSitemap(urls);
+    // console.log("sitemap", sitemap);
+
+    res.header("Content-Type", "application/xml");
+    res.send(sitemap);
+  } catch (error) {
+    res.status(500).send("Error generating sitemap", error);
+  }
+});
 
 app.get("/", (req, res) => res.send("Server is ready "));
 

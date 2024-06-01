@@ -114,6 +114,7 @@ const productSchema = mongoose.Schema(
         conditionName: {
           type: String,
         },
+        page: { type: Number },
         conditionLabels: [
           {
             conditionLabelId: {
@@ -152,6 +153,7 @@ const productSchema = mongoose.Schema(
             conditionName: {
               type: String,
             },
+            page: { type: Number },
             conditionLabels: [
               {
                 conditionLabelId: {

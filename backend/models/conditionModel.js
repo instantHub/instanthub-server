@@ -9,6 +9,8 @@ const conditionSchema = mongoose.Schema(
       required: true,
     },
 
+    page: { type: Number },
+
     conditionLabels: [
       {
         type: mongoose.Schema.Types.ObjectId,

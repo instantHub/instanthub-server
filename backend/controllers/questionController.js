@@ -22,7 +22,10 @@ export const getConditions = async (req, res) => {
 
 // Create Conditions
 export const createCondtions = async (req, res) => {
-  const { category, conditionNames } = req.body;
+  console.log("createCondtions Controller");
+  // const { category, conditionNames } = req.body;
+  const { category, conditionName, page } = req.body;
+  console.log(req.body);
 
   try {
     // Fetch existing conditions for the given category
@@ -36,34 +39,53 @@ export const createCondtions = async (req, res) => {
     );
 
     // Check for duplicate condition names
-    const duplicateConditionNames = conditionNames.filter((conditionName) =>
-      existingConditionNames.includes(conditionName)
-    );
+    const duplicateConditionName =
+      existingConditionNames.includes(conditionName);
+    // const duplicateConditionNames = conditionNames.filter((conditionName) =>
+    //   existingConditionNames.includes(conditionName)
+    // );
 
     // Return if duplicates found
-    if (duplicateConditionNames.length > 0) {
-      return res.status(400).json({
+    if (duplicateConditionName) {
+      return res.status(201).json({
         message: "Duplicate condition names found for this category.",
-        duplicateConditionNames,
+        duplicateConditionName,
       });
     }
+    // if (duplicateConditionNames.length > 0) {
+    //   return res.status(400).json({
+    //     message: "Duplicate condition names found for this category.",
+    //     duplicateConditionNames,
+    //   });
+    // }
 
     // Create new conditions
-    const newConditions = await Condition.create(
-      conditionNames.map((conditionName) => ({
-        category,
-        conditionName: conditionName.name,
-      }))
-    );
-    console.log(newConditions);
+    const newCondition = await Condition.create({
+      category,
+      conditionName,
+      page,
+    });
+    // const newConditions = await Condition.create(
+    //   conditionNames.map((conditionName) => ({
+    //     category,
+    //     conditionName: conditionName.name,
+    //   }))
+    // );
+    console.log(newCondition);
 
     // Create new deductions to add into the products
-    const newDeductions = newConditions.map((condition) => ({
-      conditionId: condition.id,
-      conditionName: condition.conditionName,
+    const newDeduction = {
+      conditionId: newCondition.id,
+      conditionName: newCondition.conditionName,
+      page: newCondition.page,
       conditionLabels: [], // Initialize with an empty array
-    }));
-    console.log(newDeductions);
+    };
+    // const newDeductions = newConditions.map((condition) => ({
+    //   conditionId: condition.id,
+    //   conditionName: condition.conditionName,
+    //   conditionLabels: [], // Initialize with an empty array
+    // }));
+    console.log(newDeduction);
 
     const updatedProducts = [];
 
@@ -76,9 +98,9 @@ export const createCondtions = async (req, res) => {
         // Iterate over each variantDeduction of the product
         product.variantDeductions.forEach((vd) => {
           // Iterate over each new deduction and push it to the deductions array
-          newDeductions.forEach((newDe) => {
-            vd.deductions.push(newDe);
-          });
+          // newDeductions.forEach((newDe) => {
+          vd.deductions.push(newDeduction);
+          // });
         });
 
         // Save the updated product
@@ -91,13 +113,13 @@ export const createCondtions = async (req, res) => {
       // Update "deductions" field of all the products of this category
       await Product.updateMany(
         { category: category }, // Update products of a specific category
-        { $push: { simpleDeductions: { $each: newDeductions } } }
+        { $push: { simpleDeductions: { $each: newDeduction } } }
       );
     }
 
     console.log("updateProducts", updatedProducts);
 
-    return res.status(201).json({ newConditions, updatedProducts });
+    return res.status(201).json({ newCondition, updatedProducts });
   } catch (error) {
     return res.status(500).json({ message: "Internal server error.", error });
   }
@@ -130,6 +152,7 @@ export const updateCondition = async (req, res) => {
           vd.deductions.forEach((deduction) => {
             if (deduction.conditionId === conditionId) {
               deduction.conditionName = req.body.conditionName;
+              deduction.page = req.body.page;
             }
           });
         }
@@ -144,6 +167,7 @@ export const updateCondition = async (req, res) => {
         product.simpleDeductions.forEach((deduction) => {
           if (deduction.conditionId === conditionId) {
             deduction.conditionName = req.body.conditionName;
+            deduction.page = req.body.page;
           }
         });
 
