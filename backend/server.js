@@ -31,6 +31,9 @@ import sliderRoutes from "./routes/sliderRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import seriesRoutes from "./routes/seriesRoutes.js";
 import otpRoutes from "./routes/otpRoutes.js";
+import stockRoutes from "./routes/stockRoutes.js";
+import deleteRoutes from "./routes/deleteRoutes.js";
+import couponRoutes from "./routes/couponRoutes.js";
 
 import { generateSitemap, getDynamicUrls } from "./generateSiteMap.js";
 
@@ -98,6 +101,11 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/upload/customer-proof", uploadCustomerProofRoutes);
 app.use("/api/series", seriesRoutes);
 app.use("/api/otp", otpRoutes);
+app.use("/api/stocks", stockRoutes);
+app.use("/api/coupons", couponRoutes);
+
+// Delete Image Route
+app.use("/api/delete", deleteRoutes);
 
 // Cookie Testing
 // app.get("/contact", (req, res) => {

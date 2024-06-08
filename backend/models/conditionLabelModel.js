@@ -16,7 +16,7 @@ const conditionLabelSchema = mongoose.Schema(
 
     conditionLabelImg: {
       type: String,
-      required: true,
+      // required: true,
     },
   },
   { timestamps: true }

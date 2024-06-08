@@ -63,11 +63,24 @@ const generateDynamicRoutes = async () => {
   console.log("object", allIds);
   console.log("object", allIds.length);
 
-  return allIds.map((ids) => ({
-    loc: `https://instantcashpick.com/categories/brands/${ids._id}`,
+  const brandsURLs = categories.map((category) => ({
+    loc: `https://instantcashpick.com/categories/brands/${category._id}`,
     lastmod: new Date().toISOString(),
     priority: "0.64",
   }));
+
+  const productsURLs = brands.map((brand) => ({
+    loc: `https://instantcashpick.com/categories/brands/products/${brand._id}`,
+    lastmod: new Date().toISOString(),
+    priority: "0.64",
+  }));
+
+  return [...brandsURLs, ...productsURLs];
+  //   return allIds.map((ids) => ({
+  //     loc: `https://instantcashpick.com/categories/brands/${ids._id}`,
+  //     lastmod: new Date().toISOString(),
+  //     priority: "0.64",
+  //   }));
   //   return categoriesList.map((category) => ({
   //     loc: `https://instantcashpick.com/categories/brands/${category.id}`,
   //     lastmod: new Date().toISOString(),

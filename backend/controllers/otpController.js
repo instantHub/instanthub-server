@@ -263,3 +263,20 @@ export const generateOTP = async (req, res) => {
     // res.status(404).json({ message: error.message });
   }
 };
+
+export const getPhoneNumbers = async (req, res) => {
+  console.log("getPhoneNumbers controller");
+
+  try {
+    const phoneNumbers = await OTPCollected.find();
+    console.log(phoneNumbers.length);
+    res.status(200).json({ phoneNumbers });
+  } catch (error) {
+    res
+      .status(404)
+      .json(
+        { "Error from:": "getPhoneNumbers controller" },
+        { message: error.message }
+      );
+  }
+};

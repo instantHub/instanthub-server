@@ -52,12 +52,6 @@ export const createCondtions = async (req, res) => {
         duplicateConditionName,
       });
     }
-    // if (duplicateConditionNames.length > 0) {
-    //   return res.status(400).json({
-    //     message: "Duplicate condition names found for this category.",
-    //     duplicateConditionNames,
-    //   });
-    // }
 
     // Create new conditions
     const newCondition = await Condition.create({
@@ -65,12 +59,7 @@ export const createCondtions = async (req, res) => {
       conditionName,
       page,
     });
-    // const newConditions = await Condition.create(
-    //   conditionNames.map((conditionName) => ({
-    //     category,
-    //     conditionName: conditionName.name,
-    //   }))
-    // );
+
     console.log(newCondition);
 
     // Create new deductions to add into the products
@@ -113,7 +102,8 @@ export const createCondtions = async (req, res) => {
       // Update "deductions" field of all the products of this category
       await Product.updateMany(
         { category: category }, // Update products of a specific category
-        { $push: { simpleDeductions: { $each: newDeduction } } }
+        { $push: { simpleDeductions: newDeduction } }
+        // { $push: { simpleDeductions: { $each: newDeduction } } }
       );
     }
 

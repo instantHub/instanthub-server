@@ -10,6 +10,7 @@ dotenv.config();
 import puppeteer from "puppeteer";
 import pdf from "html-pdf";
 import PDFDocument from "pdfkit";
+import Stocks from "../models/stocksModel.js";
 
 export const getOrders = async (req, res) => {
   console.log("GetOrders controller");
@@ -324,7 +325,6 @@ export const createOrder = async (req, res) => {
     //   return pdfBuffer;
     // };
 
-
     // Sample data
     // const data = {
     //   orderId: "17374",
@@ -571,7 +571,33 @@ export const orderReceived = async (req, res) => {
     console.log("updatedOrder", updatedOrder);
 
     const product = await Product.findById(updatedOrder.productId);
-    console.log("product", product);
+    console.log("product of the Order", product);
+
+    const stockIn = await Stocks.create({
+      orderId: updatedOrder.orderId,
+      productDetails: {
+        productName: product.name,
+        productVariant: updatedOrder.variant.variantName,
+        productCategory: updatedOrder.category,
+        serialNumber: updatedOrder.deviceInfo.serialNumber,
+        imeiNumber: updatedOrder.deviceInfo.imeiNumber,
+      },
+      customerDetails: {
+        customerName: updatedOrder.customerName,
+        email: updatedOrder.email,
+        phone: updatedOrder.phone,
+      },
+      accessoriesAvailable: updatedOrder.accessoriesAvailable.map(
+        (a) => a.conditionLabel
+      ),
+      pickedUpDetails: updatedOrder.pickedUpDetails,
+      stockStatus: "In",
+      purchasePrice: updatedOrder.finalPrice,
+    });
+
+    stockIn.save();
+
+    console.log("Stocks In", stockIn);
 
     // console.log("APP_PASSWORD", process.env.USER);
     // console.log("APP_PASSWORD", process.env.APP_PASSWORD);
@@ -917,7 +943,8 @@ export const deleteOrder = async (req, res) => {
     console.log("deleteOrder", deletedOrder);
 
     // 2. Delete image from uploads/ of the deleted Brand
-    deleteImage(deletedOrder.customerProof);
+    deleteImage(deletedOrder.customerProofFront);
+    deleteImage(deletedOrder.customerProofBack);
 
     // Delete the corresponding image file from the uploads folder
     function deleteImage(image) {

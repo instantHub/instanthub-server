@@ -323,6 +323,7 @@ export const updateProduct = async (req, res) => {
         product.name = req.body.name;
         product.uniqueURL = req.body.uniqueURL;
         product.image = req.body.image;
+        product.status = req.body.status;
 
         // Extract new and old variants from req.body
         const newVariants = req.body.variants;
