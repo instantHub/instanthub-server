@@ -90,3 +90,36 @@ export const deleteCLImage = async (req, res) => {
     console.error(`Error deleteImage Controller`, err);
   }
 };
+
+export const deleteImage = async (req, res) => {
+  console.log("General deleteImage Controller");
+  console.log(req.body);
+  const { imageURL } = req.body;
+  console.log(imageURL);
+  try {
+    // Delete the corresponding image file from the uploads folder
+    const __dirname = path.resolve();
+    const imagePath = path.join(__dirname, imageURL);
+    console.log("imagePath", imageURL);
+
+    try {
+      fs.unlink(imagePath, (err) => {
+        if (err) {
+          if (err.code === "ENOENT") {
+            console.log(`Image ${imagePath} does not exist.`);
+          } else {
+            console.error(`Error deleting image ${imagePath}:`, err);
+          }
+        } else {
+          console.log(`Image ${imagePath} deleted successfully.`);
+        }
+      });
+    } catch (err) {
+      console.error(`Error deleting image ${imagePath}:`, err);
+    }
+
+    return res.status(201).json("deletedLabel");
+  } catch (err) {
+    console.error(`Error deleteImage Controller`, err);
+  }
+};

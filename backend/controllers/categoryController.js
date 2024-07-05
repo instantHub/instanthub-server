@@ -50,6 +50,8 @@ export const addCategory = async (req, res) => {
 };
 
 export const getCategory = async (req, res) => {
+  console.log("getCategory Controller");
+
   // filter = {"category":["smartphone","laptops"]}
   // sort = {_sort:"price",_order="desc"}
   // pagination = {_page:1,_limit=10}

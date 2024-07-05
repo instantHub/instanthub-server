@@ -34,6 +34,11 @@ import otpRoutes from "./routes/otpRoutes.js";
 import stockRoutes from "./routes/stockRoutes.js";
 import deleteRoutes from "./routes/deleteRoutes.js";
 import couponRoutes from "./routes/couponRoutes.js";
+import servicesRoutes from "./routes/services/servicesRoutes.js";
+import uploadServicesRoutes from "./routes/uploads/uploadServicesRoutes.js";
+import recycleRoutes from "./routes/recycleRoutes.js";
+// import subServicesRoutes from "./routes/services/subServicesRoutes.js";
+// import internalSubServicesRoutes from "./routes/services/internalSubServices.js";
 
 import { generateSitemap, getDynamicUrls } from "./generateSiteMap.js";
 
@@ -103,6 +108,11 @@ app.use("/api/series", seriesRoutes);
 app.use("/api/otp", otpRoutes);
 app.use("/api/stocks", stockRoutes);
 app.use("/api/coupons", couponRoutes);
+app.use("/api/services", servicesRoutes);
+app.use("/api/upload/services", uploadServicesRoutes);
+app.use("/api/recycle", recycleRoutes);
+// app.use("/api/sub-services", subServicesRoutes);
+// app.use("/api/internalSub-services", internalSubServicesRoutes);
 
 // Delete Image Route
 app.use("/api/delete", deleteRoutes);

@@ -186,7 +186,7 @@ export const deleteCondition = async (req, res) => {
   const category = req.query.category;
   const conditionId = req.query.conditionId;
   console.log("Delete Condition controller");
-  console.log(category, conditionId);
+  console.log("category", category, "conditionId", conditionId);
   try {
     const conditionCategory = await Category.findById(category);
     console.log("conditionCategory", conditionCategory);
@@ -200,8 +200,16 @@ export const deleteCondition = async (req, res) => {
 
     // call deleteImages function for each conditionLabel of the condition and unlink its images
     associatedConditionLabels.map((conditionLabel) => {
-      deleteImages(conditionLabel.conditionLabelImg);
+      if (conditionLabel.conditionLabelImg) {
+        deleteImages(conditionLabel.conditionLabelImg);
+      } else {
+        console.log("Image not available");
+      }
     });
+
+    // const associatedConditionLabels = await ConditionLabel.find({
+    //   conditionNameId: conditionId,
+    // });
 
     const deletedConditionLabels = await ConditionLabel.deleteMany({
       conditionNameId: conditionId,
@@ -214,10 +222,10 @@ export const deleteCondition = async (req, res) => {
 
     // Step 2: Update products to remove the deleted condition
 
-    if (conditionCategory.name === "Mobile") {
+    if (conditionCategory.name.toLowerCase().includes("mobile")) {
       // Find all products of the specific category
       const products = await Product.find({ category: category });
-      console.log("products", products);
+      // console.log("products", products);
 
       // Iterate over each product
       for (const product of products) {
@@ -227,6 +235,8 @@ export const deleteCondition = async (req, res) => {
           const index = vd.deductions.findIndex(
             (d) => d.conditionId === conditionId
           );
+          // console.log("vd", vd);
+          // console.log("index", index);
           if (index !== -1) {
             // Remove the condition from the deductions array
             vd.deductions.splice(index, 1);
@@ -550,25 +560,34 @@ export const deleteConditionLabel = async (req, res) => {
       );
     }
 
-    // Delete the corresponding image file from the uploads folder
-    const __dirname = path.resolve();
-    const imagePath = path.join(__dirname, deletedLabel.conditionLabelImg);
-    console.log("imagePath", deletedLabel.conditionLabelImg);
+    // Check if image is available
+    if (deletedLabel.conditionLabelImg) {
+      deleteImages(deletedLabel.conditionLabelImg);
+    } else {
+      console.log("Image not available");
+    }
 
-    try {
-      fs.unlink(imagePath, (err) => {
-        if (err) {
-          if (err.code === "ENOENT") {
-            console.log(`Image ${imagePath} does not exist.`);
+    // Delete the corresponding image file from the uploads folder
+    function deleteImages(conditionLabelImg) {
+      const __dirname = path.resolve();
+      const imagePath = path.join(__dirname, conditionLabelImg);
+      console.log("imagePath", conditionLabelImg);
+
+      try {
+        fs.unlink(imagePath, (err) => {
+          if (err) {
+            if (err.code === "ENOENT") {
+              console.log(`Image ${imagePath} does not exist.`);
+            } else {
+              console.error(`Error deleting image ${imagePath}:`, err);
+            }
           } else {
-            console.error(`Error deleting image ${imagePath}:`, err);
+            console.log(`Image ${imagePath} deleted successfully.`);
           }
-        } else {
-          console.log(`Image ${imagePath} deleted successfully.`);
-        }
-      });
-    } catch (err) {
-      console.error(`Error deleting image ${imagePath}:`, err);
+        });
+      } catch (err) {
+        console.error(`Error deleting image ${imagePath}:`, err);
+      }
     }
 
     return res.status(201).json(deletedLabel);

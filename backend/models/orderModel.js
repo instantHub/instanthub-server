@@ -13,9 +13,9 @@ const orderSchema = mongoose.Schema(
       ref: "Product",
       required: true,
     },
-    category: {
-      // type: mongoose.Schema.Types.ObjectId,
-      // ref: "Category",
+    productName: { type: String },
+    productBrand: { type: String },
+    productCategory: {
       type: String,
       required: true,
     },

@@ -7,7 +7,7 @@ import dotenv from "dotenv";
 import e from "express";
 dotenv.config();
 // import logo from './'
-import puppeteer from "puppeteer";
+// import puppeteer from "puppeteer";
 import pdf from "html-pdf";
 import PDFDocument from "pdfkit";
 import Stocks from "../models/stocksModel.js";
@@ -48,7 +48,7 @@ export const createOrder = async (req, res) => {
     const year = today.getFullYear().toString().slice(-2); // Last two digits of the year
     const month = (today.getMonth() + 1).toString().padStart(2, "0"); // Month with leading zero if needed
     const day = today.getDate().toString().padStart(2, "0"); // Day with leading zero if needed
-    const CN = req.body.customerName.slice(0, 2);
+    const CN = req.body.customerName.slice(0, 2).toUpperCase();
     const PH = req.body.phone.toString().slice(-3);
     const random = Math.floor(Math.random() * 1000); // Random number between 0 and 999
     const orderCount = totalOrders.length + 1;
@@ -201,25 +201,25 @@ export const createOrder = async (req, res) => {
                 </h1>
                 <h1>
                   <span>Customer Name: </span>
-                  <span>${req.body.customerName}</span>
+                  <span>${order.customerName}</span>
                 </h1>
               </div>
       
               <div>
                 <h1>
                   <span>PickUp Scheduled: </span>
-                  <span>${req.body.schedulePickUp}</span>
+                  <span>${order.schedulePickUp}</span>
                 </h1>
               </div>
       
               <div>
                 <h1>
                   <span>Email: </span>
-                  <span>${req.body.email}</span>
+                  <span>${order.email}</span>
                 </h1>
                 <h1>
                   <span>Ph #</span>
-                  <span>${req.body.phone}</span>
+                  <span>${order.phone}</span>
                 </h1>
               </div>
       
@@ -227,10 +227,10 @@ export const createOrder = async (req, res) => {
                 <h1>
                   <span>Billing Address: </span>
                   <span>
-                    ${req.body.addressDetails.address}
-                    ${req.body.addressDetails.state} 
-                    ${req.body.addressDetails.city}
-                    ${req.body.addressDetails.pinCode}
+                    ${order.addressDetails.address}
+                    ${order.addressDetails.state} 
+                    ${order.addressDetails.city}
+                    ${order.addressDetails.pinCode}
                   </span>
                 </h1>
               </div>
@@ -244,11 +244,11 @@ export const createOrder = async (req, res) => {
                 <td>
                   <div style="display: flex; flex-direction: column">
                     <h4>
-                      <span>${req.body.category}</span>
-                      <span>${product.name}</span>
+                      <span>${order.productCategory}</span>
+                      <span>${order.productName}</span>
                       ${
-                        req.body.category === "Mobile"
-                          ? `<span>${req.body.variant.variantName}</span>`
+                        order.productCategory.toLowerCase().includes("mobile")
+                          ? `<span>${order.variant.variantName}</span>`
                           : `<span> </span>`
                       }
                     </h4>
@@ -288,7 +288,7 @@ export const createOrder = async (req, res) => {
       
               <tr>
                 <th>Offered Price</th>
-                <td>₹ ${req.body.offerPrice}</td>
+                <td>₹ ${order.offerPrice}</td>
               </tr>
             </table>
             <p style="text-align: center; color: #585555">
@@ -469,8 +469,8 @@ export const createOrder = async (req, res) => {
     const mailOptions = {
       // from: process.env.USER, // Sender email address
       from: "instantcashpick@gmail.com", // Sender email address
-      to: req.body.email, // Recipient email address
-      subject: `Your Order #${orderId} has been placed ${req.body.customerName}`, // Subject line
+      to: order.email, // Recipient email address
+      subject: `Your Order #${orderId} has been placed ${order.customerName}`, // Subject line
       // text: "Hello, This is a test email from Nodemailer!", // Plain text body
       // You can also use HTML format
 
@@ -576,9 +576,9 @@ export const orderReceived = async (req, res) => {
     const stockIn = await Stocks.create({
       orderId: updatedOrder.orderId,
       productDetails: {
-        productName: product.name,
+        productName: updatedOrder.productName,
         productVariant: updatedOrder.variant.variantName,
-        productCategory: updatedOrder.category,
+        productCategory: updatedOrder.productCategory,
         serialNumber: updatedOrder.deviceInfo.serialNumber,
         imeiNumber: updatedOrder.deviceInfo.imeiNumber,
       },
@@ -591,7 +591,7 @@ export const orderReceived = async (req, res) => {
         (a) => a.conditionLabel
       ),
       pickedUpDetails: updatedOrder.pickedUpDetails,
-      stockStatus: "In",
+      stockStatus: "Stock In",
       purchasePrice: updatedOrder.finalPrice,
     });
 
@@ -797,10 +797,12 @@ export const orderReceived = async (req, res) => {
               <td>
                 <div style="display: flex; flex-direction: column">
                   <h4>
-                    <span>${updatedOrder.category}</span>
-                    <span>${product.name}</span>
+                    <span>${updatedOrder.productCategory}</span>
+                    <span>${updatedOrder.productName}</span>
                     ${
-                      updatedOrder.category === "Mobile"
+                      updatedOrder.productCategory
+                        .toLowerCase()
+                        .includes("mobile")
                         ? `<span>${updatedOrder.variant.variantName}</span>`
                         : `<span> </span>`
                     }

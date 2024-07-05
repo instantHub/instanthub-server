@@ -34,6 +34,7 @@ export const getBrands = async (req, res) => {
 };
 
 export const addBrand = async (req, res) => {
+  console.log("addBrand Controller");
   try {
     let brands = await Brand.find();
 
