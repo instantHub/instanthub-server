@@ -13,6 +13,38 @@ import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 dotenv.config();
 
+export const getCategoryServices = async (req, res) => {
+  console.log("getCategoryServices Controller");
+
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const search = req.query.search || "";
+
+  try {
+    // Escape special characters in the search term
+    const escapedSearch = search.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
+    const regex = new RegExp(escapedSearch, "i");
+    const query = {
+      name: { $regex: search, $options: "i" },
+    };
+    const skip = (page - 1) * limit;
+
+    const services = await ServiceCategory.find(query).skip(skip).limit(limit);
+
+    const totalServices = await ServiceCategory.countDocuments(query);
+
+    res.status(200).json({
+      page,
+      limit,
+      totalServices,
+      totalPages: Math.ceil(totalServices / limit),
+      services,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export const getServices = async (req, res) => {
   console.log("getServices Controller!!!");
   try {
@@ -1373,7 +1405,7 @@ export const serviceOrderCompleted = async (req, res) => {
   }
 };
 
-// DELETE Brand
+// DELETE SERVICE ORDER
 export const deleteServiceOrder = async (req, res) => {
   console.log("deleteServiceOrder controller");
   const orderId = req.params.orderId;

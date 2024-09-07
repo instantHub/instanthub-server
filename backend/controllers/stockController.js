@@ -7,7 +7,7 @@ export const getStocks = async (req, res) => {
 
   try {
     const stocks = await Stock.find();
-    console.log(stocks);
+    // console.log(stocks);
     res.status(200).json(stocks);
   } catch (error) {
     res.status(404).json({ message: error.message });
@@ -16,10 +16,10 @@ export const getStocks = async (req, res) => {
 
 export const stockSold = async (req, res) => {
   console.log("stockSold Controller");
-  console.log(req.body);
+  // console.log(req.body);
   const { soldByDetails, soldPrice, stockStatus } = req.body;
   const stockId = req.body.stockId;
-  console.log("stockId", stockId);
+  // console.log("stockId", stockId);
   try {
     // const stock = await Stock.findById(stockId);
     const stock = await Stock.findByIdAndUpdate(
@@ -33,7 +33,7 @@ export const stockSold = async (req, res) => {
         new: true,
       }
     );
-    console.log(stock);
+    // console.log(stock);
     res.status(200).json(stock);
   } catch (error) {
     res.status(404).json({ message: error.message });

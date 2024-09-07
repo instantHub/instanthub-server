@@ -22,6 +22,9 @@ const recycleOrderSchema = mongoose.Schema(
       productAge: {
         type: String,
       },
+      productStatus: {
+        type: String,
+      },
     },
     customerName: {
       type: String,
@@ -74,6 +77,9 @@ const recycleOrderSchema = mongoose.Schema(
       },
     },
     status: {
+      type: String,
+    },
+    paymentMode: {
       type: String,
     },
     recyclePrice: {

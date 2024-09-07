@@ -8,14 +8,23 @@ import {
   createServiceOrder,
   deleteServiceOrder,
   serviceOrderCompleted,
+  getCategoryServices,
 } from "../../controllers/services/servicesController.js";
 
 const router = express.Router();
 
-router.get("/", getServices);
-router.post("/add-service", addServices);
-router.put("/update-service/:serviceId", updateService);
-router.delete("/delete-service", deleteService);
+// router.get("/", getServices);
+// router.get("/search-services", getAllServices);
+// router.post("/add-service", addServices);
+// router.put("/update-service/:serviceId", updateService);
+// router.delete("/delete-service", deleteService);
+
+// RESTFul Api
+router.get("/", getServices); // Get all services
+router.get("/search", getCategoryServices); // Search services
+router.post("/", addServices); // Add a new service
+router.put("/:serviceId", updateService); // Update a service by ID
+router.delete("/", deleteService); // Delete a service by ID
 
 // SERVICE ORDERS
 router.get("/get-orders", getServicerOrders);

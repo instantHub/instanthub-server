@@ -240,14 +240,24 @@ export const createRecycleOrder = async (req, res) => {
                 }
                 
                 <tr>
+                  <th>${order.productDetails.productCategory} Status</th>
+                  <td>${order.productDetails.productStatus}</td>
+                </tr>
+
+                <tr>
+                  <th>Selected Payment Mode</th>
+                  <td>${order.paymentMode}</td>
+                </tr>
+
+                <tr>
                   <th>Recycle Price</th>
                   <td>₹ ${order.recyclePrice}</td>
                 </tr>
               </table>
               <p style="text-align: center; color: #585555">
                 Get in touch with us if you need any additional help:
-                <a href="tel:872228800" style="color: #007bff; text-decoration: none"
-                >872228800</a>
+                <a href="tel:8722288017" style="color: #007bff; text-decoration: none"
+                >8722288017</a>
               </p>
               <p style="text-align: center; color: #777">
                 If you have any questions or concerns about your order, please send us a

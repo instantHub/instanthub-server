@@ -12,9 +12,11 @@ const generateToken = (res, admin) => {
     httpOnly: true,
     secure: process.env.NODE_ENV !== "development",
     sameSite: "strict", // this will protect from CSRF attacks
-    path: "/", // from stackoverflow
-    maxAge: 30 * 24 * 60 * 60 * 1000,
+    path: "/", // from stackoverflow // Make the cookie available across the entire site
+    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days in milliseconds
   });
+
+  console.log("Token set in cookie:", res.cookies);
 };
 
 export default generateToken;

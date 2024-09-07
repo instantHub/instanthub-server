@@ -93,6 +93,9 @@ const orderSchema = mongoose.Schema(
     customerOptional2: {
       type: String,
     },
+    paymentMode: {
+      type: String,
+    },
     offerPrice: {
       type: Number,
     },

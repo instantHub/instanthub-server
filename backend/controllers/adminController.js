@@ -36,9 +36,11 @@ export const authAdmin = async (req, res) => {
   const admin = await Admin.findOne({ email });
 
   if (admin && (await admin.matchPasswords(password))) {
+    // Since JWT token is getting saved now generate token and save it to browser cookie
     // generateToken(res, admin);
-    // generateToken(res, admin._id);
+    // console.log("Cookies from authAdmin:", req.cookies);
     // TODO cookies are being sent but not getting stored in browser
+
     res.status(201).json(admin);
   } else {
     res.status(401).json({ message: "Invalid email or password" });

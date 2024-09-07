@@ -7,8 +7,7 @@
   "proxy": "${import.meta.env.VITE_APP_BASE_URL}",
   "scripts": {
     "start": "node backend/server.js",
-    "server": "nodemon backend/server.js",
-    "postinstall": "puppeteer-install"
+    "server": "nodemon backend/server.js"
   },
   "keywords": [],
   "author": "",

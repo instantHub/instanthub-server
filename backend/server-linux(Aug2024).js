@@ -40,6 +40,10 @@ import recycleRoutes from "./routes/recycleRoutes.js";
 
 import { generateSitemap, getDynamicUrls } from "./generateSiteMap.js";
 
+// data imports
+import User from "./models/user.js";
+import { dataUser } from "./data/index.js";
+
 const PORT = process.env.PORT || 3000;
 
 // configuration
@@ -108,12 +112,6 @@ app.use("/api/recycle", recycleRoutes);
 
 // Delete Image Route
 app.use("/api/delete", deleteRoutes);
-
-// Cookie Testing
-// app.get("/contact", (req, res) => {
-//   res.cookie("Test", "Yusuf");
-//   res.send(`Hello Contact page`);
-// });
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 

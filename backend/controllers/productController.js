@@ -125,10 +125,69 @@ export const createProduct = async (req, res) => {
         });
         await product.save();
 
-        let deductionsList;
+        let laptopDesktopCheck =
+          productCategory.name === "Laptop" ||
+          productCategory.name === "Desktop";
+        console.log("laptopDesktopCheck", laptopDesktopCheck);
 
-        if (productCategory.name !== "Mobile") {
-          console.log("Others Deductions");
+        let deductionsList;
+        if (laptopDesktopCheck) {
+          console.log(
+            "creating Laptop, & adding Deductions from existing laptop"
+          );
+
+          // TODO: Need to update this code for a first laptop product to create initial simpleDeduction & initial processorBasedDeduction
+          // let deductions = [
+          //   {
+          //     conditionId: "",
+          //     conditionName: "",
+          //     conditionLabels: [
+          //       {
+          //         conditionLabelId: "",
+          //         conditionLabel: "",
+          //         conditionLabelImg: "",
+          //       },
+          //     ],
+          //   },
+          // ];
+
+          // deductionsList = await createOthersDeductions(
+          //   deductions,
+          //   conditionsList,
+          //   conditionLabelsList
+          // );
+
+          // console.log("New deductions for Others: ", deductionsList);
+          // product.simpleDeductions = deductionsList;
+
+          // ALTERNATIVE Updating simpleDeductions and processorBasedDeduction of a new created laptop from an existing laptop
+          const existingLaptop = await Product.findOne({
+            category: productCategory._id,
+          });
+          console.log("Existing Laptop/Desktop", existingLaptop);
+
+          if (existingLaptop) {
+            // update simpleDeduction
+            product.simpleDeductions = existingLaptop.simpleDeductions;
+
+            // update processorBasedDeduction
+            product.processorBasedDeduction =
+              existingLaptop.processorBasedDeduction;
+          }
+        } else if (productCategory.name === "Mobile") {
+          console.log("Mobiles Deductions");
+          deductionsList = await createDeductions(
+            product.variants,
+            conditionsList,
+            conditionLabelsList
+          );
+
+          console.log("New deductions for Mobile: ", deductionsList);
+          product.variantDeductions = deductionsList;
+        } else {
+          console.log(
+            "Others Deductions for all other products apart from mobiles and laptops"
+          );
           // let deductions = [
           let deductions = [
             {
@@ -152,23 +211,7 @@ export const createProduct = async (req, res) => {
 
           console.log("New deductions for Others: ", deductionsList);
           product.simpleDeductions = deductionsList;
-        } else if (productCategory.name === "Mobile") {
-          console.log("Mobiles Deductions");
-          deductionsList = await createDeductions(
-            product.variants,
-            conditionsList,
-            conditionLabelsList
-          );
-
-          console.log("New deductions for Mobile: ", deductionsList);
-          product.variantDeductions = deductionsList;
         }
-
-        // let deductionsList = await createDeductions(
-        //   product.variants,
-        //   conditionsList,
-        //   conditionLabelsList
-        // );
 
         await product.save();
 
@@ -479,14 +522,6 @@ export const updatePriceDrop = async (req, res) => {
     brand: updatedProductData.brand.id,
   };
 
-  // console.log("After updatedProductData", updatedProductData);
-  updatedProductData.variantDeductions.map((vd) => {
-    // console.log(vd);
-    vd.deductions.map((d) => {
-      console.log(d);
-    });
-  });
-
   try {
     // Update the product with the complete updated data
     await Product.findByIdAndUpdate(productId, updatedProductData, {
@@ -494,6 +529,106 @@ export const updatePriceDrop = async (req, res) => {
     });
 
     res.status(200).json({ message: "Product updated successfully" });
+  } catch (error) {
+    console.error("Error updating product:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const updateLaptopConfigurationsPriceDrop = async (req, res) => {
+  console.log("updateLaptopConfigurationsPriceDrop Controller");
+  // console.log("req.body", req.body);
+
+  const productId = req.params.productId;
+  console.log(productId);
+  const type = req.query.type;
+  console.log(type);
+
+  const updatedProduct = req.body;
+  // console.log("updatedProduct", updatedProduct);
+
+  const product = await Product.findById(productId);
+  const categoryId = product.category;
+  const categoryFound = await Category.findById(categoryId);
+  const brandId = Product.brand;
+
+  // console.log(product);
+  // console.log(categoryId);
+  // console.log("category", categoryFound);
+
+  // console.log("updatedDeductions", updatedDeductions);
+  // console.log("processor", updatedDeductions[1]);
+
+  try {
+    let updatedDeductions = req.body.simpleDeductions;
+
+    if (type.toLowerCase().includes("alllaptopconfig")) {
+      console.log("Updating ALL Laptops CONFIGURATIONS");
+
+      // Update the product with the complete updated data
+      const result = await Product.updateMany(
+        { category: categoryId },
+        { $set: { simpleDeductions: updatedDeductions } }
+      );
+
+      console.log({
+        matchedCount: result.matchedCount,
+        modifiedCount: result.modifiedCount,
+      });
+    } else if (type.toLowerCase().includes("singlelaptopconfig")) {
+      console.log("Updating SINGLE Laptop CONFIGURATIONS");
+      // Update the product with the complete updated data
+      const productUpdated = await Product.findByIdAndUpdate(
+        productId,
+        { $set: { simpleDeductions: updatedProduct.simpleDeductions } },
+        { new: true }
+      );
+      await productUpdated.save();
+      // console.log("productUpdated", productUpdated);
+    } else if (type.toLowerCase().includes("singlelaptopconditions")) {
+      console.log("Updating SINGLE Laptop CONDITIONS");
+      // Update the product with the complete updated data
+
+      const productUpdated = await Product.findByIdAndUpdate(
+        productId,
+        {
+          $set: {
+            processorBasedDeduction: updatedProduct.processorBasedDeduction,
+          },
+        },
+        { new: true }
+      );
+      await productUpdated.save();
+
+      // console.log("productUpdated", productUpdated);
+    } else if (type.toLowerCase().includes("alllaptopconditions")) {
+      console.log("Updating ALL Laptop CONDITIONS");
+      // Update the product with the complete updated data
+
+      let selectedProcessorDeduction = req.body;
+      console.log("selectedProcessorDeduction", selectedProcessorDeduction);
+      // processorBasedDeduction
+      const productsUpdated = await Product.updateMany(
+        {
+          category: categoryId,
+          "processorBasedDeduction.processorId":
+            selectedProcessorDeduction.processorId,
+        },
+        {
+          $set: {
+            "processorBasedDeduction.$.deductions":
+              selectedProcessorDeduction.deductions,
+          },
+        }
+      );
+
+      console.log({
+        matchedCount: productsUpdated.matchedCount,
+        modifiedCount: productsUpdated.modifiedCount,
+      });
+    }
+
+    res.status(200).json({ message: "Products updated successfully" });
   } catch (error) {
     console.error("Error updating product:", error);
     res.status(500).json({ message: "Internal server error" });

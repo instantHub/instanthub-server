@@ -98,7 +98,7 @@ export const createOrder = async (req, res) => {
             )
             .map((deduction) => `<li>${deduction.conditionLabel}</li>`)
             .join("")
-        : "<li>Problems not selected</li>";
+        : "<li>Specifications not selected</li>";
 
     let emailBody = `<!DOCTYPE html>
       <html lang="en">
@@ -278,12 +278,17 @@ export const createOrder = async (req, res) => {
           
               </tr>
               <tr>
-                <th>Problems</th>
+                <th>Selected Specification</th>
                 <td>
                   <ol>
                     ${filteredDeductionsHTML}
                   </ol>
                 </td>
+              </tr>
+
+              <tr>
+                <th>Selected Payment Mode</th>
+                <td>${order.paymentMode}</td>
               </tr>
       
               <tr>
@@ -293,8 +298,8 @@ export const createOrder = async (req, res) => {
             </table>
             <p style="text-align: center; color: #585555">
               Get in touch with us if you need any additional help:
-              <a href="tel:872228800" style="color: #007bff; text-decoration: none"
-              >872228800</a>
+              <a href="tel:8722288017" style="color: #007bff; text-decoration: none"
+              >8722288017</a>
             </p>
             <p style="text-align: center; color: #777">
               If you have any questions or concerns about your order, please send us a
@@ -436,7 +441,7 @@ export const createOrder = async (req, res) => {
     //     .text("Get in touch with us if you need any additional help:", {
     //       align: "center",
     //     })
-    //     .text("872228800", { align: "center", link: "tel:872228800" })
+    //     .text("8722288017", { align: "center", link: "tel:8722288017" })
     //     .text(
     //       "If you have any questions or concerns about your order, please send us a mail at",
     //       { align: "center" }

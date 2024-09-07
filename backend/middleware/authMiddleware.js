@@ -5,7 +5,7 @@ const protect = async (req, res, next) => {
   let token;
 
   token = req.cookies.jwt;
-  console.log("token", token);
+  console.log("token from authMiddleware", token);
 
   if (token) {
     try {
