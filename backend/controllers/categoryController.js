@@ -52,34 +52,6 @@ export const addCategory = async (req, res) => {
 export const getCategory = async (req, res) => {
   console.log("getCategory Controller");
 
-  // filter = {"category":["smartphone","laptops"]}
-  // sort = {_sort:"price",_order="desc"}
-  // pagination = {_page:1,_limit=10}
-  // let condition = {};
-  // if (!req.query.admin) {
-  //   condition.deleted = { $ne: true };
-  // }
-
-  // let condition = {};
-
-  // let query = Category.find(condition);
-  // console.log("query", query);
-  // // let totalProductsQuery = Product.find(condition);
-
-  // console.log(req.query);
-
-  // if (req.query._sort && req.query._order) {
-  //   query = query.sort({ [req.query._sort]: req.query._order });
-  // }
-
-  // try {
-  //   const docs = await query.exec();
-  //   // res.set('X-Total-Count', totalDocs);
-  //   res.status(200).json(docs);
-  // } catch (err) {
-  //   res.status(400).json(err);
-  // }
-
   try {
     const categories = await Category.find().populate("brands", "name");
     res.status(200).json(categories);
@@ -172,17 +144,19 @@ export const deleteCategory = async (req, res) => {
 
     // 10. Find the ConditionLabels of the Deleted Category
     const associatedConditionLabels = await ConditionLabel.find({
-      category: deletedCategory.id,
+      category: deletedCategory._id,
     });
 
     // 11. Delete images of each conditionLabel of the Deleted Category and unlink its image
     associatedConditionLabels.map((conditionLabel) => {
-      deleteImage(conditionLabel.conditionLabelImg);
+      if (conditionLabel.conditionLabelImg)
+        deleteImage(conditionLabel.conditionLabelImg);
+      
     });
 
     // 12. Delete the associated conditionLabel
     const deletedConditionLabels = await ConditionLabel.deleteMany({
-      category: deletedCategory.id,
+      category: deletedCategory._id,
     });
 
     console.log(
@@ -219,6 +193,7 @@ export const deleteCategory = async (req, res) => {
       message: "Category delete successfully",
     });
   } catch (error) {
+    console.log("Internal server error while deleting Category.", error);
     return res.status(500).json({
       message: "Internal server error while deleting Category.",
       error,

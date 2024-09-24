@@ -83,7 +83,7 @@ export const getProductDetails = async (req, res) => {
 
 export const createProduct = async (req, res) => {
   console.log("createProduct Controller");
-  console.log(req.body);
+  // console.log(req.body);
   // console.log(req.body.series);
   try {
     const products = await Product.find({ brand: req.body.brand });
@@ -96,7 +96,7 @@ export const createProduct = async (req, res) => {
       category: req.body.category,
     });
 
-    console.log("productCategory", productCategory);
+    // console.log("productCategory", productCategory);
 
     if (products.length > 0) {
       let duplicate = false;
@@ -163,7 +163,9 @@ export const createProduct = async (req, res) => {
           // ALTERNATIVE Updating simpleDeductions and processorBasedDeduction of a new created laptop from an existing laptop
           const existingLaptop = await Product.findOne({
             category: productCategory._id,
+            brand: product.brand,
           });
+
           console.log("Existing Laptop/Desktop", existingLaptop);
 
           if (existingLaptop) {
@@ -173,6 +175,10 @@ export const createProduct = async (req, res) => {
             // update processorBasedDeduction
             product.processorBasedDeduction =
               existingLaptop.processorBasedDeduction;
+          } else {
+            console.log(
+              "No Existing Product of this Category and Brand to add deductions"
+            );
           }
         } else if (productCategory.name === "Mobile") {
           console.log("Mobiles Deductions");
@@ -229,19 +235,19 @@ export const createProduct = async (req, res) => {
         });
       }
     } else {
-      // let product = await Product.create({
-      //   name: req.body.name,
-      //   uniqueURL: req.body.uniqueURL,
-      //   image: req.body.image,
-      //   category: req.body.category,
-      //   brand: req.body.brand,
-      //   variants: req.body.variants,
-      //   deductions: deductionsList,
-      //   status: req.body.status,
-      //   ...(req.body.series !== null && { series: req.body.series }),
-      // });
+      console.log(`Creating First Product of this Brand ${productBrand.name}`);
+      // ALTERNATIVE Updating simpleDeductions and processorBasedDeduction of a new created laptop from an existing laptop
+      const EXISTING_CAT_BR_PROD = await Product.findOne({
+        category: productCategory._id,
+        brand: productBrand._id,
+      });
 
-      console.log(".");
+      const EXISTING_CAT_PROD = await Product.findOne({
+        category: productCategory._id,
+      }).populate("brand", "name");
+
+      // console.log("Existing Laptop/Desktop category System", EXISTING_CAT_PROD);
+
       // Create Product
       let product = await Product.create({
         name: req.body.name,
@@ -255,10 +261,98 @@ export const createProduct = async (req, res) => {
       });
       await product.save();
 
+      // console.log("req.body brand: ", productBrand);
+
+      let laptopDesktopCheck =
+        productCategory.name === "Laptop" || productCategory.name === "Desktop";
+      console.log("laptopDesktopCheck", laptopDesktopCheck);
+
       let deductionsList;
 
-      if (productCategory.name !== "Mobile") {
-        console.log("Others Deductions");
+      if (laptopDesktopCheck) {
+        console.log(
+          "creating new system & adding Deductions from existing system"
+        );
+
+        let isNewProdApple = productBrand.name === "Apple";
+
+        if (isNewProdApple) {
+          console.log("Newest Apple Prod");
+          const appleProd = await Product.findOne({
+            category: product.category,
+            brand: product.brand,
+          });
+
+          product.simpleDeductions = appleProd.simpleDeductions;
+          product.processorBasedDeduction = appleProd.processorBasedDeduction;
+        } else {
+          console.log("Newest Laptop Prod other than Apple");
+
+          let appleBrand = await Brand.findOne({
+            category: product.category,
+            name: "Apple",
+          }).select("category name _id");
+          console.log("Apple Brand Detail", appleBrand);
+
+          const windowProd = await Product.findOne({
+            category: product.category,
+            brand: { $ne: appleBrand._id },
+          });
+
+          product.simpleDeductions = windowProd.simpleDeductions;
+          product.processorBasedDeduction = windowProd.processorBasedDeduction;
+        }
+        // let isExistingCatProdApple = EXISTING_CAT_PROD.brand.name === "Apple";
+
+        // const CREATE_APPLE_PROD = isNewProdApple && isExistingCatProdApple;
+        // const CREATE_WINDOWS_PROD = !isNewProdApple && !isExistingCatProdApple;
+
+        // console.log("isNewProdApple", isNewProdApple);
+        // console.log("isExistingCatProdApple", isExistingCatProdApple);
+
+        // console.log(
+        //   "Existing Laptop/Desktop category brand System",
+        //   EXISTING_CAT_BR_PROD
+        // );
+
+        // if (EXISTING_CAT_PROD) {
+        //   if (CREATE_WINDOWS_PROD) {
+        //     console.log("Creating new windows laptop");
+        //     // update simpleDeduction
+        //     product.simpleDeductions = EXISTING_CAT_PROD.simpleDeductions;
+
+        //     // update processorBasedDeduction
+        //     product.processorBasedDeduction =
+        //       EXISTING_CAT_PROD.processorBasedDeduction;
+        //   }
+        //   // else if (isNewProdApple) {
+        //   //   if (CREATE_APPLE_PROD) {
+        //   //     console.log("Creating Apple(IOS) laptop");
+        //   //   } else {
+        //   //     console.log("Creating new Apple(IOS) laptop");
+        //   //   }
+        //   // }
+        // } else {
+        //   console.log(
+        //     `Creating new product in this ${productCategory.name} category, with no deductions`
+        //   );
+        // }
+      } else if (productCategory.name === "Mobile") {
+        console.log("Mobiles Deductions");
+        deductionsList = await createDeductions(
+          product.variants,
+          conditionsList,
+          conditionLabelsList
+        );
+
+        console.log("New deductions for Mobile: ", deductionsList);
+
+        // Add deductions to the product
+        product.variantDeductions = deductionsList;
+      } else {
+        console.log(
+          "Others Deductions for all other products apart from mobiles and laptops"
+        );
         // let deductions = [
         let deductions = [
           {
@@ -281,21 +375,7 @@ export const createProduct = async (req, res) => {
         );
 
         console.log("New deductions for Others: ", deductionsList);
-
-        // Add deductions to the product
         product.simpleDeductions = deductionsList;
-      } else if (productCategory.name === "Mobile") {
-        console.log("Mobiles Deductions");
-        deductionsList = await createDeductions(
-          product.variants,
-          conditionsList,
-          conditionLabelsList
-        );
-
-        console.log("New deductions for Mobile: ", deductionsList);
-
-        // Add deductions to the product
-        product.variantDeductions = deductionsList;
       }
 
       await product.save();
@@ -307,6 +387,7 @@ export const createProduct = async (req, res) => {
       res.status(200).json(product);
     }
   } catch (error) {
+    console.log("Error while creating a product", error);
     res.status(404).json({ message: error.message });
   }
 };
@@ -538,28 +619,36 @@ export const updatePriceDrop = async (req, res) => {
 export const updateLaptopConfigurationsPriceDrop = async (req, res) => {
   console.log("updateLaptopConfigurationsPriceDrop Controller");
   // console.log("req.body", req.body);
-
-  const productId = req.params.productId;
-  console.log(productId);
-  const type = req.query.type;
-  console.log(type);
-
-  const updatedProduct = req.body;
-  // console.log("updatedProduct", updatedProduct);
-
-  const product = await Product.findById(productId);
-  const categoryId = product.category;
-  const categoryFound = await Category.findById(categoryId);
-  const brandId = Product.brand;
-
-  // console.log(product);
-  // console.log(categoryId);
-  // console.log("category", categoryFound);
-
-  // console.log("updatedDeductions", updatedDeductions);
-  // console.log("processor", updatedDeductions[1]);
-
   try {
+    const productId = req.params.productId;
+    console.log("productId", productId);
+    const type = req.query.type;
+    // console.log("type", type);
+    const brand = req.query.brand;
+    console.log("brand from req.query", brand);
+
+    const updatedProduct = req.body;
+    // console.log("updatedProduct", updatedProduct);
+
+    const product = await Product.findById(productId).populate("brand");
+    // console.log("product", product);
+    const categoryId = product.category;
+    // const categoryFound = await Category.findById(categoryId);
+    // const brandId = Product.brand;
+
+    const APPLEBRAND = await Brand.findOne({
+      category: categoryId,
+      name: "Apple",
+    }).select("_id name category");
+
+    console.log("APPLEBRAND", APPLEBRAND);
+
+    let { name: appleBrandName, _id: appleBrandId } = APPLEBRAND;
+    console.log("brand name & ID from ", appleBrandName, appleBrandId);
+
+    // console.log("updatedDeductions", updatedDeductions);
+    // console.log("processor", updatedDeductions[1]);
+
     let updatedDeductions = req.body.simpleDeductions;
 
     if (type.toLowerCase().includes("alllaptopconfig")) {
@@ -567,16 +656,18 @@ export const updateLaptopConfigurationsPriceDrop = async (req, res) => {
 
       // Update the product with the complete updated data
       const result = await Product.updateMany(
-        { category: categoryId },
+        {
+          category: categoryId,
+          brand:
+            appleBrandName === brand ? appleBrandId : { $ne: appleBrandId }, // Dynamic brand match
+        },
         { $set: { simpleDeductions: updatedDeductions } }
       );
 
-      console.log({
-        matchedCount: result.matchedCount,
-        modifiedCount: result.modifiedCount,
-      });
+      console.log("productUpdated from alllaptopconfig", result);
     } else if (type.toLowerCase().includes("singlelaptopconfig")) {
       console.log("Updating SINGLE Laptop CONFIGURATIONS");
+
       // Update the product with the complete updated data
       const productUpdated = await Product.findByIdAndUpdate(
         productId,
@@ -584,9 +675,9 @@ export const updateLaptopConfigurationsPriceDrop = async (req, res) => {
         { new: true }
       );
       await productUpdated.save();
-      // console.log("productUpdated", productUpdated);
+      console.log("productUpdated from singlelaptopconfig", productUpdated);
     } else if (type.toLowerCase().includes("singlelaptopconditions")) {
-      console.log("Updating SINGLE Laptop CONDITIONS");
+      console.log("Updating SINGLE Laptop Processor Based Problems");
       // Update the product with the complete updated data
 
       const productUpdated = await Product.findByIdAndUpdate(
@@ -602,15 +693,25 @@ export const updateLaptopConfigurationsPriceDrop = async (req, res) => {
 
       // console.log("productUpdated", productUpdated);
     } else if (type.toLowerCase().includes("alllaptopconditions")) {
-      console.log("Updating ALL Laptop CONDITIONS");
+      console.log("Updating ALL Laptops Processor Based Problems");
       // Update the product with the complete updated data
 
       let selectedProcessorDeduction = req.body;
-      console.log("selectedProcessorDeduction", selectedProcessorDeduction);
+      // console.log("selectedProcessorDeduction", selectedProcessorDeduction);
       // processorBasedDeduction
+
+      const noOfProducts = await Product.find({
+        category: categoryId,
+        brand: appleBrandName === brand ? appleBrandId : { $ne: appleBrandId }, // Dynamic brand match
+      });
+
+      console.log("noOfProducts", noOfProducts.length);
+
       const productsUpdated = await Product.updateMany(
         {
           category: categoryId,
+          brand:
+            appleBrandName === brand ? appleBrandId : { $ne: appleBrandId }, // Dynamic brand match
           "processorBasedDeduction.processorId":
             selectedProcessorDeduction.processorId,
         },
