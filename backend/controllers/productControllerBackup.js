@@ -11,9 +11,8 @@ export const getAllProducts = async (req, res) => {
   console.log("getAllProducts Controller");
 
   const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) < 10 ? 20 : parseInt(req.query.limit);
+  const limit = parseInt(req.query.limit) || 10;
   const search = req.query.search || "";
-  const categoryId = req.query.categoryId || "";
 
   try {
     // Escape special characters in the search term
@@ -21,9 +20,7 @@ export const getAllProducts = async (req, res) => {
     const regex = new RegExp(escapedSearch, "i");
     const query = {
       name: { $regex: search, $options: "i" },
-      ...(categoryId ? { category: categoryId } : {}), // Add category only if categoryId exists
     };
-
     const skip = (page - 1) * limit;
 
     const products = await Product.find(query)
@@ -692,62 +689,56 @@ export const updateLaptopConfigurationsPriceDrop = async (req, res) => {
       await productUpdated.save();
       console.log("productUpdated from singlelaptopconfig", productUpdated);
     } else if (type.toLowerCase().includes("singlelaptopconditions")) {
-      console.log("*********************************");
-      console.log("Updating Single Processor Based Problems");
+      console.log("Updating SINGLE Laptop Processor Based Problems");
+      // Update the product with the complete updated data
+
+      const productUpdated = await Product.findByIdAndUpdate(
+        productId,
+        {
+          $set: {
+            processorBasedDeduction: updatedProduct.processorBasedDeduction,
+          },
+        },
+        { new: true }
+      );
+      await productUpdated.save();
+
+      // console.log("productUpdated", productUpdated);
+    } else if (type.toLowerCase().includes("alllaptopconditions")) {
+      console.log("Updating ALL Laptops Processor Based Problems");
       // Update the product with the complete updated data
 
       let selectedProcessorDeduction = req.body;
       // console.log("selectedProcessorDeduction", selectedProcessorDeduction);
-      console.log(
-        "category",
-        selectedProcessorDeduction.category.id,
-        "productId",
-        selectedProcessorDeduction.processorId
-      );
+      // processorBasedDeduction
 
-      // Update the Processor with the complete updated data
-      const processorUpdated = await Processor.updateOne(
+      // const noOfProducts = await Product.find({
+      //   category: categoryId,
+      //   brand: appleBrandName === brand ? appleBrandId : { $ne: appleBrandId }, // Dynamic brand match
+      // });
+
+      // console.log("noOfProducts", noOfProducts.length);
+
+      const productsUpdated = await Product.updateMany(
         {
-          category: selectedProcessorDeduction.category.id, // Match by category
-          processorId: selectedProcessorDeduction.processorId, // Match by processorId
+          category: categoryId,
+          brand:
+            appleBrandName === brand ? appleBrandId : { $ne: appleBrandId }, // Dynamic brand match
+          "processorBasedDeduction.processorId":
+            selectedProcessorDeduction.processorId,
         },
         {
           $set: {
-            deductions: selectedProcessorDeduction.deductions, // Set the new deductions data
+            "processorBasedDeduction.$.deductions":
+              selectedProcessorDeduction.deductions,
           },
         }
       );
 
-      console.log("processorUpdated", processorUpdated);
-
-      // console.log("productUpdated", productUpdated);
-    } else if (type.toLowerCase().includes("alllaptopconditions")) {
-      console.log("*********************************");
-      console.log("Updating ALL Processor Based Problems");
-
-      let selectedProcessorDeduction = req.body;
-      // console.log("selectedProcessorDeduction", selectedProcessorDeduction);
-      console.log(
-        "category",
-        selectedProcessorDeduction.category.id,
-        "productId",
-        selectedProcessorDeduction.processorId
-      );
-
-      // Update the Processor with the complete updated data
-      const processorUpdated = await Processor.updateMany(
-        {
-          category: selectedProcessorDeduction.category.id, // Match by category
-          // processorId: selectedProcessorDeduction.processorId, // Match by processorId
-        },
-        {
-          $set: {
-            deductions: selectedProcessorDeduction.deductions, // Set the new deductions data
-          },
-        }
-      );
-
-      console.log("processorUpdated", processorUpdated);
+      console.log({
+        matchedCount: productsUpdated.matchedCount,
+        modifiedCount: productsUpdated.modifiedCount,
+      });
     }
 
     res.status(200).json({ message: "Products updated successfully" });
@@ -761,25 +752,7 @@ export const getProcessorDeductions = async (req, res) => {
   console.log("productsController getProcessorDeductions");
   try {
     const processorId = req.params.processorId;
-    const from = req.query.from; // Access the "from" query parameter
-
-    // console.log("Processor ID:", processorId);
-
-    if (from == "finalPriceCal") {
-      console.log("resulting for", from);
-      const processorName = req.params.processorId;
-      const category = req.query.category; // Access the "category" query parameter
-      // console.log("Category:", category);
-
-      const processor = await Processor.findOne({
-        category: category,
-        processorName: processorName,
-      }).populate("category", "name");
-
-      res.status(200).json(processor);
-      return;
-    }
-
+    console.log("processorId", processorId);
     const processor = await Processor.findOne({
       processorId: processorId,
     }).populate("category", "name");

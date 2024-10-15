@@ -6,15 +6,13 @@ import { VariantQuestion } from "../models/variantQuestionModel.js";
 import path from "path";
 import fs from "fs";
 import Brand from "../models/brandModel.js";
+import Processor from "../models/processorModel.js";
 
 // Get Conditions
 export const getConditions = async (req, res) => {
   console.log("getConditions controller");
   try {
-    // console.log("before");
     const conditions = await Condition.find().populate("category", "name");
-    // console.log(conditions);
-    // console.log("after");
     res.status(200).json(conditions);
   } catch (error) {
     return res.status(500).json({ message: "Internal server error.", error });
@@ -24,7 +22,6 @@ export const getConditions = async (req, res) => {
 // Create Conditions
 export const createCondtions = async (req, res) => {
   console.log("createCondtions Controller");
-  // const { category, conditionNames } = req.body;
   const { category, conditionName, page } = req.body;
   // console.log(req.body);
 
@@ -34,14 +31,12 @@ export const createCondtions = async (req, res) => {
     const conditionCategory = await Category.findById(category);
     // console.log("category", conditionCategory);
 
-    // const EXISTING_CAT_PRODS = await Product.find({ category });
-    // console.log("Existing Category Products length", EXISTING_CAT_PRODS.length);
-
     let laptopDesktopCheck =
       conditionCategory.name === "Laptop" ||
       conditionCategory.name === "Desktop";
 
-    // newDeduction.conditionName.toLowerCase().includes("processor") ||
+    console.log("laptopDesktopCheck", laptopDesktopCheck);
+
     const configCheck =
       conditionName.toLowerCase().includes("processor") ||
       conditionName.toLowerCase().includes("ram") ||
@@ -54,24 +49,40 @@ export const createCondtions = async (req, res) => {
       const APPLE_BRAND = await Brand.findOne({
         category: conditionCategory.id,
         name: "Apple",
-        // name: conditionCategory.name === "Laptop" ? "Apple" : "iMac",
       });
-
-      const APPLE_PRODS = await Product.find({
-        category: conditionCategory._id,
-        brand: APPLE_BRAND?._id,
+      let NON_APPLE_BRAND = await Brand.findOne({
+        category: conditionCategory.id,
+        name: { $ne: "Apple" }, // Excludes brands with the name "Apple"
       });
+      if (!NON_APPLE_BRAND || NON_APPLE_BRAND?.products?.length <= 0) {
+        NON_APPLE_BRAND = await Brand.findOne({
+          category: conditionCategory.id,
+          name: { $nin: ["Apple", NON_APPLE_BRAND?.name || ""] }, // Excludes "Apple" and the previous brand name (if found)
+        });
+        console.log("NON_APPLE_BRAND of laptop 2", NON_APPLE_BRAND?.name);
+      }
 
-      const WINDOWS_PRODS = await Product.find({
-        category: conditionCategory._id,
-        brand: { $ne: APPLE_BRAND?._id }, // $ne for "not equal" to Apple brand
-      });
+      console.log("APPLE_BRAND of laptop", APPLE_BRAND?.name);
+      console.log("NON_APPLE_BRAND of laptop", NON_APPLE_BRAND?.name);
 
-      console.log("APPLE_PRODS length", APPLE_PRODS?.length);
-      console.log("WINDOWS_PRODS length", WINDOWS_PRODS?.length);
+      // const APPLE_PRODS = await Product.find({
+      //   category: conditionCategory._id,
+      //   brand: APPLE_BRAND?._id,
+      // });
+
+      // const WINDOWS_PRODS = await Product.find({
+      //   category: conditionCategory._id,
+      //   brand: { $ne: APPLE_BRAND?._id }, // $ne for "not equal" to Apple brand
+      // });
+
+      const APPLE_PROD_LEN = APPLE_BRAND?.products.length;
+      const WINDOWS_PROD_LEN = NON_APPLE_BRAND?.products.length;
+
+      console.log("APPLE_PROD_LEN ", APPLE_PROD_LEN);
+      console.log("WINDOWS_PROD_LEN ", WINDOWS_PROD_LEN);
 
       // If no product exists: Need to create a product first
-      if (APPLE_PRODS?.length <= 0 || WINDOWS_PRODS?.length <= 0) {
+      if (APPLE_PROD_LEN <= 0 || WINDOWS_PROD_LEN <= 0) {
         console.log("Create Products in this category first..!");
         return res.status(201).json({
           message: `Create atleast one Windows AND one Apple(IOS) Product, to Create this Conditions.`,
@@ -98,18 +109,10 @@ export const createCondtions = async (req, res) => {
           console.log("Flag if PROCESSORS_LIST.length > 1", flag);
 
           let appleCL = PROCESSORS_LIST.find((p) =>
-            p.conditionLabel.includes("Apple")
+            p.conditionLabel.toLowerCase().includes("apple")
           );
           if (appleCL) flag = true;
           else flag = false;
-          // PROCESSORS_LIST.forEach((processor) => {
-          //   // console.log("inside for each", processor.conditionLabel);
-          //   processor.conditionLabel.includes("Apple")
-          //     ? (flag = true)
-          //     : (flag = false);
-
-          //   if (flag) return;
-          // });
         }
         console.log("Final flag value after Apple processor check:", flag);
 
@@ -119,15 +122,6 @@ export const createCondtions = async (req, res) => {
             message: `Create atleast one Processor of Windows AND one MAC(IOS), to Create this Conditions.`,
           });
         }
-
-        // console.log("PROCESSORS_LIST", PROCESSORS_LIST);
-
-        // if (PROCESSORS_LIST?.length <= 1) {
-        //   console.log("Create Processors first for this category..!");
-        //   return res.status(201).json({
-        //     message: `Create atleast one Processor for each Windows AND one Apple(IOS) Product, to Create this Conditions.`,
-        //   });
-        // }
       }
     }
 
@@ -168,26 +162,20 @@ export const createCondtions = async (req, res) => {
     };
     // console.log("newDeduction", newDeduction);
 
-    const updatedProducts = [];
-
     if (conditionCategory.name === "Mobile") {
+      console.log("Creating condition for Mobiles");
       // Find all products of the specific category
-      const products = await Product.find({ category: category });
-      for (const product of products) {
-        // Iterate over each variantDeduction of the product
-        product.variantDeductions.forEach((vd) => {
-          // Iterate over each new deduction and push it to the deductions array
-          // newDeductions.forEach((newDe) => {
-          vd.deductions.push(newDeduction);
-          // });
-        });
-
-        // Save the updated product
-        const updatedProduct = await product.save();
-
-        // Push the updated product to the array
-        updatedProducts.push(updatedProduct);
-      }
+      const productsUpdated = await Product.updateMany(
+        {
+          category: category, // Match products by category
+        },
+        {
+          $push: {
+            "variantDeductions.$[].deductions": newDeduction, // Push new deduction to each variantDeduction array
+          },
+        }
+      );
+      console.log("productsUpdated", productsUpdated);
 
       // Create and Push New Condition from VARIANTS QUESTIONS as well
       for (const vq of variantsQuestions) {
@@ -196,59 +184,47 @@ export const createCondtions = async (req, res) => {
         vq.save();
       }
     } else if (laptopDesktopCheck) {
-      // Update "deductions" field of all the products of this category
+      console.log("Creating condition for Laptops");
 
+      // Update "deductions" field of all the products of this category
       if (configCheck) {
         console.log("Configuration Condition");
-        await Product.updateMany(
+        const productsUpdated = await Product.updateMany(
           { category: category }, // Update products of a specific category
           { $push: { simpleDeductions: newDeduction } }
-          // { $push: { simpleDeductions: { $each: newDeduction } } }
         );
+        console.log("productsUpdated", productsUpdated);
       } else {
-        // const products = await Product.find({ category: category });
-        // for (const product of products) {
-        //   // Iterate over each variantDeduction of the product
-        //   product.processorBasedDeduction.forEach((pbd) => {
-        //     // Iterate over each new deduction and push it to the deductions array
-        //     pbd.deductions.push(newDeduction);
-        //   });
-
-        //   // Save the updated product
-        //   const updatedProduct = await product.save();
-
-        //   // Push the updated product to the array
-        //   updatedProducts.push(updatedProduct);
-        // }
         console.log("Non Configuration Condition");
-        const productsUpdated = await Product.updateMany(
+
+        const processorsUpdated = await Processor.updateMany(
           {
             category: category, // Match products by category
           },
           {
             $push: {
-              "processorBasedDeduction.$[].deductions": newDeduction, // Push new deduction to each processorBasedDeduction array
+              deductions: newDeduction, // Push new deduction to each processor's deductions array
             },
           }
         );
-        console.log("productsUpdated", productsUpdated);
+        console.log("processorsUpdated", processorsUpdated);
       }
-    }
-    //  else {
-    //   // Update "deductions" field of all the products of this category
-    //   await Product.updateMany(
-    //     { category: category }, // Update products of a specific category
-    //     { $push: { simpleDeductions: newDeduction } }
-    //     // { $push: { simpleDeductions: { $each: newDeduction } } }
-    //   );
-    // }
+    } else {
+      console.log("Other category condition, updating in all products");
 
-    // console.log("updateProducts", updatedProducts);
+      // Update "simpleDeductions" field of all the products of this category
+      const productsUpdated = await Product.updateMany(
+        { category: category }, // Update products of a specific category
+        { $push: { simpleDeductions: newDeduction } }
+      );
+
+      console.log("productsUpdated", productsUpdated);
+    }
 
     return res.status(201).json({
       message: "Successfully Created.",
       newCondition,
-      updatedProducts,
+      // updatedProducts,
     });
   } catch (error) {
     return res.status(500).json({ message: "Internal server error.", error });
@@ -266,36 +242,37 @@ export const updateCondition = async (req, res) => {
     const conditionCategory = await Category.findById(conditionFound.category);
     // console.log("conditionCategory", conditionCategory);
 
-    const variantsQuestions = await VariantQuestion.find();
-    // console.log("variantsQuestions", variantsQuestions);
-
-    // Find all products of the same category
-    const productsToUpdate = await Product.find({
-      category: conditionFound.category,
-    });
-
-    // console.log("productsToUpdate", productsToUpdate);
-
     let laptopDesktopCheck =
       conditionCategory.name === "Laptop" ||
       conditionCategory.name === "Desktop";
 
+    console.log("laptopDesktopCheck", laptopDesktopCheck);
+
     // NEW APPROACH TO UPDATE PRODUCTS DEDUCTIONS CONDITION
     if (conditionCategory.name === "Mobile") {
-      // Iterate over each product
-      for (const product of productsToUpdate) {
-        // Iterate over each variantDeduction of the product
-        for (const vd of product.variantDeductions) {
-          // Find the condition to update in the deductions array
-          vd.deductions.forEach((deduction) => {
-            if (deduction.conditionId === conditionId) {
-              deduction.conditionName = req.body.conditionName;
-              deduction.page = req.body.page;
-            }
-          });
+      console.log("Updating condition of a mobile");
+      // Find all products of the same category
+      const productsUpdated = await Product.updateMany(
+        {
+          category: conditionFound.category,
+          "variantDeductions.deductions.conditionId": conditionId, // Match conditionId in deductions
+        },
+        {
+          $set: {
+            "variantDeductions.$[].deductions.$[deduction].conditionName":
+              req.body.conditionName,
+            "variantDeductions.$[].deductions.$[deduction].page": req.body.page,
+          },
+        },
+        {
+          arrayFilters: [{ "deduction.conditionId": conditionId }], // Filter for deductions to update
         }
-        product.save();
-      }
+      );
+
+      console.log("productsUpdated", productsUpdated);
+
+      const variantsQuestions = await VariantQuestion.find();
+      // console.log("variantsQuestions", variantsQuestions);
 
       // Update ConditionName from VARIANTS QUESTIONS as well
       for (const vq of variantsQuestions) {
@@ -310,11 +287,6 @@ export const updateCondition = async (req, res) => {
         });
         vq.save();
       }
-
-      // Save the updated products
-      // const updatedProducts = await Promise.all(
-      //   productsToUpdate.map((product) => product.save())
-      // );
     } else if (laptopDesktopCheck) {
       console.log("Laptops condition to update");
       const configCheck =
@@ -324,17 +296,6 @@ export const updateCondition = async (req, res) => {
 
       if (configCheck) {
         console.log("Config Deduction update");
-        // for (const product of productsToUpdate) {
-        //   product.simpleDeductions.forEach((deduction) => {
-        //     if (deduction.conditionId === conditionId) {
-        //       deduction.conditionName = req.body.conditionName;
-        //       deduction.page = req.body.page;
-        //     }
-        //   });
-
-        //   // Save the updated product
-        //   await product.save();
-        // }
         const productsUpdated = await Product.updateMany(
           {
             category: conditionCategory._id, // Match products by category
@@ -353,54 +314,46 @@ export const updateCondition = async (req, res) => {
         console.log("productsUpdated", productsUpdated);
       } else {
         console.log("Non Config Deduction update");
-        // for (const product of productsToUpdate) {
-        //   // Iterate over each variantDeduction of the product
-        //   for (const pbd of product.processorBasedDeduction) {
-        //     // Find the condition to update in the deductions array
-        //     pbd.deductions.forEach((deduction) => {
-        //       if (deduction.conditionId === conditionId) {
-        //         deduction.conditionName = req.body.conditionName;
-        //         deduction.page = req.body.page;
-        //       }
-        //     });
-        //   }
-        //   product.save();
-        // }
 
-        const productsUpdated = await Product.updateMany(
+        const processorsUpdated = await Processor.updateMany(
           {
             category: conditionCategory._id, // Match products by category
-            "processorBasedDeduction.deductions.conditionId": conditionId, // Match the conditionId in the deductions array
+            "deductions.conditionId": conditionId, // Match the conditionId in the deductions array
           },
           {
             $set: {
-              "processorBasedDeduction.$[].deductions.$[elem].conditionName":
-                req.body.conditionName,
-              "processorBasedDeduction.$[].deductions.$[elem].page":
-                req.body.page,
+              "deductions.$[elem].conditionName": req.body.conditionName,
+              "deductions.$[elem].page": req.body.page,
             },
           },
           {
             arrayFilters: [{ "elem.conditionId": conditionId }], // Update the specific element that matches the conditionId
           }
         );
-
-        console.log("productsUpdated", productsUpdated);
+        console.log("processorsUpdated", processorsUpdated);
       }
-    }
-    // else {
-    //   for (const product of productsToUpdate) {
-    //     product.simpleDeductions.forEach((deduction) => {
-    //       if (deduction.conditionId === conditionId) {
-    //         deduction.conditionName = req.body.conditionName;
-    //         deduction.page = req.body.page;
-    //       }
-    //     });
+    } else {
+      console.log("Other category condition, updating in products");
+      const productsUpdated = await Product.updateMany(
+        {
+          category: conditionFound.category, // Match by category
+          "simpleDeductions.conditionId": conditionId, // Match the conditionId within simpleDeductions array
+        },
+        {
+          $set: {
+            "simpleDeductions.$[elem].conditionName": req.body.conditionName, // Update the conditionName
+            "simpleDeductions.$[elem].page": req.body.page, // Update the page
+          },
+        },
+        {
+          arrayFilters: [
+            { "elem.conditionId": conditionId }, // Array filter to apply the update to only the matching conditionId
+          ],
+        }
+      );
 
-    //     // Save the updated product
-    //     await product.save();
-    //   }
-    // }
+      console.log("productsUpdated", productsUpdated);
+    }
 
     // Use Mongoose to find the question by ID and update it with the provided updates
     const updatedCondition = await Condition.findByIdAndUpdate(
@@ -444,10 +397,6 @@ export const deleteCondition = async (req, res) => {
       }
     });
 
-    // const associatedConditionLabels = await ConditionLabel.find({
-    //   conditionNameId: conditionId,
-    // });
-
     const deletedConditionLabels = await ConditionLabel.deleteMany({
       conditionNameId: conditionId,
     });
@@ -465,43 +414,18 @@ export const deleteCondition = async (req, res) => {
     // Step 2: Update products to remove the deleted condition
     if (conditionCategory.name.toLowerCase().includes("mobile")) {
       // Find all products of the specific category
-      const products = await Product.find({ category: category });
-
-      // Iterate over each product
-      for (const product of products) {
-        // Iterate over each variantDeduction of the product
-        for (const vd of product.variantDeductions) {
-          // Find the index of the condition to delete in the deductions array
-          const index = vd.deductions.findIndex(
-            (d) => d.conditionId === conditionId
-          );
-          // console.log("vd", vd);
-          // console.log("index", index);
-          if (index !== -1) {
-            // Remove the condition from the deductions array
-            vd.deductions.splice(index, 1);
-          }
+      const productsUpdated = await Product.updateMany(
+        {
+          category: category, // Match products by category
+          "variantDeductions.deductions.conditionId": conditionId, // Match the conditionId in the deductions array within variantDeductions
+        },
+        {
+          $pull: {
+            "variantDeductions.$[].deductions": { conditionId: conditionId }, // Remove deduction where conditionId matches
+          },
         }
-      }
-
-      // Save the updated products
-      const updatedProducts = await Promise.all(
-        products.map((product) => product.save())
       );
-
-      // const productsUpdated = await Product.updateMany(
-      //   {
-      //     category: category, // Match products by category
-      //     "variantDeductions.deductions.conditionId": conditionId, // Match the conditionId in the deductions array within variantDeductions
-      //   },
-      //   {
-      //     $pull: {
-      //       "variantDeductions.$[].deductions": { conditionId: conditionId }, // Remove deduction where conditionId matches
-      //     },
-      //   }
-      // );
-
-      // console.log("productsUpdated", productsUpdated);
+      console.log("productsUpdated", productsUpdated);
 
       // Delete Condition from Varianst Questions
       for (const vq of variantsQuestions) {
@@ -516,6 +440,8 @@ export const deleteCondition = async (req, res) => {
         vq.save();
       }
     } else if (laptopDesktopCheck) {
+      console.log("Laptop/Desktop", laptopDesktopCheck);
+
       const configCheck =
         deletedCondition.conditionName.toLowerCase().includes("processor") ||
         deletedCondition.conditionName.toLowerCase().includes("ram") ||
@@ -526,7 +452,8 @@ export const deleteCondition = async (req, res) => {
         .includes("processor");
 
       if (configCheck) {
-        await Product.updateMany(
+        console.log("Deleting config condition");
+        const productsUpdated = await Product.updateMany(
           {
             category: category, // Match by category
             "simpleDeductions.conditionId": conditionId, // Match by conditionId
@@ -538,54 +465,48 @@ export const deleteCondition = async (req, res) => {
           }
         );
 
+        console.log("productsUpdated", productsUpdated);
+
         if (processorCond) {
           console.log("Deleting Processor Condition");
-          const products = await Product.find({ category: category });
-          // Iterate over each product
-          for (const product of products) {
-            // Iterate over each variantDeduction of the product
-            product.processorBasedDeduction = [];
-            await product.save();
-          }
+          const processorUpdated = await Processor.deleteMany({
+            category: category, // Match by category
+          });
+
+          console.log("processorUpdated", processorUpdated);
         }
       } else {
+        console.log("Deleting non-config condition");
+
         // Find all products of the specific category
-        const products = await Product.find({ category: category });
-
-        // Iterate over each product
-        // for (const product of products) {
-        //   // Iterate over each variantDeduction of the product
-        //   for (const pbd of product.processorBasedDeduction) {
-        //     // Find the index of the condition to delete in the deductions array
-        //     const index = pbd.deductions.findIndex(
-        //       (d) => d.conditionId === conditionId
-        //     );
-        //     // console.log("pbd", pbd);
-        //     // console.log("index", index);
-        //     if (index !== -1) {
-        //       // Remove the condition from the deductions array
-        //       pbd.deductions.splice(index, 1);
-        //     }
-        //   }
-        //   await product.save();
-        // }
-
-        const productsUpdated = await Product.updateMany(
+        const processorUpdated = await Processor.updateMany(
           {
             category: category, // Match by category
-            "processorBasedDeduction.deductions.conditionId": conditionId, // Match by conditionId within the deductions array in processorBasedDeduction
+            "deductions.conditionId": conditionId, // Match by conditionId within the deductions array in processorBasedDeduction
           },
           {
             $pull: {
-              "processorBasedDeduction.$[].deductions": {
-                conditionId: conditionId,
-              }, // Remove the deduction object where conditionId matches
+              deductions: { conditionId: conditionId }, // Remove the deduction object where conditionId matches
             },
           }
         );
 
-        console.log("productsUpdated", productsUpdated);
+        console.log("processorUpdated", processorUpdated);
       }
+    } else {
+      console.log("Other category condition, deleting in products");
+      const productsUpdated = await Product.updateMany(
+        {
+          category: category, // Match by category
+          "simpleDeductions.conditionId": conditionId, // Match by conditionId
+        },
+        {
+          $pull: {
+            simpleDeductions: { conditionId: conditionId }, // Remove the entire deduction object
+          },
+        }
+      );
+      console.log("productsUpdated", productsUpdated);
     }
 
     // Delete the corresponding image file from the uploads folder
@@ -665,26 +586,24 @@ export const createCondtionLabel = async (req, res) => {
       const APPLE_BRAND = await Brand.findOne({
         category: cLCategory.id,
         name: "Apple",
-        // name: cLCategory.name === "Laptop" ? "Apple" : "iMac",
       });
 
-      // console.log("APPLE_BRAND", APPLE_BRAND);
-
-      const APPLE_PRODS = await Product.find({
-        category: cLCategory._id,
-        brand: APPLE_BRAND?._id,
+      const NON_APPLE_BRAND = await Brand.findOne({
+        category: cLCategory.id,
+        name: { $ne: "Apple" }, // Excludes brands with the name "Apple"
       });
 
-      const WINDOWS_PRODS = await Product.find({
-        category: cLCategory._id,
-        brand: { $ne: APPLE_BRAND?._id }, // $ne for "not equal" to Apple brand
-      });
+      console.log("APPLE_BRAND of laptop", APPLE_BRAND?.name);
+      console.log("NON_APPLE_BRAND of laptop", NON_APPLE_BRAND?.name);
 
-      console.log("APPLE_PRODS length", APPLE_PRODS?.length);
-      console.log("WINDOWS_PRODS length", WINDOWS_PRODS?.length);
+      const APPLE_PROD_LEN = APPLE_BRAND?.products?.length;
+      const WINDOWS_PROD_LEN = NON_APPLE_BRAND?.products?.length;
+
+      console.log("APPLE_PROD_LEN ", APPLE_PROD_LEN);
+      console.log("WINDOWS_PROD_LEN ", WINDOWS_PROD_LEN);
 
       // If no product exists: Need to create a product first
-      if (APPLE_PRODS?.length <= 0 || WINDOWS_PRODS?.length <= 0) {
+      if (APPLE_PROD_LEN <= 0 || WINDOWS_PROD_LEN <= 0) {
         console.log("Create Products in this category first..!");
         return res.status(201).json({
           message: `Create atleast one Windows AND one Apple(IOS) Product, to Create this Conditions Label.`,
@@ -714,10 +633,8 @@ export const createCondtionLabel = async (req, res) => {
     });
     console.log("created newConditionLabel", newConditionLabel);
 
-    // Find all products of the specific category
-    // const products = await Product.find({ category: category });
-
     if (cLCategory.name === "Mobile") {
+      console.log("Updating created condition label into Mobiles");
       // Update "deductions" field of all products of the specific category
       const updatedProducts = await Product.updateMany(
         {
@@ -743,10 +660,10 @@ export const createCondtionLabel = async (req, res) => {
           ],
         } // Array filters to match variant and condition
       );
-      // console.log("updatedProducts", updatedProducts);
+      console.log("updatedProducts", updatedProducts);
 
       // Update Variants Questions Condition Labels as well
-      await VariantQuestion.updateMany(
+      const updatedVariantQuestions = await VariantQuestion.updateMany(
         {},
         {
           $push: {
@@ -762,14 +679,14 @@ export const createCondtionLabel = async (req, res) => {
           arrayFilters: [{ "condition.conditionId": conditionNameId }],
         }
       );
+      console.log("updatedVariantQuestions", updatedVariantQuestions);
     } else if (laptopDesktopCheck) {
-      // Update "deductions" field of all the products of this category
-      console.log("category", category);
-      console.log("conditionNameId", conditionNameId);
-      const condition = await Condition.findById(conditionNameId);
-      // const condition = await Condition.find({ _id: conditionNameId });
+      console.log("Pushing created condition label into Laptops");
 
-      console.log("condition of the conditionLabel", condition);
+      // console.log("category", category, "conditionNameId", conditionNameId);
+
+      const condition = await Condition.findById(conditionNameId);
+      console.log("condition of the conditionLabel", condition.conditionName);
       // debugger;
 
       const AppleBrand = await Brand.findOne({
@@ -794,7 +711,7 @@ export const createCondtionLabel = async (req, res) => {
         if (processorCond) {
           console.log("Processor Condition Labels");
 
-          // name: cLCategory.name === "Laptop" ? "Apple" : "iMac",
+          // Pushing/Creating PROCESSOR on all products simpleDeductions
           const updatedProducts = await Product.updateMany(
             {
               category: category, // Match by category
@@ -815,11 +732,14 @@ export const createCondtionLabel = async (req, res) => {
           );
           console.log("Updated updatedProducts", updatedProducts);
 
-          const prod = await Product.findOne({ category });
-          console.log("prod", prod);
+          // const prod = await Product.findOne({ category });
+          // console.log("product of this System category", prod.name);
+
+          const processor = await Processor.findOne({ category });
+          console.log("processor of System category", processor?.processorName);
 
           const oldProcessorBasedDeductionExist =
-            prod.processorBasedDeduction.length > 0;
+            processor?.deductions.length > 0;
 
           console.log(
             "oldProcessorBasedDeductionExist",
@@ -827,23 +747,16 @@ export const createCondtionLabel = async (req, res) => {
           );
 
           const newProcBasDeduc = {
+            category: category,
             processorId: newConditionLabel._id,
             processorName: newConditionLabel.conditionLabel,
             deductions: oldProcessorBasedDeductionExist
-              ? prod.processorBasedDeduction[0].deductions
+              ? processor.deductions
               : [],
           };
 
-          const productProcDed = await Product.updateMany(
-            {
-              category: category, // Update products of a specific category
-              brand:
-                appleBrandName === brand ? appleBrandId : { $ne: appleBrandId },
-            }, // Dynamic brand match
-
-            { $push: { processorBasedDeduction: newProcBasDeduc } }
-          );
-          console.log("productProcDed", productProcDed);
+          let processorCreated = await Processor.create(newProcBasDeduc);
+          processorCreated.save();
         } else {
           console.log("Non Processor Condition Labels");
           const updatedProducts = await Product.updateMany(
@@ -866,53 +779,55 @@ export const createCondtionLabel = async (req, res) => {
         }
       } else {
         console.log("Non Configurations, condition label");
-        const updatedProducts = await Product.updateMany(
+        const processorsUpdated = await Processor.updateMany(
           {
             category: category, // Match documents by category
-            "processorBasedDeduction.deductions.conditionId": conditionNameId, // Match by conditionId within deductions
+            "deductions.conditionId": conditionNameId, // Match by conditionId within deductions
           },
           {
             $push: {
-              "processorBasedDeduction.$[processor].deductions.$[deduction].conditionLabels":
-                {
-                  conditionLabelId: newConditionLabel._id,
-                  conditionLabel: newConditionLabel.conditionLabel,
-                  conditionLabelImg: newConditionLabel.conditionLabelImg,
-                  operation: "Subtrack", // or "Subtract" if that was a typo
-                },
+              "deductions.$[deduction].conditionLabels": {
+                conditionLabelId: newConditionLabel._id,
+                conditionLabel: newConditionLabel.conditionLabel,
+                conditionLabelImg: newConditionLabel.conditionLabelImg,
+                operation: "Subtrack",
+              },
             },
           },
           {
             arrayFilters: [
-              { "processor.deductions.conditionId": conditionNameId }, // Filter for matching deductions by conditionId
-              { "deduction.conditionId": conditionNameId }, // Ensure deduction matches the conditionId
+              { "deduction.conditionId": conditionNameId }, // Filter by matching conditionId within deductions array
             ],
-            multi: true, // Update multiple documents
+            multi: true, // Ensure multiple documents are updated
           }
         );
 
-        console.log("updatedProducts", updatedProducts);
+        console.log("processorsUpdated", processorsUpdated);
       }
+    } else {
+      console.log("Other category conditionLabel, updating in all products");
+
+      const updatedProducts = await Product.updateMany(
+        {
+          category: category, // Add any other conditions if needed
+          "simpleDeductions.conditionId": conditionNameId, // Match by conditionId
+        },
+        {
+          $push: {
+            "simpleDeductions.$.conditionLabels": {
+              conditionLabelId: newConditionLabel._id,
+              conditionLabel: newConditionLabel.conditionLabel,
+              conditionLabelImg: newConditionLabel.conditionLabelImg,
+              operation: "Subtrack",
+              // priceDrop: newConditionLabel.priceDrop,
+            },
+          },
+        }
+      );
+      console.log("updatedProducts", updatedProducts);
     }
-    // else {
-    //   await Product.updateMany(
-    //     {
-    //       category: category, // Add any other conditions if needed
-    //       "simpleDeductions.conditionId": conditionNameId, // Match by conditionId
-    //     },
-    //     {
-    //       $push: {
-    //         "simpleDeductions.$.conditionLabels": {
-    //           conditionLabelId: newConditionLabel._id,
-    //           conditionLabel: newConditionLabel.conditionLabel,
-    //           conditionLabelImg: newConditionLabel.conditionLabelImg,
-    //           operation: "Subtrack",
-    //           // priceDrop: newConditionLabel.priceDrop,
-    //         },
-    //       },
-    //     }
-    //   );
-    // }
+
+    newConditionLabel.save();
 
     return res.status(201).json({
       newConditionLabel: newConditionLabel,
@@ -944,12 +859,11 @@ export const updateConditionLabel = async (req, res) => {
     const cLCategory = await Category.findById(category);
     // console.log("cLCategory", cLCategory);
 
-    // Update the conditionLabels using the provided category, conditionId, and conditionLabelId
-
     let laptopDesktopCheck =
       cLCategory.name === "Laptop" || cLCategory.name === "Desktop";
 
     if (cLCategory.name === "Mobile") {
+      console.log("Updating condition label into all Mobile products");
       const updatedProducts = await Product.updateMany(
         {
           category: category,
@@ -971,7 +885,7 @@ export const updateConditionLabel = async (req, res) => {
           ],
         } // Array filters to match variant and condition
       );
-      // console.log("updatedProducts", updatedProducts);
+      console.log("updatedProducts", updatedProducts);
 
       // Update Variants Questions Condition Labels as well
       await VariantQuestion.updateMany(
@@ -992,6 +906,7 @@ export const updateConditionLabel = async (req, res) => {
         }
       );
     } else if (laptopDesktopCheck) {
+      console.log("Updating condition label into all Laptop products");
       const condition = await Condition.findById(
         updatedConditionLabel.conditionNameId
       );
@@ -1021,8 +936,6 @@ export const updateConditionLabel = async (req, res) => {
                 conditionLabel,
               "simpleDeductions.$[outer].conditionLabels.$[inner].conditionLabelImg":
                 conditionLabelImg,
-              // "simpleDeductions.$[outer].conditionLabels.$[inner].operation":
-              //   "Subtrack",
             },
           },
           {
@@ -1038,46 +951,47 @@ export const updateConditionLabel = async (req, res) => {
         if (processorCond) {
           console.log("Updating conditionLabels of processorConditions ");
 
-          const products = await Product.find({ category });
-          // console.log("products", products);
+          const processorsUpdated = await Processor.updateMany(
+            {
+              category: category, // Match by category
+              processorId: conditionLabelId, // Match by processorId
+            },
+            {
+              $set: { processorName: conditionLabel }, // Update the processorName
+            }
+          );
 
-          for (let product of products) {
-            product.processorBasedDeduction.forEach((pbd) => {
-              if (pbd.processorId === conditionLabelId) {
-                console.log("Mactched processorId");
-                pbd.processorName = conditionLabel;
-              }
-            });
-            await product.save();
-          }
+          console.log("processorsUpdated", processorsUpdated);
         }
       } else {
         console.log("Updating conditionLabel of non configuration conditions");
 
-        const productsUpdated = await Product.updateMany(
+        const processorsUpdated = await Processor.updateMany(
           {
-            "processorBasedDeduction.deductions.conditionId": conditionNameId, // Match documents where the conditionId in deductions matches conditionNameId
+            category: category, // Match processors by category
+            "deductions.conditionId": conditionNameId, // Match deductions where conditionId equals conditionNameId
           },
           {
             $set: {
-              "processorBasedDeduction.$[processor].deductions.$[deduction].conditionLabels.$[label].conditionLabel":
-                conditionLabel, // Update the conditionLabel under matched conditionId
-              "processorBasedDeduction.$[processor].deductions.$[deduction].conditionLabels.$[label].conditionLabelImg":
-                conditionLabelImg, // Optionally update the conditionLabelImg
+              "deductions.$[deduction].conditionLabels.$[label].conditionLabel":
+                conditionLabel, // Update conditionLabel
+              "deductions.$[deduction].conditionLabels.$[label].conditionLabelImg":
+                conditionLabelImg, // Optionally update conditionLabelImg
             },
           },
           {
             arrayFilters: [
-              { "processor.deductions.conditionId": conditionNameId }, // Filter for matching processor deductions by conditionId
-              { "deduction.conditionId": conditionNameId }, // Filter for matching deductions by conditionId
-              { "label.conditionLabelId": conditionLabelId }, // Filter for matching conditionLabels by conditionLabelId
+              { "deduction.conditionId": conditionNameId }, // Match the correct deduction by conditionId
+              { "label.conditionLabelId": conditionLabelId }, // Match the correct conditionLabel within the deduction
             ],
-            multi: true, // Update multiple documents
+            multi: true, // Apply to multiple documents
           }
         );
-        console.log("productsUpdated", productsUpdated);
+
+        console.log("processorsUpdated", processorsUpdated);
       }
     } else {
+      console.log("Other category conditionLabel, updating in all products");
       const productsUpdated = await Product.updateMany(
         {
           category: category, // Match by category
@@ -1160,7 +1074,7 @@ export const deleteConditionLabel = async (req, res) => {
           ],
         } // Array filters to match conditionLabelIdToDelete
       );
-      // console.log("updatedProducts", updatedProducts);
+      console.log("updatedProducts", updatedProducts);
 
       // Update Variants Questions Condition Labels as well
       await VariantQuestion.updateMany(
@@ -1192,7 +1106,7 @@ export const deleteConditionLabel = async (req, res) => {
         console.log(
           "Deleting conditionLabel which are from configuration conditions"
         );
-        await Product.updateMany(
+        const productsUpdated = await Product.updateMany(
           {
             category: category, // Add any other conditions if needed
             "simpleDeductions.conditionLabels.conditionLabelId":
@@ -1205,55 +1119,47 @@ export const deleteConditionLabel = async (req, res) => {
           }
         );
 
+        console.log("productsUpdated", productsUpdated);
+
         if (processorCond) {
-          console.log("Deleting Processor from Processor based deductions");
-          await Product.updateMany(
-            {
-              "processorBasedDeduction.processorId": conditionLabelId, // Match documents where processorId matches the conditionLabelId
-            },
-            {
-              $pull: {
-                processorBasedDeduction: {
-                  processorId: conditionLabelId, // Pull the specific processorBasedDeduction where processorId matches conditionLabelId
-                },
-              },
-            }
-          );
+          console.log("Deleting processor from Processors collection");
+          const processorDeleted = await Processor.deleteOne({
+            category: category, // Match processors by category
+            processorId: conditionLabelId, // Match processors by processorId (which is set as conditionLabelId)
+          });
+
+          console.log("processorDeleted", processorDeleted);
         }
       } else {
         console.log(
           "Deleting ConditionLabel which are not from configuration conditions"
         );
-        await Product.updateMany(
+        const processorsUpdated = await Processor.updateMany(
           {
             category: category, // Match documents by category (if needed)
-            "processorBasedDeduction.deductions.conditionId":
-              deletedLabel.conditionNameId, // Match by conditionId within deductions
-            "processorBasedDeduction.deductions.conditionLabels.conditionLabelId":
-              conditionLabelId, // Match by conditionLabelId within conditionLabels
+            "deductions.conditionId": deletedLabel.conditionNameId, // Match by conditionId within deductions
           },
           {
             $pull: {
-              "processorBasedDeduction.$[processor].deductions.$[deduction].conditionLabels":
-                {
-                  conditionLabelId: conditionLabelId, // Pull the specific conditionLabel by ID
-                },
+              "deductions.$[deduction].conditionLabels": {
+                conditionLabelId: conditionLabelId, // Pull the specific conditionLabel by ID
+              },
             },
           },
           {
             arrayFilters: [
-              {
-                "processor.deductions.conditionId":
-                  deletedLabel.conditionNameId,
-              }, // Match specific conditionId in deductions
               { "deduction.conditionId": deletedLabel.conditionNameId }, // Ensure deduction matches the conditionId
             ],
             multi: true, // Update multiple documents
           }
         );
+
+        console.log("processorsUpdated", processorsUpdated);
       }
     } else {
-      await Product.updateMany(
+      console.log("Other category conditionLabel, deleting from all products");
+
+      const productsUpdated = await Product.updateMany(
         {
           category: category, // Add any other conditions if needed
           "simpleDeductions.conditionLabels.conditionLabelId": conditionLabelId, // Match by conditionLabelId
@@ -1264,6 +1170,7 @@ export const deleteConditionLabel = async (req, res) => {
           },
         }
       );
+      console.log("productsUpdated", productsUpdated);
     }
 
     // Delete the corresponding image file from the uploads folder
@@ -1296,6 +1203,8 @@ export const deleteConditionLabel = async (req, res) => {
 };
 
 //  VARIANTS WISE QUESTIONS
+
+// Get a Single Products
 export const getSingleProduct = async (req, res) => {
   console.log("getSingleProduct Controller");
 
@@ -1313,6 +1222,7 @@ export const getSingleProduct = async (req, res) => {
   return res.status(201).json(product);
 };
 
+// Get VariantQuestio
 export const getVariantsQuestions = async (req, res) => {
   console.log("getVariantsQuestions Controller");
   const variantsQuestions = await VariantQuestion.find();
@@ -1321,6 +1231,7 @@ export const getVariantsQuestions = async (req, res) => {
   return res.status(201).json(variantsQuestions);
 };
 
+// Create VariantQuestio
 export const createVariantQuestions = async (req, res) => {
   console.log("createVariantQuestions Controller");
   // console.log("req body", req.body);
@@ -1341,6 +1252,7 @@ export const createVariantQuestions = async (req, res) => {
   return res.status(201).json(newVariantQuestion);
 };
 
+// Update VariantQuestio
 export const updateVariantQuestions = async (req, res) => {
   console.log("updateVariantQuestions Controller");
   // console.log("req", req.body);
@@ -1365,7 +1277,7 @@ export const updateVariantQuestions = async (req, res) => {
   return res.status(201).json(updatedVariant);
 };
 
-// Delete Condition
+// Delete VariantQuestion
 export const deleteVariantQuestions = async (req, res) => {
   console.log("deleteVariantQuestions controller");
 

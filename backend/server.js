@@ -58,10 +58,13 @@ app.use(morgan("common"));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 // app.use(cors());
-// Testing
+
 // Set CORS origin dynamically from an environment variable
 // const corsOrigin = process.env.CORS_ORIGIN || 'http://localhost:5173'; // Default to localhost
-const corsOrigin = process.env.CORS_ORIGIN;
+
+const corsOrigin = process.env.CORS_ORIGIN || "https://instantcashpick.com"; // Default to instantcashpick.com
+// const corsOrigin = process.env.CORS_ORIGIN;
+console.log("corsOrigin", corsOrigin);
 app.use(
   cors({
     origin: corsOrigin,
@@ -69,18 +72,41 @@ app.use(
   })
 );
 
+app.use(function (req, res, next) {
+  const allowedOrigins = ["https://instantcashpick.com"];
+  const origin = req.headers.origin;
+
+  if (allowedOrigins.includes(origin)) {
+    console.log("Allowed Origin");
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
+
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET, POST, OPTIONS, PUT, PATCH, DELETE"
+  );
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+
+  // Handle preflight requests
+  if (req.method == "OPTIONS") {
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    // Explicitly set the allowed origin instead of using wildcard *
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    return res.status(200).end();
+  }
+
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+  next();
+});
+
 // app.use(
 //   cors({
 //     origin: "http://localhost:5173", // Adjust accordingly
 //     credentials: true,
 //   })
 // );
-// app.use(
-//   cors({
-//     origin: "http://93.127.166.173:5173", // Adjust accordingly
-//     credentials: true,
-//   })
-// );
+
 app.use(cookieParser());
 
 /* ROUTES */

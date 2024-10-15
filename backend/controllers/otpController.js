@@ -35,7 +35,7 @@ export const generateOTP = async (req, res) => {
 
     // Check count of OTPs generated for the mobile number within the last 24 hours
     const startTime = new Date();
-    startTime.setDate(startTime.getDate() - 1); // Subtract 1 day from current date
+    startTime.setDate(startTime.getDate() - 1); // Subtrack 1 day from current date
     console.log("startTime", startTime);
 
     const numberPresent = await OTP.findOne({ mobileNumber: mobileNo });

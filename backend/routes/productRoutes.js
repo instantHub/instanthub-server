@@ -3,6 +3,7 @@ import {
   createProduct,
   deleteProduct,
   getAllProducts,
+  getProcessorDeductions,
   getProductDetails,
   getProductsByBrand,
   updateLaptopConfigurationsPriceDrop,
@@ -27,5 +28,8 @@ router.put(
   "/updateLaptopConfigurationsPriceDrop/:productId",
   updateLaptopConfigurationsPriceDrop
 );
+
+// Processor route
+router.get("/processor-deductions/:processorId", getProcessorDeductions);
 
 export default router;
