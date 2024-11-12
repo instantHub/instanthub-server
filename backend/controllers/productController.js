@@ -64,7 +64,9 @@ export const getProductsByBrand = async (req, res) => {
     const products = await Product.find(query)
       .where("brand")
       .equals(brandId)
-      .select("-processorBasedDeduction -variantDeductions");
+      .select("-processorBasedDeduction -variantDeductions")
+      .populate("category", "name")
+      .populate("brand", "name");
 
     //
     // const products = await Product.find(query)

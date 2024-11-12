@@ -16,16 +16,23 @@ export const getAllBrands = async (req, res) => {
 };
 
 export const getBrands = async (req, res) => {
-  const catId = req.params.catId;
-  //   console.log("catId from brandController", catId);
-  try {
-    const categoryWithBrands = await Category.findById(catId).populate(
-      "brands"
-    );
-    // console.log(categoryWithBrands);
+  console.log("getBrands Controller");
 
-    const brands = categoryWithBrands.brands;
+  const catId = req.params.catId;
+  console.log("catId from brandController", catId);
+  try {
+    // const categoryWithBrands = await Category.findById(catId).populate(
+    //   "brands"
+    // );
+
+    // const brands = categoryWithBrands.brands;
     // console.log("brands from brandController", brands);
+
+    const brands = await Brand.find({
+      category: catId,
+    }).populate("category");
+
+    // console.log(brands);
 
     res.status(200).json(brands);
   } catch (error) {

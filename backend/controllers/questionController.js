@@ -50,33 +50,38 @@ export const createCondtions = async (req, res) => {
         category: conditionCategory.id,
         name: "Apple",
       });
-      let NON_APPLE_BRAND = await Brand.findOne({
+
+      // let NON_APPLE_BRAND = await Brand.findOne({
+      //   category: conditionCategory.id,
+      //   name: { $ne: "Apple" }, // Excludes brands with the name "Apple"
+      // });
+
+      // if (!NON_APPLE_BRAND || NON_APPLE_BRAND?.products?.length <= 0) {
+      //   NON_APPLE_BRAND = await Brand.findOne({
+      //     category: conditionCategory.id,
+      //     name: { $nin: ["Apple", NON_APPLE_BRAND?.name || ""] }, // Excludes "Apple" and the previous brand name (if found)
+      //   });
+      //   console.log("NON_APPLE_BRAND of laptop 2", NON_APPLE_BRAND?.name);
+      // }
+
+      const NON_APPLE_BRAND = await Brand.find({
         category: conditionCategory.id,
         name: { $ne: "Apple" }, // Excludes brands with the name "Apple"
       });
-      if (!NON_APPLE_BRAND || NON_APPLE_BRAND?.products?.length <= 0) {
-        NON_APPLE_BRAND = await Brand.findOne({
-          category: conditionCategory.id,
-          name: { $nin: ["Apple", NON_APPLE_BRAND?.name || ""] }, // Excludes "Apple" and the previous brand name (if found)
-        });
-        console.log("NON_APPLE_BRAND of laptop 2", NON_APPLE_BRAND?.name);
-      }
 
       console.log("APPLE_BRAND of laptop", APPLE_BRAND?.name);
-      console.log("NON_APPLE_BRAND of laptop", NON_APPLE_BRAND?.name);
+      console.log("NON_APPLE_BRAND of laptop", NON_APPLE_BRAND[0]?.name);
 
-      // const APPLE_PRODS = await Product.find({
-      //   category: conditionCategory._id,
-      //   brand: APPLE_BRAND?._id,
-      // });
+      const APPLE_PROD_LEN = APPLE_BRAND?.products?.length || 0;
+      // const WINDOWS_PROD_LEN = NON_APPLE_BRAND?.products?.length || 0;
 
-      // const WINDOWS_PRODS = await Product.find({
-      //   category: conditionCategory._id,
-      //   brand: { $ne: APPLE_BRAND?._id }, // $ne for "not equal" to Apple brand
-      // });
-
-      const APPLE_PROD_LEN = APPLE_BRAND?.products.length;
-      const WINDOWS_PROD_LEN = NON_APPLE_BRAND?.products.length;
+      const WINDOWS_PROD_LEN = (NON_APPLE_BRAND || []).reduce(
+        (total, brand) => {
+          const count = brand?.products?.length || 0;
+          return total + count;
+        },
+        0
+      );
 
       console.log("APPLE_PROD_LEN ", APPLE_PROD_LEN);
       console.log("WINDOWS_PROD_LEN ", WINDOWS_PROD_LEN);
@@ -588,7 +593,8 @@ export const createCondtionLabel = async (req, res) => {
         name: "Apple",
       });
 
-      const NON_APPLE_BRAND = await Brand.findOne({
+      // const NON_APPLE_BRAND = await Brand.findOne({
+      const NON_APPLE_BRAND = await Brand.find({
         category: cLCategory.id,
         name: { $ne: "Apple" }, // Excludes brands with the name "Apple"
       });
@@ -596,11 +602,19 @@ export const createCondtionLabel = async (req, res) => {
       console.log("APPLE_BRAND of laptop", APPLE_BRAND?.name);
       console.log("NON_APPLE_BRAND of laptop", NON_APPLE_BRAND?.name);
 
-      const APPLE_PROD_LEN = APPLE_BRAND?.products?.length;
-      const WINDOWS_PROD_LEN = NON_APPLE_BRAND?.products?.length;
+      const APPLE_PROD_LEN = APPLE_BRAND?.products?.length || 0;
+      // const WINDOWS_PROD_LEN = NON_APPLE_BRAND?.products?.length || 0;
+
+      const WINDOWS_PROD_LEN = (NON_APPLE_BRAND || []).reduce(
+        (total, brand) => {
+          const count = brand?.products?.length || 0;
+          return total + count;
+        },
+        0
+      );
 
       console.log("APPLE_PROD_LEN ", APPLE_PROD_LEN);
-      console.log("WINDOWS_PROD_LEN ", WINDOWS_PROD_LEN);
+      console.log("WINDOWS_PROD_LEN", WINDOWS_PROD_LEN);
 
       // If no product exists: Need to create a product first
       if (APPLE_PROD_LEN <= 0 || WINDOWS_PROD_LEN <= 0) {
