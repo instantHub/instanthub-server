@@ -575,15 +575,12 @@ export const orderReceived = async (req, res) => {
 
     console.log("updatedOrder", updatedOrder);
 
-    const product = await Product.findById(updatedOrder.productId);
-    console.log("product of the Order", product);
-
     const stockIn = await Stocks.create({
       orderId: updatedOrder.orderId,
       productDetails: {
         productName: updatedOrder.productName,
         productVariant: updatedOrder.variant.variantName,
-        productCategory: updatedOrder.productCategory,
+        productCategory: updatedOrder.category,
         serialNumber: updatedOrder.deviceInfo.serialNumber,
         imeiNumber: updatedOrder.deviceInfo.imeiNumber,
       },
@@ -592,7 +589,7 @@ export const orderReceived = async (req, res) => {
         email: updatedOrder.email,
         phone: updatedOrder.phone,
       },
-      accessoriesAvailable: updatedOrder.accessoriesAvailable.map(
+      accessoriesAvailable: updatedOrder.accessoriesAvailable?.map(
         (a) => a.conditionLabel
       ),
       pickedUpDetails: updatedOrder.pickedUpDetails,
