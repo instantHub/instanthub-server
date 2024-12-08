@@ -4,6 +4,7 @@ import mongoose, { mongo } from "mongoose";
 // import path from "path";
 
 // const IMAGE_PATH = path.join("/uploads/users/avatars");
+// si
 
 const brandSchema = mongoose.Schema(
   {
