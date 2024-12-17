@@ -1,6 +1,7 @@
 import express from "express";
 import {
   authAdmin,
+  dashboardDetail,
   getAdmin,
   getAdminProfile,
   logout,
@@ -22,5 +23,8 @@ router.post("/logout", logout);
 
 router.get("/admin-profile", getAdminProfile);
 router.put("/update-admin", updateAdmin);
+
+// Dashboard Detail
+router.get("/admin/dashboard", dashboardDetail);
 
 export default router;

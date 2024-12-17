@@ -2,13 +2,15 @@ import express from "express";
 import {
   createSlider,
   deleteSlider,
-  getSliders,
+  getActiveSliders,
+  getAllSliders,
   updateSlider,
 } from "../controllers/sliderController.js";
 
 const router = express.Router();
 
-router.get("/", getSliders);
+router.get("/active-sliders", getActiveSliders);
+router.get("/all-sliders", getAllSliders);
 router.post("/create-slider", createSlider);
 router.put("/update-slider/:sliderId", updateSlider);
 router.delete("/delete-slider/:sliderId", deleteSlider);

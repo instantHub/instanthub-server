@@ -2,11 +2,23 @@ import Slider from "../models/sliderModel.js";
 import path from "path";
 import fs from "fs";
 
-export const getSliders = async (req, res) => {
-  console.log("getSliders Controller");
+export const getAllSliders = async (req, res) => {
+  console.log("getAllSliders Controller");
 
   try {
     const slidersList = await Slider.find();
+    // console.log(slidersList);
+    res.status(200).json(slidersList);
+  } catch (error) {
+    res.status(404).json({ message: error.message });
+  }
+};
+
+export const getActiveSliders = async (req, res) => {
+  console.log("getActiveSliders Controller");
+
+  try {
+    const slidersList = await Slider.find({ status: "Active" });
     // console.log(slidersList);
     res.status(200).json(slidersList);
   } catch (error) {
