@@ -13,9 +13,21 @@ const protect = async (req, res, next) => {
       req.admin = await Admin.findById(decoded.adminId).select("-password");
       next();
     } catch (error) {
-      res
-        .status(401)
-        .json({ msg: "Not authorized, invalid token", Error: error });
+      // If the token is expired, log out the user
+      if (error.name === "TokenExpiredError") {
+        res.clearCookie("jwt", {
+          httpOnly: true,
+          secure: process.env.NODE_ENV !== "development",
+        });
+        return res
+          .status(401)
+          .json({ msg: "Session expired, please log in again" });
+      }
+      res.status(401).json({ msg: "Not authorized, invalid token" });
+
+      // res
+      //   .status(401)
+      //   .json({ msg: "Not authorized, invalid token", Error: error });
     }
   } else {
     res.status(401).json({ msg: "Not authorized, no token" });

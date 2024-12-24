@@ -83,7 +83,7 @@ export const getServices = async (req, res) => {
 
 export const addServices = async (req, res) => {
   console.log("addServices Controller");
-  console.log(req.body);
+  console.log("req.body:- ", req.body);
 
   const {
     serviceFor,
@@ -123,18 +123,24 @@ export const addServices = async (req, res) => {
       console.log("existing serviceCategory", serviceCategory);
 
       if (!serviceCategory) {
-        serviceCategory = new ServiceCategory({
+        console.log("new serviceCategory");
+        // serviceCategory = new ServiceCategory({
+        serviceCategory = await ServiceCategory.create({
           type,
           name: serviceName,
           image: serviceImage,
         });
         await serviceCategory.save();
-        console.log("new serviceCategory", serviceCategory);
+        console.log(serviceCategory);
+        res
+          .status(201)
+          .json({ message: "Service created successfully", serviceCategory });
+      } else {
+        res.status(500).json({
+          message: "Service Already Exists!!",
+          serviceCategory,
+        });
       }
-
-      res
-        .status(201)
-        .json({ message: "Service created successfully", serviceCategory });
     } else if (serviceFor === "serviceBrand" && type === "Brand") {
       console.log("serviceBrand");
       let brand = await ServiceBrand.findOne({
@@ -144,44 +150,24 @@ export const addServices = async (req, res) => {
       console.log("existing Brand", brand);
 
       if (!brand) {
-        brand = new ServiceBrand({
+        // brand = new ServiceBrand({
+        brand = await ServiceBrand.create({
           serviceCategoryId,
           name: brandName,
           image: brandImage,
         });
         await brand.save();
         console.log("new Brand", brand);
-      }
-
-      res.status(201).json({
-        message: "Service Brand created successfully",
-        brand,
-      });
-    } else if (
-      serviceFor === "serviceSubCategory" &&
-      type === "ServiceSubCategory"
-    ) {
-      console.log("serviceSubCategory");
-      let serviceSubCategory = await ServiceSubCategory.findOne({
-        name: serviceName,
-        serviceCategoryId,
-      });
-      console.log("existing serviceSubCategory", serviceSubCategory);
-
-      if (!serviceSubCategory) {
-        serviceSubCategory = new ServiceSubCategory({
-          // serviceCategoryId: serviceCategory._id,
-          serviceCategoryId,
-          name: subServiceName,
-          image: subServiceImage,
+        res.status(201).json({
+          message: "Service Brand created successfully",
+          brand,
         });
-        await serviceSubCategory.save();
-        console.log("new serviceSubCategory", serviceSubCategory);
+      } else {
+        res.status(500).json({
+          message: "Service Brand Already Exists!!",
+          brand,
+        });
       }
-      res.status(201).json({
-        message: "Service Sub Category created successfully",
-        serviceSubCategory,
-      });
     } else if (serviceFor === "serviceBrandProblem") {
       console.log("serviceBrandProblem");
       let problem = await ServiceProblem.findOne({
@@ -190,7 +176,7 @@ export const addServices = async (req, res) => {
       });
       console.log("existing problem", problem);
       if (!problem) {
-        problem = new ServiceProblem({
+        problem = await ServiceProblem.create({
           serviceCategoryId,
           name: brandProblemName,
           image: brandProblemImage,
@@ -200,11 +186,47 @@ export const addServices = async (req, res) => {
         });
         await problem.save();
         console.log("new problem", problem);
+        res.status(201).json({
+          message: "Service Brand Problem created successfully",
+          problem,
+        });
+      } else {
+        res.status(500).json({
+          message: "Service Brand Problem Already Exists!!",
+          problem,
+        });
       }
-      res.status(201).json({
-        message: "Service Brand Problem created successfully",
-        problem,
+    } else if (
+      serviceFor === "serviceSubCategory" &&
+      type === "ServiceSubCategory"
+    ) {
+      console.log("serviceSubCategory");
+      let serviceSubCategory = await ServiceSubCategory.findOne({
+        name: subServiceName,
+        serviceCategoryId,
       });
+      console.log("existing serviceSubCategory", serviceSubCategory);
+
+      if (!serviceSubCategory) {
+        console.log("new serviceSubCategory");
+        serviceSubCategory = await ServiceSubCategory.create({
+          // serviceCategoryId: serviceCategory._id,
+          serviceCategoryId,
+          name: subServiceName,
+          image: subServiceImage,
+        });
+        await serviceSubCategory.save();
+        console.log(serviceSubCategory);
+        res.status(201).json({
+          message: "Service Sub Category created successfully",
+          serviceSubCategory,
+        });
+      } else {
+        res.status(500).json({
+          message: "Service Sub Category Already Exists!!",
+          serviceSubCategory,
+        });
+      }
     } else if (serviceFor === "serviceSubProduct") {
       console.log("serviceSubProduct");
       let subProduct = await ServiceSubProduct.findOne({
@@ -213,32 +235,35 @@ export const addServices = async (req, res) => {
       });
       console.log("existing subProduct", subProduct);
       if (!subProduct) {
-        try {
-          console.log("IN TRY");
-          subProduct = await ServiceSubProduct.create({
-            serviceCategoryId,
-            subServiceId,
-            // productName,
-            // productPrice,
-            // productImage,
+        // try {
+        console.log("new subProduct");
+        subProduct = await ServiceSubProduct.create({
+          serviceCategoryId,
+          subServiceId,
+          name: productName,
+          description: subProdDesc,
+          discount: prodDisPer,
+          price: productPrice,
+          image: productImage,
+        });
+        await subProduct.save();
 
-            name: productName,
-            description: subProdDesc,
-            discount: prodDisPer,
-            price: productPrice,
-            image: productImage,
-          });
-          subProduct.save();
+        console.log(subProduct);
+        // }
+        // catch (err) {
+        //   console.log("ERROR", err);
+        // }
 
-          console.log("new subProduct", subProduct);
-        } catch (err) {
-          console.log("ERROR", err);
-        }
+        res.status(201).json({
+          message: "Service Sub Product created successfully",
+          subProduct,
+        });
+      } else {
+        res.status(500).json({
+          message: "Service Sub Product Already Exists!!",
+          subProduct,
+        });
       }
-      res.status(201).json({
-        message: "Service Sub Product created successfully",
-        subProduct,
-      });
     }
   } catch (error) {
     res.status(500).json({ message: "Error creating service", error });
@@ -267,7 +292,7 @@ export const updateService = async (req, res) => {
 
       console.log("existing serviceCategory", serviceCategory);
 
-      if (!serviceCategory) {
+      if (serviceCategory) {
         serviceCategory = await ServiceCategory.findByIdAndUpdate(
           serviceId,
           {
@@ -277,12 +302,15 @@ export const updateService = async (req, res) => {
           { new: true }
         );
         await serviceCategory.save();
-        console.log("updated serviceCategory", serviceCategory);
+        console.log("Updated serviceCategory", serviceCategory);
+        res
+          .status(201)
+          .json({ message: "Service updated successfully", serviceCategory });
+      } else {
+        res
+          .status(500)
+          .json({ message: "Service Category Not Found", serviceCategory });
       }
-
-      res
-        .status(201)
-        .json({ message: "Service updated successfully", serviceCategory });
     } else if (serviceFrom === "serviceBrand") {
       console.log("serviceBrand");
       let brand = await ServiceBrand.findOne({
@@ -290,7 +318,7 @@ export const updateService = async (req, res) => {
       });
       console.log("existing Brand", brand);
 
-      if (!brand) {
+      if (brand) {
         brand = await ServiceBrand.findByIdAndUpdate(
           serviceId,
           {
@@ -312,7 +340,7 @@ export const updateService = async (req, res) => {
         name,
       });
       console.log("existing problem", problem);
-      if (!problem) {
+      if (problem) {
         problem = await ServiceProblem.findByIdAndUpdate(
           serviceId,
           {
@@ -335,7 +363,7 @@ export const updateService = async (req, res) => {
       });
       console.log("existing serviceSubCategory", serviceSubCategory);
 
-      if (!serviceSubCategory) {
+      if (serviceSubCategory) {
         serviceSubCategory = await ServiceSubCategory.findByIdAndUpdate(
           serviceId,
           {
@@ -357,7 +385,7 @@ export const updateService = async (req, res) => {
         name,
       });
       console.log("existing subProduct", subProduct);
-      if (!subProduct) {
+      if (subProduct) {
         try {
           subProduct = await ServiceSubProduct.findByIdAndUpdate(
             serviceId,
@@ -814,18 +842,18 @@ export const createServiceOrder = async (req, res) => {
               order.serviceType === "Brand"
                 ? `
                 <h2 style="text-align: center">
-                  congratulations your ${order.selectedService.serviceCategoryId.name} order has been booked with InstantCashPick
+                  congratulations your ${order.selectedService.serviceCategoryId.name} order has been booked with InstantHub
                 </h2>
                 `
                 : `
                 <h2 style="text-align: center">
-                  congratulations your ${order.selectedService.name} order has been booked with InstantCashPick
+                  congratulations your ${order.selectedService.name} order has been booked with InstantHub
                 </h2>
                 `
             }
            
             <h1 style="font-size: small">
-              <a href="https://instantcashpick.com">InstantCashPick</a>
+              <a href="https://instanthub.in">InstantHub</a>
             </h1>
       
             <div class="order-detail">
@@ -986,8 +1014,8 @@ export const createServiceOrder = async (req, res) => {
             <p style="text-align: center; color: #777">
               If you have any questions or concerns about your order, please send us a
               mail at
-              <a href="mailto:support@instantcashpick.com"
-                >support@instantcashpick.com</a
+              <a href="mailto:support@instanthub.in"
+                >support@instanthub.in</a
               >.
             </p>
             
@@ -1183,18 +1211,18 @@ export const serviceOrderCompleted = async (req, res) => {
               updatedServiceOrder.serviceType === "Brand"
                 ? `
                 <h2 style="text-align: center">
-                  congratulations your ${updatedServiceOrder.selectedService.serviceCategoryId.name} order has been completed by InstantCashPick
+                  congratulations your ${updatedServiceOrder.selectedService.serviceCategoryId.name} order has been completed by InstantHub
                 </h2>
                 `
                 : `
                 <h2 style="text-align: center">
-                  congratulations your ${updatedServiceOrder.selectedService.name} order has been completed by InstantCashPick
+                  congratulations your ${updatedServiceOrder.selectedService.name} order has been completed by InstantHub
                 </h2>
                 `
             }
            
             <h1 style="font-size: small">
-              <a href="https://instantcashpick.com">InstantCashPick</a>
+              <a href="https://instanthub.in">InstantHub</a>
             </h1>
       
             <div class="order-detail">
@@ -1363,8 +1391,8 @@ export const serviceOrderCompleted = async (req, res) => {
             <p style="text-align: center; color: #777">
               If you have any questions or concerns about your order, please send us a
               mail at
-              <a href="mailto:support@instantcashpick.com"
-                >support@instantcashpick.com</a
+              <a href="mailto:support@instanthub.in"
+                >support@instanthub.in</a
               >.
             </p>
             

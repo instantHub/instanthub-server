@@ -43,8 +43,8 @@ export const authAdmin = async (req, res) => {
 
   if (admin && (await admin.matchPasswords(password))) {
     // Since JWT token is getting saved now generate token and save it to browser cookie
-    // generateToken(res, admin);
-    // console.log("Cookies from authAdmin:", req.cookies);
+    generateToken(res, admin);
+    console.log("Cookies from authAdmin:", req.cookies);
     // TODO cookies are being sent but not getting stored in browser
 
     res.status(201).json(admin);
@@ -58,11 +58,15 @@ export const authAdmin = async (req, res) => {
 // route    POST /api/logout
 // @access   Private
 export const logout = async (req, res) => {
+  // console.log("logout controller");
+
+  // res.cookie("jwt", "", { httpOnly: true, expires: new Date(0) });
+  // // res.clearCookie('jwt', { path: '/' });
+
+  // res.status(200).json({ msg: "Admin logged out" });
+  
   console.log("logout controller");
-
   res.cookie("jwt", "", { httpOnly: true, expires: new Date(0) });
-  // res.clearCookie('jwt', { path: '/' });
-
   res.status(200).json({ msg: "Admin logged out" });
 };
 
@@ -70,8 +74,8 @@ export const getAdmin = async (req, res) => {
   console.log("getAdmin controller");
   try {
     // const { id } = req.params;
-    // const admin = await Admin.findById(id);
-    // res.status(200).json(admin);
+    const admin = await Admin.findById(id);
+    res.status(200).json(admin);
   } catch (error) {
     res.status(404).json({ message: error.message });
   }

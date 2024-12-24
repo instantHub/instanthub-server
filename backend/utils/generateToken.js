@@ -4,7 +4,8 @@ import jwt from "jsonwebtoken";
 const generateToken = (res, admin) => {
   const adminId = admin._id;
   const token = jwt.sign({ adminId }, process.env.JWT_SECRET, {
-    expiresIn: "30d",
+    // expiresIn: "30d",
+    expiresIn: "2m",
   });
 
   console.log("token from generateToken", token);
@@ -13,10 +14,11 @@ const generateToken = (res, admin) => {
     secure: process.env.NODE_ENV !== "development",
     sameSite: "strict", // this will protect from CSRF attacks
     path: "/", // from stackoverflow // Make the cookie available across the entire site
-    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days in milliseconds
+    // maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days in milliseconds
+    maxAge: 2 * 60 * 1000, // 2 minutes in milliseconds
   });
 
-  console.log("Token set in cookie:", res.cookies);
+  // console.log("Token set in cookie:", res.cookies);
 };
 
 export default generateToken;

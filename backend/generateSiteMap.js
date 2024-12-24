@@ -24,22 +24,22 @@ export const generateSitemap = (urls) => {
 export const getDynamicUrls = async () => {
   const staticUrls = [
     {
-      loc: "https://instantcashpick.com/",
+      loc: "https://instanthub.in/",
       lastmod: new Date().toISOString(),
       priority: "1.00",
     },
     {
-      loc: "https://instantcashpick.com/about",
+      loc: "https://instanthub.in/about",
       lastmod: new Date().toISOString(),
       priority: "0.80",
     },
     {
-      loc: "https://instantcashpick.com/services",
+      loc: "https://instanthub.in/services",
       lastmod: new Date().toISOString(),
       priority: "0.80",
     },
     {
-      loc: "https://instantcashpick.com/contact",
+      loc: "https://instanthub.in/contact",
       lastmod: new Date().toISOString(),
       priority: "0.64",
     },
@@ -60,29 +60,29 @@ const generateDynamicRoutes = async () => {
 
   //   console.log("Sitemaps Categories", categories);
   const allIds = [...categories, ...brands, ...products];
-  console.log("object", allIds);
-  console.log("object", allIds.length);
+  console.log("allIds", allIds);
+  console.log("allIds.length", allIds.length);
 
   const brandsURLs = categories.map((category) => ({
-    loc: `https://instantcashpick.com/categories/brands/${category._id}`,
+    loc: `https://instanthub.in/categories/brands/${category._id}`,
     lastmod: new Date().toISOString(),
     priority: "0.64",
   }));
 
   const productsURLs = brands.map((brand) => ({
-    loc: `https://instantcashpick.com/categories/brands/products/${brand._id}`,
+    loc: `https://instanthub.in/categories/brands/products/${brand._id}`,
     lastmod: new Date().toISOString(),
     priority: "0.64",
   }));
 
   return [...brandsURLs, ...productsURLs];
   //   return allIds.map((ids) => ({
-  //     loc: `https://instantcashpick.com/categories/brands/${ids._id}`,
+  //     loc: `https://instanthub.in/categories/brands/${ids._id}`,
   //     lastmod: new Date().toISOString(),
   //     priority: "0.64",
   //   }));
   //   return categoriesList.map((category) => ({
-  //     loc: `https://instantcashpick.com/categories/brands/${category.id}`,
+  //     loc: `https://instanthub.in/categories/brands/${category.id}`,
   //     lastmod: new Date().toISOString(),
   //     priority: "0.64",
   //   }));

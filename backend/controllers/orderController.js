@@ -187,10 +187,10 @@ export const createOrder = async (req, res) => {
             </h1>
             <h1 class="sell" style="text-align: center">Sell Receipt</h1>
             <h2 style="text-align: center">
-              congratulations your order has been placed with InstantCashPick
+              congratulations your order has been placed with InstantHub
             </h2>
             <h1 style="font-size: small">
-              <a href="https://instantcashpick.com">InstantCashPick</a>
+              <a href="https://instanthub.in">InstantHub</a>
             </h1>
       
             <div class="order-detail">
@@ -304,8 +304,8 @@ export const createOrder = async (req, res) => {
             <p style="text-align: center; color: #777">
               If you have any questions or concerns about your order, please send us a
               mail at
-              <a href="mailto:support@instantcashpick.com"
-                >support@instantcashpick.com</a
+              <a href="mailto:support@instanthub.in"
+                >support@instanthub.in</a
               >.
             </p>
             
@@ -380,12 +380,12 @@ export const createOrder = async (req, res) => {
     //     .text("Sell Receipt", 180, 65, { align: "center" })
     //     .fontSize(14)
     //     .text(
-    //       "Congratulations, your order has been placed with InstantCashPick",
+    //       "Congratulations, your order has been placed with InstantHub",
     //       { align: "center" }
     //     )
     //     // .fontSize(12)
-    //     // .text("InstantCashPick", {
-    //     //   link: "https://instantcashpick.com",
+    //     // .text("InstantHub", {
+    //     //   link: "https://instanthub.in",
     //     //   align: "center",
     //     // })
     //     .moveDown();
@@ -446,9 +446,9 @@ export const createOrder = async (req, res) => {
     //       "If you have any questions or concerns about your order, please send us a mail at",
     //       { align: "center" }
     //     )
-    //     .text("support@instantcashpick.com", {
+    //     .text("support@instanthub.in", {
     //       align: "center",
-    //       link: "mailto:support@instantcashpick.com",
+    //       link: "mailto:support@instanthub.in",
     //     })
     //     .fontSize(8)
     //     .text(`GST Number: ${data.gstNumber}`, { align: "right" });
@@ -841,14 +841,14 @@ export const orderReceived = async (req, res) => {
     
           <p style="font-size: px; text-align: center">
             Visit us again
-            <a href="https://instantcashpick.com">instantpashpick.com</a>
+            <a href="https://instanthub.in">instantpashpick.com</a>
           </p>
     
           <p style="text-align: center; color: #777">
             If you have any questions or concerns about your order, please send us a
             mail at
-            <a href="mailto:support@instantcashpick.com"
-              >support@instantcashpick.com</a
+            <a href="mailto:support@instanthub.in"
+              >support@instanthub.in</a
             >.
           </p>
           <p

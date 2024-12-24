@@ -62,7 +62,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 // Set CORS origin dynamically from an environment variable
 // const corsOrigin = process.env.CORS_ORIGIN || 'http://localhost:5173'; // Default to localhost
 
-const corsOrigin = process.env.CORS_ORIGIN || "https://instantcashpick.com"; // Default to instantcashpick.com
+const corsOrigin = process.env.CORS_ORIGIN || "https://www.instanthub.in"; // Default to instanthub.in
 // const corsOrigin = process.env.CORS_ORIGIN;
 console.log("corsOrigin", corsOrigin);
 app.use(
@@ -73,8 +73,14 @@ app.use(
 );
 
 app.use(function (req, res, next) {
-  const allowedOrigins = ["https://instantcashpick.com"];
+  // const allowedOrigins = ["https://instantcashpick.com"];
+  const allowedOrigins = [
+    "http://localhost:5173",
+    "https://www.instanthub.in",
+    "https://instantcashpick.com",
+  ];
   const origin = req.headers.origin;
+  console.log("origin from app.use for headers:", origin);
 
   if (allowedOrigins.includes(origin)) {
     console.log("Allowed Origin");
@@ -99,13 +105,6 @@ app.use(function (req, res, next) {
   res.setHeader("Access-Control-Allow-Credentials", "true");
   next();
 });
-
-// app.use(
-//   cors({
-//     origin: "http://localhost:5173", // Adjust accordingly
-//     credentials: true,
-//   })
-// );
 
 app.use(cookieParser());
 

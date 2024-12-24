@@ -156,10 +156,10 @@ export const createRecycleOrder = async (req, res) => {
               <h2 style="text-align: center">
               congratulations your recycle order for ${
                 order.productDetails.productCategory
-              } has been placed with InstantCashPick
+              } has been placed with InstantHub
               </h2>
               <h1 style="font-size: small">
-                <a href="https://instantcashpick.com">InstantCashPick</a>
+                <a href="https://instanthub.in">InstantHub</a>
               </h1>
         
               <div class="order-detail">
@@ -262,8 +262,8 @@ export const createRecycleOrder = async (req, res) => {
               <p style="text-align: center; color: #777">
                 If you have any questions or concerns about your order, please send us a
                 mail at
-                <a href="mailto:support@instantcashpick.com"
-                  >support@instantcashpick.com</a
+                <a href="mailto:support@instanthub.in"
+                  >support@instanthub.in</a
                 >.
               </p>
               
@@ -544,7 +544,7 @@ export const recycleOrderReceived = async (req, res) => {
           <h2 style="text-align: center">
               congratulations your recycle order for ${
                 updatedOrder.productDetails.productCategory
-              } has been completed by InstantCashPick
+              } has been completed by InstantHub
               </h2>
     
           <div class="order-detail">
@@ -633,14 +633,14 @@ export const recycleOrderReceived = async (req, res) => {
     
           <p style="font-size: px; text-align: center">
             Visit us again
-            <a href="https://instantcashpick.com">instantpashpick.com</a>
+            <a href="https://instanthub.in">instantpashpick.com</a>
           </p>
     
           <p style="text-align: center; color: #777">
             If you have any questions or concerns about your order, please send us a
             mail at
-            <a href="mailto:support@instantcashpick.com"
-              >support@instantcashpick.com</a
+            <a href="mailto:support@instanthub.in"
+              >support@instanthub.in</a
             >.
           </p>
           <p
