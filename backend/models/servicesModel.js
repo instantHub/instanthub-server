@@ -12,7 +12,7 @@ const BrandSchema = new mongoose.Schema({
     ref: "ServiceCategory",
     required: true,
   },
-  name: { type: String, unique: true, required: true },
+  name: { type: String, required: true },
   image: String,
 });
 
