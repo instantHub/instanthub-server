@@ -336,9 +336,7 @@ export const updateService = async (req, res) => {
       });
     } else if (serviceFrom === "serviceBrandProblem") {
       console.log("serviceBrandProblem");
-      let problem = await ServiceProblem.findOne({
-        name,
-      });
+      let problem = await ServiceProblem.findById(serviceId);
       console.log("existing problem", problem);
       if (problem) {
         problem = await ServiceProblem.findByIdAndUpdate(
@@ -351,11 +349,14 @@ export const updateService = async (req, res) => {
         );
         await problem.save();
         console.log("updated problem", problem);
+
+        res.status(201).json({
+          message: "Service Brand Problem updated successfully",
+          problem,
+        });
+      } else {
+        res.status(400).json({ message: "Service Not Found..!" });
       }
-      res.status(201).json({
-        message: "Service Brand Problem updated successfully",
-        problem,
-      });
     } else if (serviceFrom === "serviceSubCategory") {
       console.log("serviceSubCategory");
       let serviceSubCategory = await ServiceSubCategory.findOne({
@@ -731,15 +732,27 @@ export const createServiceOrder = async (req, res) => {
     // console.log(orderDetail);
 
     // Create a transporter object using SMTP transport
+    // const transporter = nodemailer.createTransport({
+    //   service: "gmail",
+    //   host: "smtp.example.com", // SMTP server address
+    //   port: 465, // SMTP port (usually 587 for TLS, 465 for SSL)
+    //   secure: false, // true for 465, false for other ports
+    //   auth: {
+    //     // user: process.env.USER, // Your email address
+    //     // user: "instantcashpick@gmail.com", // Your email address
+    //     user: "instanthub.in@gmail.com", // Your email address
+    //     pass: process.env.APP_PASSWORD, // Your email password
+    //   },
+    // });
+
     const transporter = nodemailer.createTransport({
-      service: "gmail",
-      host: "smtp.example.com", // SMTP server address
-      port: 465, // SMTP port (usually 587 for TLS, 465 for SSL)
-      secure: false, // true for 465, false for other ports
+      // service: "gmail",
+      host: "smtp.hostinger.com", // Replace with your SMTP server
+      port: 465, // Use 587 for TLS or 465 for SSL
+      secure: true, // true for port 465, false for 587
       auth: {
-        // user: process.env.USER, // Your email address
-        user: "instantcashpick@gmail.com", // Your email address
-        pass: process.env.APP_PASSWORD, // Your email password
+        user: "support@instanthub.in", // Your domain email
+        pass: process.env.SUPPORT_PASSWORD, // Your domain email password
       },
     });
 
@@ -872,7 +885,6 @@ export const createServiceOrder = async (req, res) => {
                 <h1>
                   <span> Scheduled Date & Time: </span>
                   <span>${order.scheduleDate}</span>
-                  <span>${order.scheduleTime}</span>
                 </h1>
               </div>
       
@@ -1033,8 +1045,9 @@ export const createServiceOrder = async (req, res) => {
     // Email content
     const mailOptions = {
       // from: process.env.USER, // Sender email address
-      from: "instantcashpick@gmail.com", // Sender email address
+      from: "service-orders@instanthub.in", // Sender email address
       to: req.body.email, // Recipient email address
+      cc: "instanthub.in@gmail.com", // CC email address (can be a string or an array of strings)
       subject: `Your Order #${serviceOrderId} has been placed ${order.customerName}`, // Subject line
 
       html: emailBody,
@@ -1060,8 +1073,11 @@ export const serviceOrderCompleted = async (req, res) => {
   console.log("serviceOrderCompleted controller");
   // const serviceOrderId = req.params.serviceOrderId;
   try {
+    const serviceOrderId = req.params.serviceOrderId;
+    console.log(serviceOrderId);
+
     const {
-      serviceOrderId,
+      // serviceOrderId,
       serviceFinalPrice,
       serviceAgent,
       serviceCompletedOn,
@@ -1089,15 +1105,27 @@ export const serviceOrderCompleted = async (req, res) => {
     // console.log(orderDetail);
 
     // Create a transporter object using SMTP transport
+    // const transporter = nodemailer.createTransport({
+    //   service: "gmail",
+    //   host: "smtp.example.com", // SMTP server address
+    //   port: 465, // SMTP port (usually 587 for TLS, 465 for SSL)
+    //   secure: false, // true for 465, false for other ports
+    //   auth: {
+    //     // user: process.env.USER, // Your email address
+    //     // user: "instantcashpick@gmail.com", // Your email address
+    //     user: "instanthub.in@gmail.com", // Your email address
+    //     pass: process.env.APP_PASSWORD, // Your email password
+    //   },
+    // });
+
     const transporter = nodemailer.createTransport({
-      service: "gmail",
-      host: "smtp.example.com", // SMTP server address
-      port: 465, // SMTP port (usually 587 for TLS, 465 for SSL)
-      secure: false, // true for 465, false for other ports
+      // service: "gmail",
+      host: "smtp.hostinger.com", // Replace with your SMTP server
+      port: 465, // Use 587 for TLS or 465 for SSL
+      secure: true, // true for port 465, false for 587
       auth: {
-        // user: process.env.USER, // Your email address
-        user: "instantcashpick@gmail.com", // Your email address
-        pass: process.env.APP_PASSWORD, // Your email password
+        user: "support@instanthub.in", // Your domain email
+        pass: process.env.SUPPORT_PASSWORD, // Your domain email password
       },
     });
 
@@ -1241,7 +1269,6 @@ export const serviceOrderCompleted = async (req, res) => {
                 <h1>
                   <span> Scheduled Date & Time: </span>
                   <span>${updatedServiceOrder.scheduleDate}</span>
-                  <span>${updatedServiceOrder.scheduleTime}</span>
                 </h1>
               </div>
       
@@ -1410,8 +1437,9 @@ export const serviceOrderCompleted = async (req, res) => {
     // Email content
     const mailOptions = {
       // from: process.env.USER, // Sender email address
-      from: "instantcashpick@gmail.com", // Sender email address
+      from: "service-orders@instanthub.in", // Sender email address
       to: updatedServiceOrder.email, // Recipient email address
+      cc: "instanthub.in@gmail.com", // CC email address (can be a string or an array of strings)
       subject: `Your Order #${updatedServiceOrder.serviceOrderId} has been placed ${updatedServiceOrder.customerName}`, // Subject line
 
       html: emailBody,
@@ -1436,12 +1464,12 @@ export const serviceOrderCompleted = async (req, res) => {
 // DELETE SERVICE ORDER
 export const deleteServiceOrder = async (req, res) => {
   console.log("deleteServiceOrder controller");
-  const orderId = req.params.orderId;
-  console.log(orderId);
+  const serviceOrderId = req.params.serviceOrderId;
+  console.log(serviceOrderId);
 
   try {
     // 1. Delete brand
-    const deletedOrder = await ServiceOrder.findByIdAndDelete(orderId);
+    const deletedOrder = await ServiceOrder.findByIdAndDelete(serviceOrderId);
     console.log("deleteOrder", deletedOrder);
 
     return res.status(201).json(deletedOrder);

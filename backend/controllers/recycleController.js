@@ -1,12 +1,9 @@
 import RecycleOrder from "../models/recycleOrderModel.js";
-import Product from "../models/productModel.js";
 import path from "path";
 import fs from "fs";
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 dotenv.config();
-import pdf from "html-pdf";
-import PDFDocument from "pdfkit";
 
 export const getRecycleOrders = async (req, res) => {
   console.log("getRecycleOrders controller");
@@ -24,7 +21,7 @@ export const getRecycleOrders = async (req, res) => {
 export const createRecycleOrder = async (req, res) => {
   console.log("createRecycleOrder controller");
   try {
-    console.log(req.body);
+    console.log("req.body", req.body);
     const totalOrders = await RecycleOrder.find();
     console.log("totalOrders", totalOrders.length);
     // console.log("totalOrders", totalOrders.count);
@@ -48,22 +45,31 @@ export const createRecycleOrder = async (req, res) => {
     order.save();
     console.log("created recycleOrder", order);
 
-    // const orderDetail = await Order.find({ orderId: order.orderId });
-    // console.log(orderDetail);
-
     // console.log("APP_PASSWORD", process.env.USER);
     // console.log("APP_PASSWORD", process.env.APP_PASSWORD);
 
     // Create a transporter object using SMTP transport
+    // const transporter = nodemailer.createTransport({
+    //   service: "gmail",
+    //   host: "smtp.example.com", // SMTP server address
+    //   port: 465, // SMTP port (usually 587 for TLS, 465 for SSL)
+    //   secure: false, // true for 465, false for other ports
+    //   auth: {
+    //     // user: process.env.USER, // Your email address
+    //     // user: "instantcashpick@gmail.com", // Your email address
+    //     user: "instanthub.in@gmail.com", // Your email address
+    //     pass: process.env.APP_PASSWORD, // Your email password
+    //   },
+    // });
+
     const transporter = nodemailer.createTransport({
-      service: "gmail",
-      host: "smtp.example.com", // SMTP server address
-      port: 465, // SMTP port (usually 587 for TLS, 465 for SSL)
-      secure: false, // true for 465, false for other ports
+      // service: "gmail",
+      host: "smtp.hostinger.com", // Replace with your SMTP server
+      port: 465, // Use 587 for TLS or 465 for SSL
+      secure: true, // true for port 465, false for 587
       auth: {
-        // user: process.env.USER, // Your email address
-        user: "instantcashpick@gmail.com", // Your email address
-        pass: process.env.APP_PASSWORD, // Your email password
+        user: "support@instanthub.in", // Your domain email
+        pass: process.env.SUPPORT_PASSWORD, // Your domain email password
       },
     });
 
@@ -281,8 +287,9 @@ export const createRecycleOrder = async (req, res) => {
     // Email content
     const mailOptions = {
       // from: process.env.USER, // Sender email address
-      from: "instantcashpick@gmail.com", // Sender email address
+      from: "recycle-orders@instanthub.in", // Sender email address
       to: order.email, // Recipient email address
+      cc: "instanthub.in@gmail.com", // CC email address (can be a string or an array of strings)
       subject: `Your Order #${recycleOrderId} has been placed ${order.customerName}`, // Subject line
       // text: "Hello, This is a test email from Nodemailer!", // Plain text body
       // You can also use HTML format
@@ -306,12 +313,15 @@ export const createRecycleOrder = async (req, res) => {
   }
 };
 
+// Recycle Order Completed
 export const recycleOrderReceived = async (req, res) => {
   console.log("recycleOrderReceived Controller");
   try {
     console.log(req.body);
+
+    const recycleOrderId = req.params.recycleOrderId;
+
     const {
-      recycleOrderId,
       customerProofFront,
       customerProofBack,
       customerOptional1,
@@ -551,7 +561,7 @@ export const recycleOrderReceived = async (req, res) => {
             <div>
               <h1>
                 <span>Order #</span>
-                <span>${updatedOrder.recyclOrderId}</span>
+                <span>${updatedOrder.recycleOrderId}</span>
               </h1>
               <h1>
                 <span>Customer Name: </span>
@@ -633,7 +643,7 @@ export const recycleOrderReceived = async (req, res) => {
     
           <p style="font-size: px; text-align: center">
             Visit us again
-            <a href="https://instanthub.in">instantpashpick.com</a>
+            <a href="https://www.instanthub.in">instanthub.in</a>
           </p>
     
           <p style="text-align: center; color: #777">
@@ -657,23 +667,36 @@ export const recycleOrderReceived = async (req, res) => {
     // Email content
     const mailOptions = {
       // from: process.env.USER, // Sender email address
-      from: "instantcashpick@gmail.com", // Sender email address
+      from: "recycle-orders@instanthub.in", // Sender email address
       to: updatedOrder.email, // Recipient email address
-      cc: "instantcashpick@gmail.com", // CC email address (can be a string or an array of strings)
-      subject: `Purchase Details for Order ${updatedOrder.orderId}`, // Subject line
+      cc: "instanthub.in@gmail.com", // CC email address (can be a string or an array of strings)
+      cc: process.env.USER, // CC email address (can be a string or an array of strings)
+      subject: `Purchase Details for Order ${updatedOrder.recycleOrderId}`, // Subject line
       html: emailBody,
     };
 
     // Create a transporter object using SMTP transport
+    // const transporter = nodemailer.createTransport({
+    //   service: "gmail",
+    //   host: "smtp.example.com", // SMTP server address
+    //   port: 465, // SMTP port (usually 587 for TLS, 465 for SSL)
+    //   secure: false, // true for 465, false for other ports
+    //   auth: {
+    //     // user: process.env.USER, // Your email address
+    //     // user: "instantcashpick@gmail.com", // Your email address
+    //     user: "instanthub.in@gmail.com", // Your email address
+    //     pass: process.env.APP_PASSWORD, // Your email password
+    //   },
+    // });
+
     const transporter = nodemailer.createTransport({
-      service: "gmail",
-      host: "smtp.example.com", // SMTP server address
-      port: 465, // SMTP port (usually 587 for TLS, 465 for SSL)
-      secure: false, // true for 465, false for other ports
+      // service: "gmail",
+      host: "smtp.hostinger.com", // Replace with your SMTP server
+      port: 465, // Use 587 for TLS or 465 for SSL
+      secure: true, // true for port 465, false for 587
       auth: {
-        // user: process.env.USER, // Your email address
-        user: "instantcashpick@gmail.com", // Your email address
-        pass: process.env.APP_PASSWORD, // Your email password
+        user: "support@instanthub.in", // Your domain email
+        pass: process.env.SUPPORT_PASSWORD, // Your domain email password
       },
     });
 
@@ -700,12 +723,14 @@ export const recycleOrderReceived = async (req, res) => {
 // DELETE Recyle Order
 export const deleteRecycleOrder = async (req, res) => {
   console.log("deleteRecycleOrder controller");
-  const orderId = req.params.orderId;
-  console.log(orderId);
+  const recycleOrderId = req.params.recycleOrderId;
+  console.log(recycleOrderId);
 
   try {
     // 1. Delete brand
-    const deletedRecycleOrder = await RecycleOrder.findByIdAndDelete(orderId);
+    const deletedRecycleOrder = await RecycleOrder.findByIdAndDelete(
+      recycleOrderId
+    );
     console.log("deletedRecycleOrder", deletedRecycleOrder);
 
     return res.status(201).json(deletedRecycleOrder);

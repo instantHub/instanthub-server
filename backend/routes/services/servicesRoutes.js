@@ -27,9 +27,13 @@ router.put("/:serviceId", updateService); // Update a service by ID
 router.delete("/", deleteService); // Delete a service by ID
 
 // SERVICE ORDERS
-router.get("/get-orders", getServicerOrders);
-router.post("/create-order", createServiceOrder);
-router.put("/completed-service-order", serviceOrderCompleted);
-router.delete("/delete-order/:orderId", deleteServiceOrder);
+// router.get("/get-orders", getServicerOrders);
+// router.post("/create-order", createServiceOrder);
+// router.put("/completed-service-order", serviceOrderCompleted);
+// router.delete("/delete-order/:orderId", deleteServiceOrder);
+router.get("/orders", getServicerOrders);
+router.post("/orders", createServiceOrder);
+router.put("/orders/:serviceOrderId", serviceOrderCompleted);
+router.delete("/orders/:serviceOrderId", deleteServiceOrder);
 
 export default router;

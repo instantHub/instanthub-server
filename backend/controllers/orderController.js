@@ -4,12 +4,12 @@ import path from "path";
 import fs from "fs";
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
-import e from "express";
+// import e from "express";
 dotenv.config();
 // import logo from './'
 // import puppeteer from "puppeteer";
 import pdf from "html-pdf";
-import PDFDocument from "pdfkit";
+// import PDFDocument from "pdfkit";
 import Stocks from "../models/stocksModel.js";
 
 export const getOrders = async (req, res) => {
@@ -74,15 +74,26 @@ export const createOrder = async (req, res) => {
     // console.log("APP_PASSWORD", process.env.APP_PASSWORD);
 
     // Create a transporter object using SMTP transport
+    // const transporter = nodemailer.createTransport({
+    //   service: "gmail",
+    //   host: "smtp.example.com", // SMTP server address
+    //   port: 465, // SMTP port (usually 587 for TLS, 465 for SSL)
+    //   secure: false, // true for 465, false for other ports
+    //   auth: {
+    //     // user: process.env.USER, // Your email address
+    //     user: "instanthub.in@gmail.com", // Your email address
+    //     pass: process.env.SUPPORT_PASSWORD, // Your email password
+    //   },
+    // });
+
     const transporter = nodemailer.createTransport({
-      service: "gmail",
-      host: "smtp.example.com", // SMTP server address
-      port: 465, // SMTP port (usually 587 for TLS, 465 for SSL)
-      secure: false, // true for 465, false for other ports
+      // service: "gmail",
+      host: "smtp.hostinger.com", // Replace with your SMTP server
+      port: 465, // Use 587 for TLS or 465 for SSL
+      secure: true, // true for port 465, false for 587
       auth: {
-        // user: process.env.USER, // Your email address
-        user: "instantcashpick@gmail.com", // Your email address
-        pass: process.env.APP_PASSWORD, // Your email password
+        user: "support@instanthub.in", // Your domain email
+        pass: process.env.SUPPORT_PASSWORD, // Your domain email password
       },
     });
 
@@ -320,185 +331,15 @@ export const createOrder = async (req, res) => {
       </html>
       `;
 
-    // // Function to generate PDF from HTML
-    // const generatePDF = async (html) => {
-    //   const browser = await puppeteer.launch();
-    //   const page = await browser.newPage();
-    //   await page.setContent(html);
-    //   const pdfBuffer = await page.pdf({ format: "A4" });
-    //   await browser.close();
-    //   return pdfBuffer;
-    // };
-
-    // Sample data
-    // const data = {
-    //   orderId: "17374",
-    //   customerName: "Yusuf",
-    //   schedulePickUp: "Tue May 14 2024, 12:00 PM - 02:00 PM",
-    //   email: "digitaladda86@gmail.com",
-    //   phone: "8722220088",
-    //   addressDetails: {
-    //     address: "asdfg, dhj, sff",
-    //     state: "Haryana",
-    //     city: "Chandigarh",
-    //     pinCode: "123456",
-    //   },
-    //   category: "Mobile",
-    //   product: {
-    //     name: "iPhone 13 Pro",
-    //   },
-    //   variant: {
-    //     variantName: "128GB",
-    //   },
-    //   accessoriesAvailable: [
-    //     { conditionLabel: "Box with same IMEI" },
-    //     { conditionLabel: "Bill with Same IMEI Number" },
-    //     { conditionLabel: "Original Cable" },
-    //   ],
-    //   filteredDeductionsHTML: "<li>No problems detected</li>",
-    //   offerPrice: "36525",
-    //   gstNumber: "29CSJPA4571K1ZE",
-    // };
-
-    // Function to generate PDF
-    // const generatePDF = (filePath, data) => {
-    //   const doc = new PDFDocument({ margin: 50 });
-
-    //   // Pipe the PDF content to a file
-    //   doc.pipe(fs.createWriteStream(filePath));
-
-    //   // Header
-    //   // doc
-    //   //   .image("uploads/logo.png", 50, 50, {
-    //   //     width: 60,
-    //   //     height: 50,
-    //   //     align: "center",
-    //   //   })
-    //   //   .moveDown();
-    //   doc
-    //     .fontSize(16)
-    //     .text("Sell Receipt", 180, 65, { align: "center" })
-    //     .fontSize(14)
-    //     .text(
-    //       "Congratulations, your order has been placed with InstantHub",
-    //       { align: "center" }
-    //     )
-    //     // .fontSize(12)
-    //     // .text("InstantHub", {
-    //     //   link: "https://instanthub.in",
-    //     //   align: "center",
-    //     // })
-    //     .moveDown();
-
-    //   // Order Details
-    //   doc
-    //     .fontSize(12)
-    //     .text(`Order # ${data.orderId}`)
-    //     .text(`Customer Name: ${data.customerName}`)
-    //     .text(`PickUp Scheduled: ${data.schedulePickUp}`)
-    //     .text(`Email: ${data.email}`, { columnGap: 10 })
-    //     .text(`Ph #: ${data.phone}`)
-    //     .text(
-    //       `Billing Address: ${data.addressDetails.address}, ${data.addressDetails.state}, ${data.addressDetails.city}, ${data.addressDetails.pinCode}`
-    //     )
-    //     .moveDown();
-
-    //   // Product Details
-    //   doc
-    //     .fontSize(14)
-    //     .text("Product Details", { underline: true })
-    //     .moveDown(0.5)
-    //     .text(
-    //       `${data.category} ${data.product.name} ${
-    //         data.category === "Mobile" ? data.variant.variantName : ""
-    //       }`
-    //     )
-    //     .moveDown();
-
-    //   // Accessories
-    //   doc.fontSize(14).text("Accessories", { underline: true }).moveDown(0.5);
-
-    //   data.accessoriesAvailable.forEach((accessory) => {
-    //     doc.fontSize(12).text(`- ${accessory.conditionLabel}`);
-    //   });
-
-    //   doc.moveDown();
-
-    //   // Problems
-    //   doc
-    //     .fontSize(14)
-    //     .text("Problems", { underline: true })
-    //     .moveDown(0.5)
-    //     .text(data.filteredDeductionsHTML, { columnGap: 10 })
-    //     .moveDown();
-
-    //   // Offered Price
-    //   doc.fontSize(14).text(`Offered Price: ₹ ${data.offerPrice}`).moveDown();
-
-    //   // Footer
-    //   doc
-    //     .fontSize(10)
-    //     .text("Get in touch with us if you need any additional help:", {
-    //       align: "center",
-    //     })
-    //     .text("8722288017", { align: "center", link: "tel:8722288017" })
-    //     .text(
-    //       "If you have any questions or concerns about your order, please send us a mail at",
-    //       { align: "center" }
-    //     )
-    //     .text("support@instanthub.in", {
-    //       align: "center",
-    //       link: "mailto:support@instanthub.in",
-    //     })
-    //     .fontSize(8)
-    //     .text(`GST Number: ${data.gstNumber}`, { align: "right" });
-
-    //   // Finalize the PDF
-    //   doc.end();
-    // };
-
-    // Path to save the PDF
-    // const outputDirectory = path.join(path.resolve(), "pdfs");
-    // if (!fs.existsSync(outputDirectory)) {
-    //   fs.mkdirSync(outputDirectory);
-    // }
-    // const outputPath = path.join(outputDirectory, "order-summary.pdf");
-    // generatePDF(outputPath, data);
-
-    // OLD
-    // Path to save the PDF
-    // const outputPath = path.join(path.resolve(), "order-summary.pdf");
-    // generatePDF(outputPath, data);
-
     // Email content
     const mailOptions = {
       // from: process.env.USER, // Sender email address
-      from: "instantcashpick@gmail.com", // Sender email address
+      from: "orders@instanthub.in", // Sender email address
       to: order.email, // Recipient email address
+      cc: "instanthub.in@gmail.com",
       subject: `Your Order #${orderId} has been placed ${order.customerName}`, // Subject line
       // text: "Hello, This is a test email from Nodemailer!", // Plain text body
-      // You can also use HTML format
-
       html: emailBody,
-      // attachments: [
-      //   {
-      //     filename: `${orderId}_summary.pdf`,
-      //     content: pdfBuffer,
-      //     contentType: "application/pdf",
-      //   },
-      // ],
-      // attachments: [
-      //   {
-      //     filename: "order-summary.pdf",
-      //     path: path.join(path.resolve(), "order-summary.pdf"),
-      //   },
-      // ],
-      // attachments: [
-      //   {
-      //     filename: "order-summary.pdf",
-      //     path: outputPath,
-      //   },
-      // ],
     };
 
     // Send email
@@ -841,7 +682,7 @@ export const orderReceived = async (req, res) => {
     
           <p style="font-size: px; text-align: center">
             Visit us again
-            <a href="https://instanthub.in">instantpashpick.com</a>
+            <a href="https://instanthub.in">instanthub.in</a>
           </p>
     
           <p style="text-align: center; color: #777">
@@ -888,30 +729,35 @@ export const orderReceived = async (req, res) => {
     // Email content
     const mailOptions = {
       // from: process.env.USER, // Sender email address
-      from: "instantcashpick@gmail.com", // Sender email address
+      from: "orders@instanthub.in", // Sender email address
       to: updatedOrder.email, // Recipient email address
-      cc: "instantcashpick@gmail.com", // CC email address (can be a string or an array of strings)
+      cc: "instanthub.in@gmail.com", // CC email address (can be a string or an array of strings)
+      cc: process.env.USER, // CC email address (can be a string or an array of strings)
       subject: `Purchase Details for Order ${updatedOrder.orderId}`, // Subject line
       html: emailBody,
-      // attachments: [
-      //   {
-      //     filename: `${updatedOrder.orderId}_summary.pdf`,
-      //     content: pdfBuffer,
-      //     contentType: "application/pdf",
-      //   },
-      // ],
     };
 
     // Create a transporter object using SMTP transport
+    // const transporter = nodemailer.createTransport({
+    //   service: "gmail",
+    //   host: "smtp.example.com", // SMTP server address
+    //   port: 465, // SMTP port (usually 587 for TLS, 465 for SSL)
+    //   secure: false, // true for 465, false for other ports
+    //   auth: {
+    //     // user: process.env.USER, // Your email address
+    //     // user: "instantcashpick@gmail.com", // Your email address
+    //     user: "instanthub.in@gmail.com", // Your email address
+    //     pass: process.env.APP_PASSWORD, // Your email password
+    //   },
+    // });
     const transporter = nodemailer.createTransport({
-      service: "gmail",
-      host: "smtp.example.com", // SMTP server address
-      port: 465, // SMTP port (usually 587 for TLS, 465 for SSL)
-      secure: false, // true for 465, false for other ports
+      // service: "gmail",
+      host: "smtp.hostinger.com", // Replace with your SMTP server
+      port: 465, // Use 587 for TLS or 465 for SSL
+      secure: true, // true for port 465, false for 587
       auth: {
-        // user: process.env.USER, // Your email address
-        user: "instantcashpick@gmail.com", // Your email address
-        pass: process.env.APP_PASSWORD, // Your email password
+        user: "support@instanthub.in", // Your domain email
+        pass: process.env.SUPPORT_PASSWORD, // Your domain email password
       },
     });
 

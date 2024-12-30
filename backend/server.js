@@ -75,7 +75,7 @@ app.use(
 app.use(function (req, res, next) {
   // const allowedOrigins = ["https://instantcashpick.com"];
   const allowedOrigins = [
-    "http://localhost:5173",
+    // "http://localhost:5173",
     "https://www.instanthub.in",
     "https://instantcashpick.com",
   ];
