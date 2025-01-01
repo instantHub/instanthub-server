@@ -18,6 +18,20 @@ export const getRecycleOrders = async (req, res) => {
   }
 };
 
+export const getRecycleOrder = async (req, res) => {
+  console.log("getRecycleOrder controller");
+
+  try {
+    const recycleOrderId = req.params.recycleOrderId;
+    // const ordersList = await RecycleOrder.find().populate("productId", "name");
+    const recycleOrder = await RecycleOrder.findById(recycleOrderId);
+    // console.log("recycleOrder",recycleOrder);
+    res.status(200).json(recycleOrder);
+  } catch (error) {
+    res.status(404).json({ message: error.message });
+  }
+};
+
 export const createRecycleOrder = async (req, res) => {
   console.log("createRecycleOrder controller");
   try {
@@ -38,7 +52,7 @@ export const createRecycleOrder = async (req, res) => {
     const recycleOrderId = `REORD${year}${month}${day}${CN}${PH}00${orderCount}`; // Concatenate date and random number
     console.log("recycleOrderId", recycleOrderId);
 
-    const orderData = { ...req.body, recycleOrderId, status: "pending" };
+    const orderData = { ...req.body, recycleOrderId };
     console.log("recycleOrderData", orderData);
 
     let order = await RecycleOrder.create(orderData);
@@ -670,7 +684,6 @@ export const recycleOrderReceived = async (req, res) => {
       from: "recycle-orders@instanthub.in", // Sender email address
       to: updatedOrder.email, // Recipient email address
       cc: "instanthub.in@gmail.com", // CC email address (can be a string or an array of strings)
-      cc: process.env.USER, // CC email address (can be a string or an array of strings)
       subject: `Purchase Details for Order ${updatedOrder.recycleOrderId}`, // Subject line
       html: emailBody,
     };
@@ -720,6 +733,40 @@ export const recycleOrderReceived = async (req, res) => {
   }
 };
 
+// Cancel Recycle Order
+export const recycleOrderCancel = async (req, res) => {
+  console.log("orderCancel controller");
+  const recycleOrderId = req.params.recycleOrderId;
+  console.log("recycleOrderId", recycleOrderId);
+
+  const { status, cancelReason } = req.body;
+  console.log("req.body", req.body);
+  console.log("status", status);
+  console.log("cancelReason", cancelReason);
+
+  try {
+    const updateOrder = await RecycleOrder.findByIdAndUpdate(
+      recycleOrderId, // The ID of the order to update
+      { status, cancelReason }, // The fields to update
+      { new: true } // Option to return the updated document
+    );
+    console.log("updateOrder", updateOrder);
+
+    if (!updateOrder) {
+      return res.status(404).json({ message: "Recycle Order not found" });
+    }
+
+    res
+      .status(200)
+      .json({ message: "Recycle Order cancelled successfully", updateOrder });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal server error while cancelling Recycle Order.",
+      error,
+    });
+  }
+};
+
 // DELETE Recyle Order
 export const deleteRecycleOrder = async (req, res) => {
   console.log("deleteRecycleOrder controller");
@@ -732,6 +779,38 @@ export const deleteRecycleOrder = async (req, res) => {
       recycleOrderId
     );
     console.log("deletedRecycleOrder", deletedRecycleOrder);
+
+    // 2. Delete image from uploads/ of the deleted Order
+    deleteImage(deletedRecycleOrder.customerProofFront);
+    deleteImage(deletedRecycleOrder.customerProofBack);
+
+    if (deletedRecycleOrder.customerOptional1)
+      deleteImage(deletedRecycleOrder.customerOptional1);
+    if (deletedRecycleOrder.customerOptional2)
+      deleteImage(deletedRecycleOrder.customerOptional2);
+
+    // Delete the corresponding image file from the uploads folder
+    function deleteImage(image) {
+      const __dirname = path.resolve();
+      const imagePath = path.join(__dirname, image);
+      console.log("imagePath", image);
+
+      try {
+        fs.unlink(imagePath, (err) => {
+          if (err) {
+            if (err.code === "ENOENT") {
+              console.log(`Image ${imagePath} does not exist.`);
+            } else {
+              console.error(`Error deleting image ${imagePath}:`, err);
+            }
+          } else {
+            console.log(`Image ${imagePath} deleted successfully.`);
+          }
+        });
+      } catch (err) {
+        console.error(`Error deleting image ${imagePath}:`, err);
+      }
+    }
 
     return res.status(201).json(deletedRecycleOrder);
   } catch (error) {

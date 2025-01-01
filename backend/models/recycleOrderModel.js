@@ -1,4 +1,4 @@
-import mongoose, { mongo } from "mongoose";
+import mongoose from "mongoose";
 
 const recycleOrderSchema = mongoose.Schema(
   {
@@ -76,9 +76,7 @@ const recycleOrderSchema = mongoose.Schema(
         type: String,
       },
     },
-    status: {
-      type: String,
-    },
+
     paymentMode: {
       type: String,
     },
@@ -87,6 +85,24 @@ const recycleOrderSchema = mongoose.Schema(
     },
     finalPrice: {
       type: Number,
+    },
+
+    // status: {
+    //   type: String,
+    // },
+
+    status: {
+      pending: { type: Boolean },
+      completed: { type: Boolean },
+      cancelled: { type: Boolean },
+    },
+
+    cancelReason: {
+      type: String,
+      required: function () {
+        return this.status.cancelled; // Only required if the order is cancelled
+      },
+      default: null, // Default to null if not cancelled
     },
   },
   { timestamps: true }

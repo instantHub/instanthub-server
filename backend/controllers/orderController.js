@@ -24,6 +24,19 @@ export const getOrders = async (req, res) => {
   }
 };
 
+export const getOneOrders = async (req, res) => {
+  console.log("GetOrders controller");
+
+  try {
+    const orderId = req.params.orderId;
+    const order = await Order.findById(orderId).populate("productId", "name");
+    console.log(order);
+    res.status(200).json(order);
+  } catch (error) {
+    res.status(404).json({ message: error.message });
+  }
+};
+
 export const createOrder = async (req, res) => {
   console.log("CreateOrder controller");
   try {
@@ -358,6 +371,7 @@ export const createOrder = async (req, res) => {
   }
 };
 
+// Order Received
 export const orderReceived = async (req, res) => {
   console.log("orderReceived Controller");
   try {
@@ -732,7 +746,6 @@ export const orderReceived = async (req, res) => {
       from: "orders@instanthub.in", // Sender email address
       to: updatedOrder.email, // Recipient email address
       cc: "instanthub.in@gmail.com", // CC email address (can be a string or an array of strings)
-      cc: process.env.USER, // CC email address (can be a string or an array of strings)
       subject: `Purchase Details for Order ${updatedOrder.orderId}`, // Subject line
       html: emailBody,
     };
@@ -781,20 +794,59 @@ export const orderReceived = async (req, res) => {
   }
 };
 
-// DELETE Brand
+// Cancel Order
+export const orderCancel = async (req, res) => {
+  console.log("orderCancel controller");
+  const orderId = req.params.orderId;
+  console.log("orderId", orderId);
+
+  const { status, cancelReason } = req.body;
+  console.log("req.body", req.body);
+  console.log("status", status);
+  console.log("cancelReason", cancelReason);
+
+  try {
+    const updateOrder = await Order.findByIdAndUpdate(
+      orderId, // The ID of the order to update
+      { status, cancelReason }, // The fields to update
+      { new: true } // Option to return the updated document
+    );
+    console.log("updateOrder", updateOrder);
+
+    if (!updateOrder) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    res
+      .status(200)
+      .json({ message: "Order cancelled successfully", updateOrder });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal server error while cancelling Order.",
+      error,
+    });
+  }
+};
+
+// DELETE Order
 export const deleteOrder = async (req, res) => {
   console.log("DeleteOrder controller");
   const orderId = req.params.orderId;
   console.log(orderId);
 
   try {
-    // 1. Delete brand
+    // 1. Delete Order
     const deletedOrder = await Order.findByIdAndDelete(orderId);
     console.log("deleteOrder", deletedOrder);
 
-    // 2. Delete image from uploads/ of the deleted Brand
+    // 2. Delete image from uploads/ of the deleted Order
     deleteImage(deletedOrder.customerProofFront);
     deleteImage(deletedOrder.customerProofBack);
+
+    if (deletedOrder.customerOptional1)
+      deleteImage(deletedOrder.customerOptional1);
+    if (deletedOrder.customerOptional2)
+      deleteImage(deletedOrder.customerOptional2);
 
     // Delete the corresponding image file from the uploads folder
     function deleteImage(image) {
