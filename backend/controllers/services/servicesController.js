@@ -843,7 +843,7 @@ export const createServiceOrder = async (req, res) => {
           >
             <h1 class="sell" style="text-align: center">
             <img
-            src="https://api.yusufqureshi.online/uploads/logo-image-1715942935175.png"
+            src="https://api.instantpick.in/uploads/NavLogo.jpg"
             alt=""
             style="width: 100px; height: 90px;"
           />
@@ -1227,7 +1227,7 @@ export const serviceOrderCompleted = async (req, res) => {
           >
             <h1 class="sell" style="text-align: center">
             <img
-            src="https://api.yusufqureshi.online/uploads/logo-image-1715942935175.png"
+            src="https://api.instantpick.in/uploads/NavLogo.jpg"
             alt=""
             style="width: 100px; height: 90px;"
           />

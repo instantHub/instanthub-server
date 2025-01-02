@@ -87,26 +87,14 @@ export const createOrder = async (req, res) => {
     // console.log("APP_PASSWORD", process.env.APP_PASSWORD);
 
     // Create a transporter object using SMTP transport
-    // const transporter = nodemailer.createTransport({
-    //   service: "gmail",
-    //   host: "smtp.example.com", // SMTP server address
-    //   port: 465, // SMTP port (usually 587 for TLS, 465 for SSL)
-    //   secure: false, // true for 465, false for other ports
-    //   auth: {
-    //     // user: process.env.USER, // Your email address
-    //     user: "instanthub.in@gmail.com", // Your email address
-    //     pass: process.env.SUPPORT_PASSWORD, // Your email password
-    //   },
-    // });
-
     const transporter = nodemailer.createTransport({
       // service: "gmail",
       host: "smtp.hostinger.com", // Replace with your SMTP server
-      port: 465, // Use 587 for TLS or 465 for SSL
+      port: 465, // Use 587 for TLS or 465 for SSL // SMTP port (usually 587 for TLS, 465 for SSL)
       secure: true, // true for port 465, false for 587
       auth: {
-        user: "support@instanthub.in", // Your domain email
-        pass: process.env.SUPPORT_PASSWORD, // Your domain email password
+        user: "support@instanthub.in", // Your domain email // Your email address
+        pass: process.env.SUPPORT_PASSWORD, // Your domain email password // Your email password
       },
     });
 
@@ -204,7 +192,7 @@ export const createOrder = async (req, res) => {
           >
             <h1 class="sell" style="text-align: center">
             <img
-            src="https://api.yusufqureshi.online/uploads/logo-image-1715942935175.png"
+            src="https://api.instantpick.in/uploads/NavLogo.jpg"
             alt=""
             style="width: 100px; height: 90px;"
           />
@@ -603,7 +591,7 @@ export const orderReceived = async (req, res) => {
         >
           <h2 class="sell" style="text-align: center">
             <img
-              src="https://api.yusufqureshi.online/uploads/logo-image-1715942935175.png"
+              src="https://api.instantpick.in/uploads/NavLogo.jpg"
               alt=""
               style="width: 100px; height: 90px"
             />
