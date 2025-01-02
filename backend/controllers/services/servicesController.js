@@ -688,6 +688,20 @@ export const getServicerOrders = async (req, res) => {
   }
 };
 
+export const getServiceOrder = async (req, res) => {
+  console.log("getServiceOrder controller");
+
+  try {
+    const serviceOrderId = req.params.serviceOrderId;
+    // const ordersList = await RecycleOrder.find().populate("productId", "name");
+    const serviceOrder = await ServiceOrder.findById(serviceOrderId);
+    // console.log("serviceOrder",serviceOrder);
+    res.status(200).json(serviceOrder);
+  } catch (error) {
+    res.status(404).json({ message: error.message });
+  }
+};
+
 export const createServiceOrder = async (req, res) => {
   console.log("CreateOrder controller");
   try {
@@ -730,31 +744,6 @@ export const createServiceOrder = async (req, res) => {
 
     // const orderDetail = await Order.find({ orderId: order.orderId });
     // console.log(orderDetail);
-
-    // Create a transporter object using SMTP transport
-    // const transporter = nodemailer.createTransport({
-    //   service: "gmail",
-    //   host: "smtp.example.com", // SMTP server address
-    //   port: 465, // SMTP port (usually 587 for TLS, 465 for SSL)
-    //   secure: false, // true for 465, false for other ports
-    //   auth: {
-    //     // user: process.env.USER, // Your email address
-    //     // user: "instantcashpick@gmail.com", // Your email address
-    //     user: "instanthub.in@gmail.com", // Your email address
-    //     pass: process.env.APP_PASSWORD, // Your email password
-    //   },
-    // });
-
-    const transporter = nodemailer.createTransport({
-      // service: "gmail",
-      host: "smtp.hostinger.com", // Replace with your SMTP server
-      port: 465, // Use 587 for TLS or 465 for SSL
-      secure: true, // true for port 465, false for 587
-      auth: {
-        user: "support@instanthub.in", // Your domain email
-        pass: process.env.SUPPORT_PASSWORD, // Your domain email password
-      },
-    });
 
     const filteredProblemsHTML =
       order.problems && order.problems.length > 0
@@ -820,6 +809,19 @@ export const createServiceOrder = async (req, res) => {
               justify-content: start;
               gap: 15%;
             }
+
+            .logo {
+              width: 120px;
+              height: 65px;
+            }
+
+            /* Mobile Styles */
+            @media only screen and (max-width: 600px) {
+              .logo {
+                width: 80px;
+                height: 55px
+              }
+            }
           </style>
         </head>
         <body
@@ -844,8 +846,8 @@ export const createServiceOrder = async (req, res) => {
             <h1 class="sell" style="text-align: center">
             <img
             src="https://api.instantpick.in/uploads/NavLogo.jpg"
-            alt=""
-            style="width: 100px; height: 90px;"
+            alt="Instant Hub"
+            class="logo"
           />
             </h1>
             <h1 class="sell" style="text-align: center">Service Booking Receipt</h1>
@@ -1020,8 +1022,8 @@ export const createServiceOrder = async (req, res) => {
             </table>
             <p style="text-align: center; color: #585555">
               Get in touch with us if you need any additional help:
-              <a href="tel:872228800" style="color: #007bff; text-decoration: none"
-              >872228800</a>
+              <a href="tel:8722288017" style="color: #007bff; text-decoration: none"
+              >8722288017</a>
             </p>
             <p style="text-align: center; color: #777">
               If you have any questions or concerns about your order, please send us a
@@ -1041,6 +1043,18 @@ export const createServiceOrder = async (req, res) => {
         </body>
       </html>
       `;
+
+    // Create a transporter object using SMTP transport
+    const transporter = nodemailer.createTransport({
+      // service: "gmail",
+      host: "smtp.hostinger.com", // Replace with your SMTP server
+      port: 465, // Use 587 for TLS or 465 for SSL
+      secure: true, // true for port 465, false for 587
+      auth: {
+        user: "support@instanthub.in", // Your domain email
+        pass: process.env.SUPPORT_PASSWORD, // Your domain email password
+      },
+    });
 
     // Email content
     const mailOptions = {
@@ -1118,17 +1132,6 @@ export const serviceOrderCompleted = async (req, res) => {
     //   },
     // });
 
-    const transporter = nodemailer.createTransport({
-      // service: "gmail",
-      host: "smtp.hostinger.com", // Replace with your SMTP server
-      port: 465, // Use 587 for TLS or 465 for SSL
-      secure: true, // true for port 465, false for 587
-      auth: {
-        user: "support@instanthub.in", // Your domain email
-        pass: process.env.SUPPORT_PASSWORD, // Your domain email password
-      },
-    });
-
     const filteredProblemsHTML =
       updatedServiceOrder.problems && updatedServiceOrder.problems.length > 0
         ? updatedServiceOrder.problems
@@ -1204,6 +1207,19 @@ export const serviceOrderCompleted = async (req, res) => {
               justify-content: start;
               gap: 15%;
             }
+
+            .logo {
+              width: 120px;
+              height: 65px;
+            }
+
+            /* Mobile Styles */
+            @media only screen and (max-width: 600px) {
+              .logo {
+                width: 80px;
+                height: 55px
+              }
+            }
           </style>
         </head>
         <body
@@ -1228,8 +1244,8 @@ export const serviceOrderCompleted = async (req, res) => {
             <h1 class="sell" style="text-align: center">
             <img
             src="https://api.instantpick.in/uploads/NavLogo.jpg"
-            alt=""
-            style="width: 100px; height: 90px;"
+            alt="Instant Hub"
+            class="logo"
           />
             </h1>
             <h1 class="sell" style="text-align: center">Service Completion Receipt</h1>
@@ -1412,8 +1428,8 @@ export const serviceOrderCompleted = async (req, res) => {
             </table>
             <p style="text-align: center; color: #585555">
               Get in touch with us if you need any additional help:
-              <a href="tel:872228800" style="color: #007bff; text-decoration: none"
-              >872228800</a>
+              <a href="tel:8722288017" style="color: #007bff; text-decoration: none"
+              >8722288017</a>
             </p>
             <p style="text-align: center; color: #777">
               If you have any questions or concerns about your order, please send us a
@@ -1434,6 +1450,17 @@ export const serviceOrderCompleted = async (req, res) => {
       </html>
       `;
 
+    const transporter = nodemailer.createTransport({
+      // service: "gmail",
+      host: "smtp.hostinger.com", // Replace with your SMTP server
+      port: 465, // Use 587 for TLS or 465 for SSL
+      secure: true, // true for port 465, false for 587
+      auth: {
+        user: "support@instanthub.in", // Your domain email
+        pass: process.env.SUPPORT_PASSWORD, // Your domain email password
+      },
+    });
+
     // Email content
     const mailOptions = {
       // from: process.env.USER, // Sender email address
@@ -1441,7 +1468,6 @@ export const serviceOrderCompleted = async (req, res) => {
       to: updatedServiceOrder.email, // Recipient email address
       cc: "instanthub.in@gmail.com", // CC email address (can be a string or an array of strings)
       subject: `Your Order #${updatedServiceOrder.serviceOrderId} has been placed ${updatedServiceOrder.customerName}`, // Subject line
-
       html: emailBody,
     };
 
@@ -1458,6 +1484,94 @@ export const serviceOrderCompleted = async (req, res) => {
     res.status(200).json({ success: true, data: updatedServiceOrder });
   } catch (error) {
     res.status(404).json({ message: error.message });
+  }
+};
+
+// Cancel Recycle Order
+export const cancelServiceOrder = async (req, res) => {
+  console.log("cancelServiceOrder controller");
+  const serviceOrderId = req.params.serviceOrderId;
+  console.log("serviceOrderId", serviceOrderId);
+
+  const { status, cancelReason } = req.body;
+  console.log("req.body", req.body);
+  // console.log("status", status);
+  // console.log("cancelReason", cancelReason);
+
+  try {
+    const updateOrder = await ServiceOrder.findByIdAndUpdate(
+      serviceOrderId, // The ID of the order to update
+      { $set: { status, cancelReason } }, // The fields to update using $set
+      { new: true } // Option to return the updated document
+    );
+    // console.log("updateOrder", updateOrder);
+
+    if (!updateOrder) {
+      return res.status(404).json({ message: "Recycle Order not found" });
+    }
+
+    // Create transporter
+    const transporter = nodemailer.createTransport({
+      // service: "gmail",
+      // host: "smtp.gmail.com", // Replace with your SMTP server
+
+      host: "smtp.hostinger.com", // Replace with your SMTP server
+      port: 465, // Use 587 for TLS or 465 for SSL
+      secure: true, // true for port 465, false for 587
+      auth: {
+        // Productio
+        user: "support@instanthub.in", // Your domain email
+        pass: process.env.SUPPORT_PASSWORD, // Your domain email password
+
+        // Development
+        // user: "instanthub.in@gmail.com", // Your domain email
+        // pass: process.env.APP_PASSWORD, // Your domain email password
+      },
+    });
+
+    // Email content
+    const mailOptions = {
+      // from: "instanthub.in@gmail.com", // Sender email address
+
+      from: "support@instanthub.in", // Sender email address
+      to: updateOrder.email, // Recipient email address
+      cc: "instanthub.in@gmail.com", // CC email address (can be a string or an array of strings)
+      subject: `Your Order #${updateOrder.serviceOrderId} has been cancelled ${updateOrder.customerName}`, // Subject line
+      text: `Dear Customer,
+
+Thank you for choosing Instant Hub. We truly appreciate your interest in our services.
+
+Sorry to inform you that we had to cancel your requested service.
+Cancellation Reason: ${cancelReason}
+
+We sincerely apologize for any inconvenience this may cause. Please let us know if there is anything else we can assist you with, or feel free to reach out to us if you have any future requirements within Bangalore.
+Thank you for your understanding and support.
+
+Best regards,  
+InstantHub Team  
+support@instanthub.in  
+8722288017  
+https://www.instanthub.in/`,
+    };
+
+    // Send email
+    transporter
+      .sendMail(mailOptions)
+      .then((info) => {
+        console.log("Email sent:", info.response);
+      })
+      .catch((error) => {
+        console.log("Error occurred:", error);
+      });
+
+    res
+      .status(200)
+      .json({ message: "Recycle Order cancelled successfully", updateOrder });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal server error while cancelling Recycle Order.",
+      error,
+    });
   }
 };
 

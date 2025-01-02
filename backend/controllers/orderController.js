@@ -40,18 +40,6 @@ export const getOneOrders = async (req, res) => {
 export const createOrder = async (req, res) => {
   console.log("CreateOrder controller");
   try {
-    // const {
-    //   productId,
-    //   customerName,
-    //   email,
-    //   phone,
-    //   address,
-    //   pinCode,
-    //   deductions,
-    //   offerPrice,
-    //   status,
-    // } = req.body;
-
     // console.log(req.body);
     const totalOrders = await Order.find();
     console.log("totalOrders", totalOrders.length);
@@ -85,18 +73,6 @@ export const createOrder = async (req, res) => {
 
     // console.log("APP_PASSWORD", process.env.USER);
     // console.log("APP_PASSWORD", process.env.APP_PASSWORD);
-
-    // Create a transporter object using SMTP transport
-    const transporter = nodemailer.createTransport({
-      // service: "gmail",
-      host: "smtp.hostinger.com", // Replace with your SMTP server
-      port: 465, // Use 587 for TLS or 465 for SSL // SMTP port (usually 587 for TLS, 465 for SSL)
-      secure: true, // true for port 465, false for 587
-      auth: {
-        user: "support@instanthub.in", // Your domain email // Your email address
-        pass: process.env.SUPPORT_PASSWORD, // Your domain email password // Your email password
-      },
-    });
 
     const filteredDeductionsHTML =
       order.deductions && order.deductions.length > 0
@@ -169,6 +145,20 @@ export const createOrder = async (req, res) => {
               justify-content: start;
               gap: 15%;
             }
+
+            .logo {
+              width: 120px;
+              height: 65px;
+            }
+
+            /* Mobile Styles */
+            @media only screen and (max-width: 600px) {
+              .logo {
+                width: 80px;
+                height: 55px
+              }
+            }
+
           </style>
         </head>
         <body
@@ -193,8 +183,8 @@ export const createOrder = async (req, res) => {
             <h1 class="sell" style="text-align: center">
             <img
             src="https://api.instantpick.in/uploads/NavLogo.jpg"
-            alt=""
-            style="width: 100px; height: 90px;"
+            alt="Instant Hub"
+            class="logo"
           />
             </h1>
             <h1 class="sell" style="text-align: center">Sell Receipt</h1>
@@ -332,9 +322,20 @@ export const createOrder = async (req, res) => {
       </html>
       `;
 
+    // Create a transporter object using SMTP transport
+    const transporter = nodemailer.createTransport({
+      // service: "gmail",
+      host: "smtp.hostinger.com", // Replace with your SMTP server // gmail smtp: "smtp.gmail.com"
+      port: 465, // Use 587 for TLS or 465 for SSL // SMTP port (usually 587 for TLS, 465 for SSL)
+      secure: true, // true for port 465, false for 587
+      auth: {
+        user: "support@instanthub.in", // Your domain email // Your email address
+        pass: process.env.SUPPORT_PASSWORD, // Your domain email password // Your email password
+      },
+    });
+
     // Email content
     const mailOptions = {
-      // from: process.env.USER, // Sender email address
       from: "orders@instanthub.in", // Sender email address
       to: order.email, // Recipient email address
       cc: "instanthub.in@gmail.com",
@@ -409,11 +410,6 @@ export const orderReceived = async (req, res) => {
       new: true,
     });
 
-    // const updatedOrder = await Order.findByIdAndUpdate(orderId, {
-    //   customerProofFront,
-    //   customerProofBack,
-    //   status,
-    // });
     updatedOrder.save();
 
     console.log("updatedOrder", updatedOrder);
@@ -568,6 +564,19 @@ export const orderReceived = async (req, res) => {
             justify-content: start;
             gap: 15%;
           }
+
+          .logo {
+              width: 120px;
+              height: 65px;
+            }
+
+          /* Mobile Styles */
+          @media only screen and (max-width: 600px) {
+            .logo {
+              width: 80px;
+              height: 55px
+            }
+          }
         </style>
       </head>
       <body
@@ -592,9 +601,9 @@ export const orderReceived = async (req, res) => {
           <h2 class="sell" style="text-align: center">
             <img
               src="https://api.instantpick.in/uploads/NavLogo.jpg"
-              alt=""
-              style="width: 100px; height: 90px"
-            />
+              alt="Instant Hub"
+              class="logo"
+              />
           </h2>
           <h1 class="sell" style="text-align: center">Purchased Receipt</h1>
     
@@ -705,52 +714,7 @@ export const orderReceived = async (req, res) => {
     </html>
     `;
 
-    // // Function to generate PDF from HTML
-    // const generatePDF = async (html) => {
-    //   const browser = await puppeteer.launch();
-    //   const page = await browser.newPage();
-    //   await page.setContent(html);
-    //   const pdfBuffer = await page.pdf({ format: "A4" });
-    //   await browser.close();
-    //   return pdfBuffer;
-    // };
-
-    // // Generate PDF
-    // const pdfBuffer = await generatePDF(emailBody);
-
-    // Function to create PDF
-    const createPDF = (htmlContent, outputPath) => {
-      const options = { format: "Letter" };
-
-      pdf.create(htmlContent, options).toFile(outputPath, (err, res) => {
-        if (err) return console.log(err);
-        console.log(res); // { filename: '/path/to/file.pdf' }
-      });
-    };
-
-    // Email content
-    const mailOptions = {
-      // from: process.env.USER, // Sender email address
-      from: "orders@instanthub.in", // Sender email address
-      to: updatedOrder.email, // Recipient email address
-      cc: "instanthub.in@gmail.com", // CC email address (can be a string or an array of strings)
-      subject: `Purchase Details for Order ${updatedOrder.orderId}`, // Subject line
-      html: emailBody,
-    };
-
     // Create a transporter object using SMTP transport
-    // const transporter = nodemailer.createTransport({
-    //   service: "gmail",
-    //   host: "smtp.example.com", // SMTP server address
-    //   port: 465, // SMTP port (usually 587 for TLS, 465 for SSL)
-    //   secure: false, // true for 465, false for other ports
-    //   auth: {
-    //     // user: process.env.USER, // Your email address
-    //     // user: "instantcashpick@gmail.com", // Your email address
-    //     user: "instanthub.in@gmail.com", // Your email address
-    //     pass: process.env.APP_PASSWORD, // Your email password
-    //   },
-    // });
     const transporter = nodemailer.createTransport({
       // service: "gmail",
       host: "smtp.hostinger.com", // Replace with your SMTP server
@@ -761,6 +725,16 @@ export const orderReceived = async (req, res) => {
         pass: process.env.SUPPORT_PASSWORD, // Your domain email password
       },
     });
+
+    // Email content
+    const mailOptions = {
+      // from: process.env.USER, // Sender email address
+      from: "orders@instanthub.in", // Sender email address
+      to: updatedOrder.email, // Recipient email address
+      cc: "instanthub.in@gmail.com", // CC email address (can be a string or an array of strings)
+      subject: `Purchase Details for Order ${updatedOrder.orderId}`, // Subject line
+      html: emailBody,
+    };
 
     // Send email
     transporter
@@ -790,8 +764,8 @@ export const orderCancel = async (req, res) => {
 
   const { status, cancelReason } = req.body;
   console.log("req.body", req.body);
-  console.log("status", status);
-  console.log("cancelReason", cancelReason);
+  // console.log("status", status);
+  // console.log("cancelReason", cancelReason);
 
   try {
     const updateOrder = await Order.findByIdAndUpdate(
@@ -804,6 +778,62 @@ export const orderCancel = async (req, res) => {
     if (!updateOrder) {
       return res.status(404).json({ message: "Order not found" });
     }
+
+    // Create transporter
+    const transporter = nodemailer.createTransport({
+      // Development
+      // service: "gmail",
+      // host: "smtp.gmail.com", // Replace with your SMTP server
+
+      host: "smtp.hostinger.com", // Replace with your SMTP server
+      port: 465, // Use 587 for TLS or 465 for SSL
+      secure: true, // true for port 465, false for 587
+      auth: {
+        // Production
+        user: "support@instanthub.in", // Your domain email
+        pass: process.env.SUPPORT_PASSWORD, // Your domain email password
+
+        // Development
+        // user: "instanthub.in@gmail.com", // Your domain email
+        // pass: process.env.APP_PASSWORD, // Your domain email password
+      },
+    });
+
+    // Email content
+    const mailOptions = {
+      // from: "instanthub.in@gmail.com", // Sender email address
+
+      from: "support@instanthub.in", // Sender email address
+      to: updateOrder.email, // Recipient email address
+      cc: "instanthub.in@gmail.com", // CC email address (can be a string or an array of strings)
+      subject: `Your Order #${updateOrder.orderId} has been cancelled ${updateOrder.customerName}`, // Subject line
+      // html: emailBody,
+      text: `Dear Customer,
+    
+    Thank you for choosing Instant Hub to sell your product. We truly appreciate your interest in our services.
+    
+    Sorry to inform you that we had to cancel your order.
+    Cancellation Reason: ${cancelReason}
+    
+    We sincerely apologize for any inconvenience this may cause. Please let us know if there is anything else we can assist you with, or feel free to reach out to us if you have any future requirements within Bangalore.
+    Thank you for your understanding and support.
+    
+    Best regards,  
+    InstantHub Team  
+    support@instanthub.in  
+    8722288017  
+    https://www.instanthub.in/`,
+    };
+
+    // Send email
+    transporter
+      .sendMail(mailOptions)
+      .then((info) => {
+        console.log("Email sent:", info.response);
+      })
+      .catch((error) => {
+        console.log("Error occurred:", error);
+      });
 
     res
       .status(200)

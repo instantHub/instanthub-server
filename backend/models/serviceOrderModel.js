@@ -1,5 +1,4 @@
-import mongoose, { mongo } from "mongoose";
-import Category from "./categoryModel.js";
+import mongoose from "mongoose";
 // import ConditionLabel from "./conditionLabelModel.js";
 
 const serviceOrderSchema = mongoose.Schema(
@@ -49,12 +48,26 @@ const serviceOrderSchema = mongoose.Schema(
     serviceCompletedOn: {
       type: String,
     },
-    status: {
-      type: String,
-    },
     inspectionCharges: {
       type: Number,
     },
+    // status: {
+    //   type: String,
+    // },
+    status: {
+      pending: { type: Boolean },
+      completed: { type: Boolean },
+      cancelled: { type: Boolean },
+    },
+
+    cancelReason: {
+      type: String,
+      required: function () {
+        return this.status.cancelled; // Only required if the order is cancelled
+      },
+      default: null, // Default to null if not cancelled
+    },
+
     price: {
       type: Number,
     },
