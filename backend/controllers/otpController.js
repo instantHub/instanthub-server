@@ -1,13 +1,13 @@
 import OTP from "../models/otpModel.js";
 import OTPCollected from "../models/otpCollectedModel.js";
-import path from "path";
-import fs from "fs";
-import fast2sms from "fast-two-sms";
+// import path from "path";
+// import fs from "fs";
+// import fast2sms from "fast-two-sms";
 import dotenv from "dotenv";
-import axios from "axios";
+// import axios from "axios";
 dotenv.config();
 // import {fast2sms}
-import twilio from "twilio";
+// import twilio from "twilio";
 
 export const getOTP = async (req, res) => {
   console.log("getOTP controller");
@@ -278,5 +278,24 @@ export const getPhoneNumbers = async (req, res) => {
         { "Error from:": "getPhoneNumbers controller" },
         { message: error.message }
       );
+  }
+};
+
+// DELETE Number
+export const deleteNumber = async (req, res) => {
+  console.log("deleteNumber controller");
+  const numberId = req.params.numberId;
+  console.log(numberId);
+
+  try {
+    // 1. Delete Order
+    const deletedNumber = await OTPCollected.findByIdAndDelete(numberId);
+    console.log("deletedNumber", deletedNumber);
+
+    return res.status(201).json(deletedNumber);
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Internal server error while deleting Order.", error });
   }
 };

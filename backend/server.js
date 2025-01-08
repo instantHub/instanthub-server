@@ -8,11 +8,8 @@ import cors from "cors";
 import path from "path";
 import helmet from "helmet";
 import morgan from "morgan";
-import multer from "multer";
 import cookieParser from "cookie-parser";
-// testing
-import Admin from "./models/adminModel.js";
-import jwt from "jsonwebtoken";
+
 
 // Routers import
 import adminRoutes from "./routes/adminRoutes.js";
@@ -142,16 +139,16 @@ app.use("/api/delete", deleteRoutes);
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-if (process.env.NODE_ENV === "production") {
-  //*Set static folder up in production
-  app.use(express.static(path.join(__dirname, "frontend", "dist")));
+// if (process.env.NODE_ENV === "production") {
+//   //*Set static folder up in production
+//   app.use(express.static(path.join(__dirname, "frontend", "dist")));
 
-  // app.use(express.static('client/build'));
+//   // app.use(express.static('client/build'));
 
-  app.get("*", (req, res) =>
-    res.sendFile(path.resolve(__dirname, "frontend", "dist", "index.html"))
-  );
-}
+//   app.get("*", (req, res) =>
+//     res.sendFile(path.resolve(__dirname, "frontend", "dist", "index.html"))
+//   );
+// }
 
 app.get("/sitemap.xml", async (req, res) => {
   try {
