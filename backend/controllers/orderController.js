@@ -4,12 +4,8 @@ import path from "path";
 import fs from "fs";
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
-// import e from "express";
 dotenv.config();
-// import logo from './'
-// import puppeteer from "puppeteer";
 import pdf from "html-pdf";
-// import PDFDocument from "pdfkit";
 import Stocks from "../models/stocksModel.js";
 
 export const getOrders = async (req, res) => {
@@ -30,7 +26,7 @@ export const getOneOrders = async (req, res) => {
   try {
     const orderId = req.params.orderId;
     const order = await Order.findById(orderId).populate("productId", "name");
-    console.log(order);
+    // console.log(order);
     res.status(200).json(order);
   } catch (error) {
     res.status(404).json({ message: error.message });

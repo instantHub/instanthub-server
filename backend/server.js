@@ -34,6 +34,7 @@ import couponRoutes from "./routes/couponRoutes.js";
 import servicesRoutes from "./routes/services/servicesRoutes.js";
 import uploadServicesRoutes from "./routes/uploads/uploadServicesRoutes.js";
 import recycleRoutes from "./routes/recycleRoutes.js";
+import complaintRoutes from "./routes/complaintRoutes.js";
 
 import { generateSitemap, getDynamicUrls } from "./generateSiteMap.js";
 
@@ -127,6 +128,7 @@ app.use("/api/coupons", couponRoutes);
 app.use("/api/services", servicesRoutes);
 app.use("/api/upload/services", uploadServicesRoutes);
 app.use("/api/recycle", recycleRoutes);
+app.use("/api/complaint", complaintRoutes);
 
 // Delete Image Route
 app.use("/api/delete", deleteRoutes);

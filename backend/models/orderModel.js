@@ -100,9 +100,7 @@ const orderSchema = mongoose.Schema(
       type: Number,
     },
 
-    // status: {
-    //   type: String,
-    // },
+    finalDeductionSet: { type: Array },
 
     status: {
       pending: { type: Boolean },
