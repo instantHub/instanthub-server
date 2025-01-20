@@ -3,6 +3,8 @@ import mongoose from "mongoose";
 const ServiceCategorySchema = new mongoose.Schema({
   name: { type: String, unique: true, required: true },
   image: String,
+  inspectionCharges: { type: Number, required: true },
+  status: { type: String, required: true },
   type: { type: String, required: true },
 });
 

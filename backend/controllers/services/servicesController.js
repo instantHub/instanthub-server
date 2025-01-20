@@ -27,6 +27,12 @@ export const getCategoryServices = async (req, res) => {
     const query = {
       name: { $regex: search, $options: "i" },
     };
+
+    // const query = {
+    //   name: { $regex: regex }, // Search by name
+    //   "services.status": "Active", // Include only active services
+    // };
+
     const skip = (page - 1) * limit;
 
     const services = await ServiceCategory.find(query).skip(skip).limit(limit);
@@ -89,6 +95,8 @@ export const addServices = async (req, res) => {
     serviceFor,
     type,
     serviceName,
+    inspectionCharges,
+    status,
     serviceImage,
     subServiceName,
     subServiceImage,
@@ -128,6 +136,8 @@ export const addServices = async (req, res) => {
         serviceCategory = await ServiceCategory.create({
           type,
           name: serviceName,
+          inspectionCharges: inspectionCharges,
+          status,
           image: serviceImage,
         });
         await serviceCategory.save();
@@ -278,17 +288,27 @@ export const updateService = async (req, res) => {
   console.log("serviceId", serviceId);
   console.log("req.body", req.body);
 
-  const { serviceFrom, type, name, image, description, discount, price } =
-    req.body;
+  const {
+    serviceFrom,
+    type,
+    name,
+    inspectionCharges,
+    status,
+    image,
+    description,
+    discount,
+    price,
+  } = req.body;
 
   // brandProblemImage;
 
   try {
     if (serviceFrom === "serviceCategory") {
       console.log("serviceCategory");
-      let serviceCategory = await ServiceCategory.findOne({
-        name,
-      });
+      // let serviceCategory = await ServiceCategory.findOne({
+      //   name,
+      // });
+      let serviceCategory = await ServiceCategory.findById(serviceId);
 
       console.log("existing serviceCategory", serviceCategory);
 
@@ -297,6 +317,8 @@ export const updateService = async (req, res) => {
           serviceId,
           {
             name,
+            inspectionCharges,
+            status,
             image,
           },
           { new: true }
@@ -313,9 +335,7 @@ export const updateService = async (req, res) => {
       }
     } else if (serviceFrom === "serviceBrand") {
       console.log("serviceBrand");
-      let brand = await ServiceBrand.findOne({
-        name,
-      });
+      let brand = await ServiceBrand.findById(serviceId);
       console.log("existing Brand", brand);
 
       if (brand) {
@@ -328,12 +348,13 @@ export const updateService = async (req, res) => {
           { new: true }
         );
         await brand.save();
+        res.status(201).json({
+          message: "Service Brand updated successfully",
+          brand,
+        });
+      } else {
+        res.status(500).json({ message: "Service Brand Not Found", brand });
       }
-
-      res.status(201).json({
-        message: "Service Brand updated successfully",
-        brand,
-      });
     } else if (serviceFrom === "serviceBrandProblem") {
       console.log("serviceBrandProblem");
       let problem = await ServiceProblem.findById(serviceId);
@@ -355,13 +376,11 @@ export const updateService = async (req, res) => {
           problem,
         });
       } else {
-        res.status(400).json({ message: "Service Not Found..!" });
+        res.status(500).json({ message: "Service Problem Not Found..!" });
       }
     } else if (serviceFrom === "serviceSubCategory") {
       console.log("serviceSubCategory");
-      let serviceSubCategory = await ServiceSubCategory.findOne({
-        name,
-      });
+      let serviceSubCategory = await ServiceSubCategory.findById(serviceId);
       console.log("existing serviceSubCategory", serviceSubCategory);
 
       if (serviceSubCategory) {
@@ -375,42 +394,40 @@ export const updateService = async (req, res) => {
         );
         await serviceSubCategory.save();
         console.log("updated serviceSubCategory", serviceSubCategory);
+        res.status(201).json({
+          message: "Sub Service Category updated successfully",
+          serviceSubCategory,
+        });
+      } else {
+        res.status(500).json({ message: "Sub Service Category Not Found..!" });
       }
-      res.status(201).json({
-        message: "Service Sub Category updated successfully",
-        serviceSubCategory,
-      });
     } else if (serviceFrom === "serviceSubProduct") {
       console.log("serviceSubProduct");
-      let subProduct = await ServiceSubProduct.findOne({
-        name,
-      });
+      let subProduct = await ServiceSubProduct.findById(serviceId);
       console.log("existing subProduct", subProduct);
       if (subProduct) {
-        try {
-          subProduct = await ServiceSubProduct.findByIdAndUpdate(
-            serviceId,
-            {
-              name,
-              description,
-              discount,
-              price,
-              image,
-            },
-            { new: true }
-          );
+        subProduct = await ServiceSubProduct.findByIdAndUpdate(
+          serviceId,
+          {
+            name,
+            description,
+            discount,
+            price,
+            image,
+          },
+          { new: true }
+        );
 
-          subProduct.save();
+        subProduct.save();
 
-          console.log("updated subProduct", subProduct);
-        } catch (err) {
-          console.log("ERROR", err);
-        }
+        console.log("updated subProduct", subProduct);
+        res.status(201).json({
+          message: "Service Sub Product created successfully",
+          subProduct,
+        });
+      } else {
+        res.status(500).json({ message: "Sub Service Product Not Found..!" });
       }
-      res.status(201).json({
-        message: "Service Sub Product created successfully",
-        subProduct,
-      });
     }
   } catch (error) {
     res.status(500).json({ message: "Error creating service", error });

@@ -6,8 +6,8 @@ import fs from "fs";
 
 export const getAllBrands = async (req, res) => {
   try {
-    const brand = await Brand.find().populate("category", "name");
-    // console.log(brand);
+    const brand = await Brand.find().populate("category", "name image");
+    console.log(brand);
 
     res.status(200).json(brand);
   } catch (error) {

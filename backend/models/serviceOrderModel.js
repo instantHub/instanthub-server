@@ -35,6 +35,9 @@ const serviceOrderSchema = mongoose.Schema(
     address: {
       type: String,
     },
+    pincode: {
+      type: String,
+    },
     problems: [
       {
         serviceProblem: {

@@ -64,7 +64,7 @@ export const logout = async (req, res) => {
   // // res.clearCookie('jwt', { path: '/' });
 
   // res.status(200).json({ msg: "Admin logged out" });
-  
+
   console.log("logout controller");
   res.cookie("jwt", "", { httpOnly: true, expires: new Date(0) });
   res.status(200).json({ msg: "Admin logged out" });
@@ -127,21 +127,81 @@ export const dashboardDetail = async (req, res) => {
     const categoriesCount = await Category.countDocuments();
     const brandsCount = await Brand.countDocuments();
     const productsCount = await Product.countDocuments();
-    const ordersCount = await Order.countDocuments();
-    const ordersPendingCount = await Order.countDocuments({
-      status: "pending",
-    });
-    const ordersCompletedCount = await Order.countDocuments({
-      status: "received",
-    });
-    const recycleOrdersCount = await RecycleOrder.countDocuments();
-    const stocksCount = await Stock.countDocuments();
-    const stocksInCount = await Stock.countDocuments({
-      stockStatus: "Stock In",
-    });
-    const stocksOutCount = await Stock.countDocuments({
-      stockStatus: "Stock Out",
-    });
+    // const ordersCount = await Order.countDocuments();
+    // const ordersPendingCount = await Order.countDocuments({
+    //   status: 'pending',
+    // });
+    // const ordersCompletedCount = await Order.countDocuments({
+    //   status: "received",
+    // });
+
+    const EMPTY_ORDERS = {
+      total: 0,
+      pending: 0,
+      completed: 0,
+      cancelled: 0,
+    };
+
+    // Sell Orders
+    const ordersCountArray = await Order.aggregate([
+      {
+        $group: {
+          _id: null,
+          total: { $sum: 1 }, // Total count of documents
+          pending: { $sum: { $cond: ["$status.pending", 1, 0] } },
+          completed: { $sum: { $cond: ["$status.completed", 1, 0] } },
+          cancelled: { $sum: { $cond: ["$status.cancelled", 1, 0] } },
+        },
+      },
+    ]);
+    const ordersCount = ordersCountArray[0] || EMPTY_ORDERS;
+
+    console.log("ordersCount", ordersCount);
+
+    // Recycle Orders
+    const recycleOrdersCountArray = await RecycleOrder.aggregate([
+      {
+        $group: {
+          _id: null,
+          total: { $sum: 1 }, // Total count of documents
+          pending: { $sum: { $cond: ["$status.pending", 1, 0] } },
+          completed: { $sum: { $cond: ["$status.completed", 1, 0] } },
+          cancelled: { $sum: { $cond: ["$status.cancelled", 1, 0] } },
+        },
+      },
+    ]);
+    const recycleOrdersCount = recycleOrdersCountArray[0] || EMPTY_ORDERS;
+
+    console.log("recycleOrdersCount", recycleOrdersCount);
+
+    // const stocksCount = await Stock.countDocuments();
+    // const stocksInCount = await Stock.countDocuments({
+    //   stockStatus: "Stock In",
+    // });
+    // const stocksOutCount = await Stock.countDocuments({
+    //   stockStatus: "Stock Out",
+    // });
+
+    const EMPTY_STOCK = {
+      total: 0,
+      in: 0,
+      out: 0,
+      lost: 0,
+    };
+
+    const stocksCountArray = await Stock.aggregate([
+      {
+        $group: {
+          _id: null,
+          total: { $sum: 1 }, // Total count of documents
+          in: { $sum: { $cond: ["$status.in", 1, 0] } },
+          out: { $sum: { $cond: ["$status.out", 1, 0] } },
+          lost: { $sum: { $cond: ["$status.lost", 1, 0] } },
+        },
+      },
+    ]);
+    const stocksCount = stocksCountArray[0] || EMPTY_STOCK;
+    console.log("stocksCount", stocksCount);
 
     // const products = await Product.find().populate({ category });
     const productsCatWise = "";
@@ -231,12 +291,9 @@ export const dashboardDetail = async (req, res) => {
       brandsCount,
       productsCount,
       ordersCount,
-      ordersPendingCount,
-      ordersCompletedCount,
+      ordersCount,
       recycleOrdersCount,
       stocksCount,
-      stocksInCount,
-      stocksOutCount,
       productsCountByCategory,
       detailedProductsCount,
     });

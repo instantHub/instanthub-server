@@ -428,7 +428,11 @@ export const orderReceived = async (req, res) => {
         (a) => a.conditionLabel
       ),
       pickedUpDetails: updatedOrder.pickedUpDetails,
-      stockStatus: "Stock In",
+      status: {
+        in: true,
+        out: false,
+        lost: false,
+      },
       purchasePrice: updatedOrder.finalPrice,
     });
 

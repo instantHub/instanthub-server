@@ -30,8 +30,8 @@ export const getAllProducts = async (req, res) => {
       .skip(skip)
       .limit(limit)
       .select("-processorBasedDeduction -simpleDeductions")
-      .populate("category", "name")
-      .populate("brand", "name");
+      .populate("category", "name image")
+      .populate("brand", "name image");
 
     const totalProducts = await Product.countDocuments(query);
 

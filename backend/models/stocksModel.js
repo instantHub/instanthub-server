@@ -37,8 +37,13 @@ const stocksSchema = mongoose.Schema(
         type: String,
       },
     },
-    stockStatus: {
-      type: String,
+    // stockStatus: {
+    //   type: String,
+    // },
+    status: {
+      in: { type: Boolean },
+      out: { type: Boolean },
+      lost: { type: Boolean },
     },
     purchasePrice: {
       type: Number,

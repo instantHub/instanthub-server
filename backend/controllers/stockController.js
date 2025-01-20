@@ -1,6 +1,4 @@
 import Stock from "../models/stocksModel.js";
-import path from "path";
-import fs, { stat } from "fs";
 
 export const getStocks = async (req, res) => {
   console.log("getStocks Controller");
@@ -17,7 +15,7 @@ export const getStocks = async (req, res) => {
 export const stockSold = async (req, res) => {
   console.log("stockSold Controller");
   // console.log(req.body);
-  const { soldByDetails, soldPrice, stockStatus } = req.body;
+  const { soldByDetails, soldPrice, status } = req.body;
   const stockId = req.body.stockId;
   // console.log("stockId", stockId);
   try {
@@ -27,7 +25,7 @@ export const stockSold = async (req, res) => {
       {
         soldByDetails,
         soldPrice,
-        stockStatus,
+        status,
       },
       {
         new: true,
