@@ -47,6 +47,11 @@ const productSchema = mongoose.Schema(
           type: String,
         },
         page: { type: Number },
+
+        keyword: { type: String },
+        isYesNoType: { type: Boolean },
+        description: { type: String },
+
         conditionLabels: [
           {
             conditionLabelId: {
@@ -86,6 +91,11 @@ const productSchema = mongoose.Schema(
               type: String,
             },
             page: { type: Number },
+
+            keyword: { type: String },
+            isYesNoType: { type: Boolean },
+            description: { type: String },
+
             conditionLabels: [
               {
                 conditionLabelId: {

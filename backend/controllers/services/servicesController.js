@@ -1524,7 +1524,7 @@ export const cancelServiceOrder = async (req, res) => {
     // console.log("updateOrder", updateOrder);
 
     if (!updateOrder) {
-      return res.status(404).json({ message: "Recycle Order not found" });
+      return res.status(404).json({ message: "Service Order not found" });
     }
 
     // Create transporter
@@ -1583,7 +1583,7 @@ https://www.instanthub.in/`,
 
     res
       .status(200)
-      .json({ message: "Recycle Order cancelled successfully", updateOrder });
+      .json({ message: "Service Order cancelled successfully", updateOrder });
   } catch (error) {
     return res.status(500).json({
       message: "Internal server error while cancelling Recycle Order.",

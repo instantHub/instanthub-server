@@ -23,6 +23,7 @@ import uploadCategoriesRoutes from "./routes/uploads/uploadCategoryRoutes.js";
 import uploadConditionLabelsRoutes from "./routes/uploads/uploadConditionLabelsRoutes.js";
 import uploadCustomerProofRoutes from "./routes/uploads/uploadCustomerProof.js";
 import productRoutes from "./routes/productRoutes.js";
+import processorRoutes from "./routes/processorRoutes.js";
 import questionRoutes from "./routes/questionRoutes.js";
 import sliderRoutes from "./routes/sliderRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
@@ -35,6 +36,7 @@ import servicesRoutes from "./routes/services/servicesRoutes.js";
 import uploadServicesRoutes from "./routes/uploads/uploadServicesRoutes.js";
 import recycleRoutes from "./routes/recycleRoutes.js";
 import complaintRoutes from "./routes/complaintRoutes.js";
+import pricingRoutes from "./routes/pricingRoutes.js";
 
 import { generateSitemap, getDynamicUrls } from "./generateSiteMap.js";
 
@@ -115,6 +117,7 @@ app.use("/api/brand", brandRouter);
 app.use("/api/upload/brands", uploadBrandsRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/upload/products", uploadProductsRoutes);
+app.use("/api/processors", processorRoutes);
 app.use("/api/questions", questionRoutes);
 app.use("/api/upload/condition-labels", uploadConditionLabelsRoutes);
 app.use("/api/sliders", sliderRoutes);
@@ -129,6 +132,8 @@ app.use("/api/services", servicesRoutes);
 app.use("/api/upload/services", uploadServicesRoutes);
 app.use("/api/recycle", recycleRoutes);
 app.use("/api/complaint", complaintRoutes);
+
+app.use("/api/pricing", pricingRoutes);
 
 // Delete Image Route
 app.use("/api/delete", deleteRoutes);

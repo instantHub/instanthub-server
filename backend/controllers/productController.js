@@ -794,6 +794,77 @@ export const getProcessorDeductions = async (req, res) => {
   }
 };
 
+export const getAllProcessorDeductions = async (req, res) => {
+  console.log("productsController getAllProcessorDeductions");
+  try {
+    const processors = await Processor.find().populate("category", "name");
+
+    // console.log(processors);
+
+    res.status(200).json(processors);
+  } catch (error) {
+    res.status(404).json({ message: error.message });
+  }
+};
+
+// Check Empty Pricing
+export const checkEmptyPricing = async (req, res) => {
+  console.log("productsController checkEmptyPricing");
+
+  try {
+    const MIN_ZERO_PRICING = 2; // Define the threshold
+
+    // MongoDB Aggregation Pipeline
+    const pipeline = [
+      { $unwind: "$variantDeductions" },
+      { $unwind: "$variantDeductions.deductions" },
+      { $unwind: "$variantDeductions.deductions.conditionLabels" },
+      {
+        $match: {
+          "variantDeductions.deductions.conditionLabels.priceDrop": { $lte: 0 },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            productName: "$name",
+            variantName: "$variantDeductions.variantName",
+          },
+          zeroOrNegativeCount: { $sum: 1 },
+        },
+      },
+      {
+        $match: {
+          zeroOrNegativeCount: { $gt: MIN_ZERO_PRICING },
+        },
+      },
+      {
+        $group: {
+          _id: "$_id.productName",
+          variants: { $push: "$_id.variantName" },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          productName: "$_id",
+          variants: 1,
+        },
+      },
+    ];
+
+    const products = await Product.aggregate(pipeline);
+    console.log(products.length);
+
+    res.status(200).json(products);
+  } catch (error) {
+    console.error("Error in checkEmptyPricing:", error);
+    res
+      .status(500)
+      .json({ message: "Internal Server Error", error: error.message });
+  }
+};
+
 // FUNCTIONS SECTION
 // Async function to create deductions
 const createDeductions = async (

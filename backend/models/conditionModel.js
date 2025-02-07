@@ -11,6 +11,10 @@ const conditionSchema = mongoose.Schema(
 
     page: { type: Number },
 
+    keyword: { type: String },
+    isYesNoType: { type: Boolean },
+    description: { type: String },
+
     conditionLabels: [
       {
         type: mongoose.Schema.Types.ObjectId,

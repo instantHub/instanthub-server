@@ -73,13 +73,6 @@ export const createOrder = async (req, res) => {
     const filteredDeductionsHTML =
       order.deductions && order.deductions.length > 0
         ? order.deductions
-            .filter(
-              (deduction) =>
-                !order.accessoriesAvailable.some(
-                  (accessory) =>
-                    accessory.conditionLabel === deduction.conditionLabel
-                )
-            )
             .map((deduction) => `<li>${deduction.conditionLabel}</li>`)
             .join("")
         : "<li>Specifications not selected</li>";
@@ -254,27 +247,9 @@ export const createOrder = async (req, res) => {
                 </td>
               </tr>
       
-              <tr>
-                <th>Accessories</th>
-                <td>
-                
-                  <ol>
-                    ${
-                      order.accessoriesAvailable &&
-                      order.accessoriesAvailable.length > 0
-                        ? order.accessoriesAvailable
-                            .map(
-                              (accessory) =>
-                                `<li>${accessory.conditionLabel}</li>`
-                            )
-                            .join("")
-                        : "<li>No accessories</li>"
-                    }
-                    
-                  </ol>
-                </td>
-          
-              </tr>
+              
+
+
               <tr>
                 <th>Selected Specification</th>
                 <td>
@@ -415,7 +390,7 @@ export const orderReceived = async (req, res) => {
       productDetails: {
         productName: updatedOrder.productName,
         productVariant: updatedOrder.variant.variantName,
-        productCategory: updatedOrder.category,
+        productCategory: updatedOrder.productCategory,
         serialNumber: updatedOrder.deviceInfo.serialNumber,
         imeiNumber: updatedOrder.deviceInfo.imeiNumber,
       },
@@ -424,9 +399,7 @@ export const orderReceived = async (req, res) => {
         email: updatedOrder.email,
         phone: updatedOrder.phone,
       },
-      accessoriesAvailable: updatedOrder.accessoriesAvailable?.map(
-        (a) => a.conditionLabel
-      ),
+
       pickedUpDetails: updatedOrder.pickedUpDetails,
       status: {
         in: true,
@@ -896,3 +869,38 @@ export const deleteOrder = async (req, res) => {
       .json({ message: "Internal server error while deleting Order.", error });
   }
 };
+
+// Accessories filter in filterdata
+{
+  // .filter(
+  //   (deduction) =>
+  //     !order.accessoriesAvailable.some(
+  //       (accessory) =>
+  //         accessory.conditionLabel === deduction.conditionLabel
+  //     )
+  // )
+}
+
+// Accessories in CreateOrder before "Selected Specification"
+{
+  /* <tr>
+  <th>Accessories</th>
+  <td>
+    <ol>
+      $
+      {order.accessoriesAvailable && order.accessoriesAvailable.length > 0
+        ? order.accessoriesAvailable
+            .map((accessory) => `<li>${accessory.conditionLabel}</li>`)
+            .join("")
+        : "<li>No accessories</li>"}
+    </ol>
+  </td>
+</tr>; */
+}
+
+// Accessories in StockIn
+{
+  //   accessoriesAvailable: updatedOrder.accessoriesAvailable?.map(
+  //   (a) => a.conditionLabel
+  // )
+}

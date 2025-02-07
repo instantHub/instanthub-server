@@ -3,7 +3,6 @@ import {
   createProduct,
   deleteProduct,
   getAllProducts,
-  getProcessorDeductions,
   getProductDetails,
   getProductsByBrand,
   updateLaptopConfigurationsPriceDrop,
@@ -16,6 +15,7 @@ const router = express.Router();
 router.get("/", getAllProducts);
 router.get("/:brandId", getProductsByBrand);
 router.get("/product-details/:prodId", getProductDetails);
+
 router.post("/add-product", createProduct);
 router.put("/update-product/:productId", updateProduct);
 router.delete("/delete-product/:productId", deleteProduct);
@@ -28,8 +28,5 @@ router.put(
   "/updateLaptopConfigurationsPriceDrop/:productId",
   updateLaptopConfigurationsPriceDrop
 );
-
-// Processor route
-router.get("/processor-deductions/:processorId", getProcessorDeductions);
 
 export default router;

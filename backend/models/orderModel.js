@@ -1,6 +1,4 @@
 import mongoose from "mongoose";
-import Category from "./categoryModel.js";
-// import ConditionLabel from "./conditionLabelModel.js";
 
 const orderSchema = mongoose.Schema(
   {
@@ -49,9 +47,6 @@ const orderSchema = mongoose.Schema(
       pinCode: {
         type: Number,
       },
-    },
-    accessoriesAvailable: {
-      type: Array,
     },
     deductions: [
       {

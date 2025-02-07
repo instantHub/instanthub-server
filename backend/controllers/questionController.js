@@ -22,7 +22,8 @@ export const getConditions = async (req, res) => {
 // Create Conditions
 export const createCondtions = async (req, res) => {
   console.log("createCondtions Controller");
-  const { category, conditionName, page } = req.body;
+  const { category, conditionName, page, keyword, isYesNoType, description } =
+    req.body;
   // console.log(req.body);
 
   try {
@@ -50,19 +51,6 @@ export const createCondtions = async (req, res) => {
         category: conditionCategory.id,
         name: "Apple",
       });
-
-      // let NON_APPLE_BRAND = await Brand.findOne({
-      //   category: conditionCategory.id,
-      //   name: { $ne: "Apple" }, // Excludes brands with the name "Apple"
-      // });
-
-      // if (!NON_APPLE_BRAND || NON_APPLE_BRAND?.products?.length <= 0) {
-      //   NON_APPLE_BRAND = await Brand.findOne({
-      //     category: conditionCategory.id,
-      //     name: { $nin: ["Apple", NON_APPLE_BRAND?.name || ""] }, // Excludes "Apple" and the previous brand name (if found)
-      //   });
-      //   console.log("NON_APPLE_BRAND of laptop 2", NON_APPLE_BRAND?.name);
-      // }
 
       const NON_APPLE_BRAND = await Brand.find({
         category: conditionCategory.id,
@@ -152,6 +140,9 @@ export const createCondtions = async (req, res) => {
       category,
       conditionName,
       page,
+      keyword,
+      isYesNoType,
+      description,
     });
 
     // console.log("newCondition", newCondition);
@@ -163,6 +154,9 @@ export const createCondtions = async (req, res) => {
       conditionId: newCondition._id,
       conditionName: newCondition.conditionName,
       page: newCondition.page,
+      keyword: newCondition.keyword,
+      isYesNoType: newCondition.isYesNoType,
+      description: newCondition.description,
       conditionLabels: [], // Initialize with an empty array
     };
     // console.log("newDeduction", newDeduction);
@@ -239,6 +233,7 @@ export const createCondtions = async (req, res) => {
 // Update condition
 export const updateCondition = async (req, res) => {
   try {
+    const { conditionName, page, keyword, isYesNoType, description } = req.body;
     const conditionId = req.params.conditionId;
     console.log("updateCondition Controller");
     // console.log("req.body", req.body);
@@ -265,8 +260,13 @@ export const updateCondition = async (req, res) => {
         {
           $set: {
             "variantDeductions.$[].deductions.$[deduction].conditionName":
-              req.body.conditionName,
-            "variantDeductions.$[].deductions.$[deduction].page": req.body.page,
+              conditionName,
+            "variantDeductions.$[].deductions.$[deduction].page": page,
+            "variantDeductions.$[].deductions.$[deduction].keyword": keyword,
+            "variantDeductions.$[].deductions.$[deduction].isYesNoType":
+              isYesNoType,
+            "variantDeductions.$[].deductions.$[deduction].description":
+              description,
           },
         },
         {
@@ -286,8 +286,11 @@ export const updateCondition = async (req, res) => {
           // console.log("vq deduction", deduction);
           if (deduction.conditionId === conditionId) {
             // console.log("found conditionId", deduction.conditionId);
-            deduction.conditionName = req.body.conditionName;
-            deduction.page = req.body.page;
+            deduction.conditionName = conditionName;
+            deduction.page = page;
+            deduction.keyword = keyword;
+            deduction.isYesNoType = isYesNoType;
+            deduction.description = description;
           }
         });
         vq.save();
@@ -308,8 +311,11 @@ export const updateCondition = async (req, res) => {
           },
           {
             $set: {
-              "simpleDeductions.$[elem].conditionName": req.body.conditionName,
-              "simpleDeductions.$[elem].page": req.body.page,
+              "simpleDeductions.$[elem].conditionName": conditionName,
+              "simpleDeductions.$[elem].page": page,
+              "simpleDeductions.$[elem].keyword": keyword,
+              "simpleDeductions.$[elem].isYesNoType": isYesNoType,
+              "simpleDeductions.$[elem].description": description,
             },
           },
           {
@@ -327,8 +333,11 @@ export const updateCondition = async (req, res) => {
           },
           {
             $set: {
-              "deductions.$[elem].conditionName": req.body.conditionName,
-              "deductions.$[elem].page": req.body.page,
+              "deductions.$[elem].conditionName": conditionName,
+              "deductions.$[elem].page": page,
+              "deductions.$[elem].keyword": keyword,
+              "deductions.$[elem].isYesNoType": isYesNoType,
+              "deductions.$[elem].description": description,
             },
           },
           {
@@ -346,8 +355,11 @@ export const updateCondition = async (req, res) => {
         },
         {
           $set: {
-            "simpleDeductions.$[elem].conditionName": req.body.conditionName, // Update the conditionName
-            "simpleDeductions.$[elem].page": req.body.page, // Update the page
+            "simpleDeductions.$[elem].conditionName": conditionName, // Update the conditionName
+            "simpleDeductions.$[elem].page": page, // Update the page
+            "simpleDeductions.$[elem].keyword": keyword,
+            "simpleDeductions.$[elem].isYesNoType": isYesNoType,
+            "simpleDeductions.$[elem].description": description,
           },
         },
         {

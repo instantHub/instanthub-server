@@ -21,6 +21,11 @@ const processorSchema = mongoose.Schema(
           type: String,
         },
         page: { type: Number },
+
+        keyword: { type: String },
+        isYesNoType: { type: Boolean },
+        description: { type: String },
+
         conditionLabels: [
           {
             conditionLabelId: {
