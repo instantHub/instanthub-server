@@ -743,8 +743,10 @@ export const createServiceOrder = async (req, res) => {
     const year = today.getFullYear().toString().slice(-2); // Last two digits of the year
     const month = (today.getMonth() + 1).toString().padStart(2, "0"); // Month with leading zero if needed
     const day = today.getDate().toString().padStart(2, "0"); // Day with leading zero if needed
-
-    const CN = req.body.customerName.slice(0, 2).toUpperCase();
+    const CN = req.body.customerName
+      .replace(/\s+/g, "")
+      .slice(0, 2)
+      .toUpperCase();
     const random = Math.floor(Math.random() * 1000); // Random number between 0 and 999
     const orderCount = totalOrders.length + 1;
 
