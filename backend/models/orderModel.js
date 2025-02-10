@@ -72,6 +72,7 @@ const orderSchema = mongoose.Schema(
       pickedUpDate: {
         type: String,
       },
+      agentAssigned: { type: Boolean, default: false },
     },
     customerProofFront: {
       type: String,

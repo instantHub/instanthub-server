@@ -3,6 +3,7 @@ import path from "path";
 import fs from "fs";
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
+import { HOSTINGER_MAILER } from "../utils/helper.js";
 dotenv.config();
 
 export const getRecycleOrders = async (req, res) => {
@@ -61,9 +62,6 @@ export const createRecycleOrder = async (req, res) => {
     let order = await RecycleOrder.create(orderData);
     order.save();
     console.log("created recycleOrder", order);
-
-    // console.log("APP_PASSWORD", process.env.USER);
-    // console.log("APP_PASSWORD", process.env.APP_PASSWORD);
 
     let emailBody = `<!DOCTYPE html>
         <html lang="en">
@@ -291,23 +289,7 @@ export const createRecycleOrder = async (req, res) => {
         `;
 
     // Create a transporter object using SMTP transport
-    const transporter = nodemailer.createTransport({
-      // service: "gmail",
-      // host: "smtp.gmail.com", // Replace with your SMTP server
-
-      host: "smtp.hostinger.com", // Replace with your SMTP server
-      port: 465, // Use 587 for TLS or 465 for SSL
-      secure: true, // true for port 465, false for 587
-      auth: {
-        // Production
-        user: "support@instanthub.in", // Your domain email
-        pass: process.env.SUPPORT_PASSWORD, // Your domain email password
-
-        // Development
-        // user: "instanthub.in@gmail.com", // Your domain email
-        // pass: process.env.APP_PASSWORD, // Your domain email password
-      },
-    });
+    const transporter = nodemailer.createTransport(HOSTINGER_MAILER);
 
     // Email content
     const mailOptions = {
@@ -355,17 +337,6 @@ export const recycleOrderReceived = async (req, res) => {
       finalPrice,
       status,
     } = req.body;
-
-    // console.log(
-    //   recycleOrderId,
-    //   customerProofFront,
-    //   customerProofBack,
-    //   customerOptional1,
-    //   customerOptional2,
-    //   pickedUpDetails,
-    //   finalPrice,
-    //   status
-    // );
 
     const updateObject = {
       customerProofFront,
@@ -702,16 +673,7 @@ export const recycleOrderReceived = async (req, res) => {
     `;
 
     // Create a transporter object using SMTP transport
-    const transporter = nodemailer.createTransport({
-      // service: "gmail",
-      host: "smtp.hostinger.com", // Replace with your SMTP server
-      port: 465, // Use 587 for TLS or 465 for SSL
-      secure: true, // true for port 465, false for 587
-      auth: {
-        user: "support@instanthub.in", // Your domain email
-        pass: process.env.SUPPORT_PASSWORD, // Your domain email password
-      },
-    });
+    const transporter = nodemailer.createTransport(HOSTINGER_MAILER);
 
     // Email content
     const mailOptions = {
@@ -767,23 +729,7 @@ export const recycleOrderCancel = async (req, res) => {
     }
 
     // Create transporter
-    const transporter = nodemailer.createTransport({
-      // service: "gmail",
-      // host: "smtp.gmail.com", // Replace with your SMTP server
-
-      host: "smtp.hostinger.com", // Replace with your SMTP server
-      port: 465, // Use 587 for TLS or 465 for SSL
-      secure: true, // true for port 465, false for 587
-      auth: {
-        // Production
-        user: "support@instanthub.in", // Your domain email
-        pass: process.env.SUPPORT_PASSWORD, // Your domain email password
-
-        // Development
-        // user: "instanthub.in@gmail.com", // Your domain email
-        // pass: process.env.APP_PASSWORD, // Your domain email password
-      },
-    });
+    const transporter = nodemailer.createTransport(HOSTINGER_MAILER);
 
     // Email content
     const mailOptions = {

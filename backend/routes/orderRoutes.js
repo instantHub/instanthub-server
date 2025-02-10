@@ -5,6 +5,7 @@ import {
   createOrder,
   deleteOrder,
   orderReceived,
+  assignAgent,
   orderCancel,
 } from "../controllers/orderController.js";
 
@@ -15,6 +16,7 @@ router.get("/:orderId", getOneOrders);
 router.post("/", createOrder);
 router.put("/complete", orderReceived);
 router.put("/cancel/:orderId", orderCancel);
+router.patch("/assign-agent/:orderId", assignAgent);
 router.delete("/delete-order/:orderId", deleteOrder);
 
 // router.put("/order-received", orderReceived);

@@ -5,8 +5,8 @@ import fs from "fs";
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 dotenv.config();
-import pdf from "html-pdf";
 import Stocks from "../models/stocksModel.js";
+import { HOSTINGER_MAILER } from "../utils/helper.js";
 
 export const getOrders = async (req, res) => {
   console.log("GetOrders controller");
@@ -40,6 +40,7 @@ export const createOrder = async (req, res) => {
     const totalOrders = await Order.find();
     console.log("totalOrders", totalOrders.length);
     // console.log("totalOrders", totalOrders.count);
+
     // Generating Order ID
     const today = new Date(); // Current date
     const year = today.getFullYear().toString().slice(-2); // Last two digits of the year
@@ -64,14 +65,8 @@ export const createOrder = async (req, res) => {
     order.save();
     console.log("created order", order);
 
-    // const orderDetail = await Order.find({ orderId: order.orderId });
-    // console.log(orderDetail);
-
     const product = await Product.findById(order.productId);
     console.log("product", product);
-
-    // console.log("APP_PASSWORD", process.env.USER);
-    // console.log("APP_PASSWORD", process.env.APP_PASSWORD);
 
     const filteredDeductionsHTML =
       order.deductions && order.deductions.length > 0
@@ -297,16 +292,7 @@ export const createOrder = async (req, res) => {
       `;
 
     // Create a transporter object using SMTP transport
-    const transporter = nodemailer.createTransport({
-      // service: "gmail",
-      host: "smtp.hostinger.com", // Replace with your SMTP server // gmail smtp: "smtp.gmail.com"
-      port: 465, // Use 587 for TLS or 465 for SSL // SMTP port (usually 587 for TLS, 465 for SSL)
-      secure: true, // true for port 465, false for 587
-      auth: {
-        user: "support@instanthub.in", // Your domain email // Your email address
-        pass: process.env.SUPPORT_PASSWORD, // Your domain email password // Your email password
-      },
-    });
+    const transporter = nodemailer.createTransport(HOSTINGER_MAILER);
 
     // Email content
     const mailOptions = {
@@ -350,18 +336,6 @@ export const orderReceived = async (req, res) => {
       finalPrice,
       status,
     } = req.body;
-
-    // console.log(
-    //   "orderId, customerProof, status",
-    //   orderId,
-    //   customerProofFront,
-    //   customerProofBack,
-    //   customerOptional1,
-    //   customerOptional2,
-    //   pickedUpDetails,
-    //   finalPrice,
-    //   status
-    // );
 
     const updateObject = {
       customerProofFront,
@@ -414,10 +388,7 @@ export const orderReceived = async (req, res) => {
 
     stockIn.save();
 
-    console.log("Stocks In", stockIn);
-
-    // console.log("APP_PASSWORD", process.env.USER);
-    // console.log("APP_PASSWORD", process.env.APP_PASSWORD);
+    // console.log("Stocks In", stockIn);
 
     let emailBody = `<!DOCTYPE html>
     <html lang="en">
@@ -691,16 +662,7 @@ export const orderReceived = async (req, res) => {
     `;
 
     // Create a transporter object using SMTP transport
-    const transporter = nodemailer.createTransport({
-      // service: "gmail",
-      host: "smtp.hostinger.com", // Replace with your SMTP server
-      port: 465, // Use 587 for TLS or 465 for SSL
-      secure: true, // true for port 465, false for 587
-      auth: {
-        user: "support@instanthub.in", // Your domain email
-        pass: process.env.SUPPORT_PASSWORD, // Your domain email password
-      },
-    });
+    const transporter = nodemailer.createTransport(HOSTINGER_MAILER);
 
     // Email content
     const mailOptions = {
@@ -756,24 +718,7 @@ export const orderCancel = async (req, res) => {
     }
 
     // Create transporter
-    const transporter = nodemailer.createTransport({
-      // Development
-      // service: "gmail",
-      // host: "smtp.gmail.com", // Replace with your SMTP server
-
-      host: "smtp.hostinger.com", // Replace with your SMTP server
-      port: 465, // Use 587 for TLS or 465 for SSL
-      secure: true, // true for port 465, false for 587
-      auth: {
-        // Production
-        user: "support@instanthub.in", // Your domain email
-        pass: process.env.SUPPORT_PASSWORD, // Your domain email password
-
-        // Development
-        // user: "instanthub.in@gmail.com", // Your domain email
-        // pass: process.env.APP_PASSWORD, // Your domain email password
-      },
-    });
+    const transporter = nodemailer.createTransport(HOSTINGER_MAILER);
 
     // Email content
     const mailOptions = {
@@ -872,6 +817,97 @@ export const deleteOrder = async (req, res) => {
       .json({ message: "Internal server error while deleting Order.", error });
   }
 };
+
+// Assign Agent
+export const assignAgent = async (req, res) => {
+  console.log("assignAgent controller");
+  const orderId = req.params.orderId;
+  // console.log("orderId", orderId);
+
+  const pickedUpDetails = req.body;
+  // console.log("req.body", req.body, pickedUpDetails);
+
+  try {
+    const updateOrder = await Order.findByIdAndUpdate(
+      orderId, // The ID of the order to update
+      { pickedUpDetails }, // The fields to update
+      { new: true } // Option to return the updated document
+    );
+    // console.log("updateOrder", updateOrder);
+
+    if (!updateOrder) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    const transporter = nodemailer.createTransport(HOSTINGER_MAILER);
+
+    // Email content
+    const mailOptions = {
+      // from: "instanthub.in@gmail.com", // Sender email address
+
+      from: "orders@instanthub.in", // Sender email address
+      to: updateOrder.email, // Recipient email address
+      cc: "instanthub.in@gmail.com", // CC email address (can be a string or an array of strings)
+      subject: `Agent Has Been Assigned To Your Order #${updateOrder.orderId}`, // Subject line
+      text: `Dear ${updateOrder.customerName},
+
+    We are pleased to inform you that an agent has been assigned to pick up your order. Below are the details:
+
+        Order ID: ${updateOrder.orderId}
+        Assigned Agent: ${updateOrder.pickedUpDetails.agentName}
+        PickUp Date & Time: ${updateOrder.pickedUpDetails.pickedUpDate}
+
+    Please ensure the item is ready for pickup at the scheduled time. If you have any questions or need to reschedule, feel free to contact us.
+
+    Thank you for choosing Instant Hub.
+
+    Best regards,
+    InstantHub Team
+    support@instanthub.in
+    8722288017
+    https://www.instanthub.in/`,
+    };
+
+    // Send email
+    transporter
+      .sendMail(mailOptions)
+      .then((info) => {
+        console.log("Email sent:", info.response);
+      })
+      .catch((error) => {
+        console.log("Error occurred:", error);
+      });
+
+    res
+      .status(200)
+      .json({ message: "Agent Assigned successfully", updateOrder });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal server error while cancelling Order.",
+      error,
+    });
+  }
+};
+
+// Old nodemailer code
+{
+  // const transporter = nodemailer.createTransport({
+  //   // Development
+  //   // service: "gmail",
+  //   // host: "smtp.gmail.com", // Replace with your SMTP server
+  //   host: "smtp.hostinger.com", // Replace with your SMTP server
+  //   port: 465, // Use 587 for TLS or 465 for SSL
+  //   secure: true, // true for port 465, false for 587
+  //   auth: {
+  //     // Production
+  //     user: "support@instanthub.in", // Your domain email
+  //     pass: process.env.SUPPORT_PASSWORD, // Your domain email password
+  //     // Development
+  //     // user: "instanthub.in@gmail.com", // Your domain email
+  //     // pass: process.env.APP_PASSWORD, // Your domain email password
+  //   },
+  // });
+}
 
 // Accessories filter in filterdata
 {

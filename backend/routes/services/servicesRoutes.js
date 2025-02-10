@@ -4,14 +4,17 @@ import {
   addServices,
   updateService,
   deleteService,
-  getServicerOrders,
+  getCategoryServices,
+} from "../../controllers/services/servicesController.js";
+
+import {
+  cancelServiceOrder,
   createServiceOrder,
   deleteServiceOrder,
-  serviceOrderCompleted,
-  getCategoryServices,
   getServiceOrder,
-  cancelServiceOrder,
-} from "../../controllers/services/servicesController.js";
+  getServicerOrders,
+  serviceOrderCompleted,
+} from "../../controllers/services/serviceOrderController.js";
 
 const router = express.Router();
 
