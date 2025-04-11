@@ -22,8 +22,15 @@ export const getConditions = async (req, res) => {
 // Create Conditions
 export const createCondtions = async (req, res) => {
   console.log("createCondtions Controller");
-  const { category, conditionName, page, keyword, isYesNoType, description } =
-    req.body;
+  const {
+    category,
+    conditionName,
+    page,
+    keyword,
+    isYesNoType,
+    description,
+    multiSelect,
+  } = req.body;
   // console.log(req.body);
 
   try {
@@ -137,12 +144,14 @@ export const createCondtions = async (req, res) => {
 
     // Create new conditions
     const newCondition = await Condition.create({
-      category,
-      conditionName,
-      page,
-      keyword,
-      isYesNoType,
-      description,
+      // category,
+      // conditionName,
+      // page,
+      // keyword,
+      // isYesNoType,
+      // description,
+      // multiSelect,
+      ...req.body,
     });
 
     // console.log("newCondition", newCondition);
@@ -151,12 +160,16 @@ export const createCondtions = async (req, res) => {
 
     // Create new deductions to add into the products
     const newDeduction = {
-      conditionId: newCondition._id,
-      conditionName: newCondition.conditionName,
-      page: newCondition.page,
-      keyword: newCondition.keyword,
-      isYesNoType: newCondition.isYesNoType,
-      description: newCondition.description,
+      // conditionId: newCondition._id,
+      // conditionName: newCondition.conditionName,
+      // page: newCondition.page,
+      // keyword: newCondition.keyword,
+      // isMandatory: newCondition.isMandatory,
+      // multiSelect: newCondition.multiSelect,
+      // isYesNoType: newCondition.isYesNoType,
+      // showLabelsImage: newCondition.showLabelsImage,
+      // description: newCondition.description,
+      ...newDeduction,
       conditionLabels: [], // Initialize with an empty array
     };
     // console.log("newDeduction", newDeduction);
@@ -233,7 +246,16 @@ export const createCondtions = async (req, res) => {
 // Update condition
 export const updateCondition = async (req, res) => {
   try {
-    const { conditionName, page, keyword, isYesNoType, description } = req.body;
+    const {
+      conditionName,
+      page,
+      keyword,
+      description,
+      isMandatory,
+      multiSelect,
+      isYesNoType,
+      showLabelsImage,
+    } = req.body;
     const conditionId = req.params.conditionId;
     console.log("updateCondition Controller");
     // console.log("req.body", req.body);
@@ -263,10 +285,16 @@ export const updateCondition = async (req, res) => {
               conditionName,
             "variantDeductions.$[].deductions.$[deduction].page": page,
             "variantDeductions.$[].deductions.$[deduction].keyword": keyword,
-            "variantDeductions.$[].deductions.$[deduction].isYesNoType":
-              isYesNoType,
             "variantDeductions.$[].deductions.$[deduction].description":
               description,
+            "variantDeductions.$[].deductions.$[deduction].isMandatory":
+              isMandatory,
+            "variantDeductions.$[].deductions.$[deduction].multiSelect":
+              multiSelect,
+            "variantDeductions.$[].deductions.$[deduction].isYesNoType":
+              isYesNoType,
+            "variantDeductions.$[].deductions.$[deduction].showLabelsImage":
+              showLabelsImage,
           },
         },
         {
@@ -289,8 +317,11 @@ export const updateCondition = async (req, res) => {
             deduction.conditionName = conditionName;
             deduction.page = page;
             deduction.keyword = keyword;
-            deduction.isYesNoType = isYesNoType;
             deduction.description = description;
+            deduction.isMandatory = isMandatory;
+            deduction.multiSelect = multiSelect;
+            deduction.isYesNoType = isYesNoType;
+            deduction.showLabelsImage = showLabelsImage;
           }
         });
         vq.save();
@@ -314,8 +345,11 @@ export const updateCondition = async (req, res) => {
               "simpleDeductions.$[elem].conditionName": conditionName,
               "simpleDeductions.$[elem].page": page,
               "simpleDeductions.$[elem].keyword": keyword,
-              "simpleDeductions.$[elem].isYesNoType": isYesNoType,
               "simpleDeductions.$[elem].description": description,
+              "simpleDeductions.$[elem].isMandatory": isMandatory,
+              "simpleDeductions.$[elem].multiSelect": multiSelect,
+              "simpleDeductions.$[elem].isYesNoType": isYesNoType,
+              "simpleDeductions.$[elem].showLabelsImage": showLabelsImage,
             },
           },
           {
@@ -336,8 +370,11 @@ export const updateCondition = async (req, res) => {
               "deductions.$[elem].conditionName": conditionName,
               "deductions.$[elem].page": page,
               "deductions.$[elem].keyword": keyword,
-              "deductions.$[elem].isYesNoType": isYesNoType,
               "deductions.$[elem].description": description,
+              "deductions.$[elem].isMandatory": isMandatory,
+              "deductions.$[elem].multiSelect": multiSelect,
+              "deductions.$[elem].isYesNoType": isYesNoType,
+              "deductions.$[elem].showLabelsImage": showLabelsImage,
             },
           },
           {
@@ -358,8 +395,11 @@ export const updateCondition = async (req, res) => {
             "simpleDeductions.$[elem].conditionName": conditionName, // Update the conditionName
             "simpleDeductions.$[elem].page": page, // Update the page
             "simpleDeductions.$[elem].keyword": keyword,
-            "simpleDeductions.$[elem].isYesNoType": isYesNoType,
             "simpleDeductions.$[elem].description": description,
+            "simpleDeductions.$[elem].isMandatory": isMandatory,
+            "simpleDeductions.$[elem].multiSelect": multiSelect,
+            "simpleDeductions.$[elem].isYesNoType": isYesNoType,
+            "simpleDeductions.$[elem].showLabelsImage": showLabelsImage,
           },
         },
         {

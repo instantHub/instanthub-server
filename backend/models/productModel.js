@@ -49,8 +49,12 @@ const productSchema = mongoose.Schema(
         page: { type: Number },
 
         keyword: { type: String },
-        isYesNoType: { type: Boolean },
         description: { type: String },
+
+        isMandatory: { type: Boolean, default: false },
+        multiSelect: { type: Boolean, default: false },
+        isYesNoType: { type: Boolean, default: false },
+        showLabelsImage: { type: Boolean, default: false },
 
         conditionLabels: [
           {
@@ -93,8 +97,12 @@ const productSchema = mongoose.Schema(
             page: { type: Number },
 
             keyword: { type: String },
-            isYesNoType: { type: Boolean },
             description: { type: String },
+
+            isMandatory: { type: Boolean, default: false },
+            multiSelect: { type: Boolean, default: false },
+            isYesNoType: { type: Boolean, default: false },
+            showLabelsImage: { type: Boolean, default: false },
 
             conditionLabels: [
               {
