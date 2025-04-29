@@ -144,35 +144,26 @@ export const createCondtions = async (req, res) => {
 
     // Create new conditions
     const newCondition = await Condition.create({
-      // category,
-      // conditionName,
-      // page,
-      // keyword,
-      // isYesNoType,
-      // description,
-      // multiSelect,
       ...req.body,
     });
 
-    // console.log("newCondition", newCondition);
+    console.log("newCondition", newCondition);
 
     const variantsQuestions = await VariantQuestion.find();
 
     // Create new deductions to add into the products
+    const conditionData = newCondition.toObject();
+
     const newDeduction = {
-      // conditionId: newCondition._id,
-      // conditionName: newCondition.conditionName,
-      // page: newCondition.page,
-      // keyword: newCondition.keyword,
-      // isMandatory: newCondition.isMandatory,
-      // multiSelect: newCondition.multiSelect,
-      // isYesNoType: newCondition.isYesNoType,
-      // showLabelsImage: newCondition.showLabelsImage,
-      // description: newCondition.description,
-      ...newDeduction,
-      conditionLabels: [], // Initialize with an empty array
+      ...conditionData,
+      conditionId: conditionData._id, // rename _id to conditionId
+      conditionLabels: [], // override or set additional fields
     };
-    // console.log("newDeduction", newDeduction);
+
+    // Optionally remove _id if you don’t want it in the final object
+    delete newDeduction._id;
+
+    console.log("newDeduction", newDeduction);
 
     if (conditionCategory.name === "Mobile") {
       console.log("Creating condition for Mobiles");
@@ -431,19 +422,15 @@ export const deleteCondition = async (req, res) => {
   const category = req.query.category;
   const conditionId = req.query.conditionId;
   console.log("Delete Condition controller");
-  // console.log("category", category, "conditionId", conditionId);
   try {
     const conditionCategory = await Category.findById(category);
-    // console.log("conditionCategory", conditionCategory);
     const deletedCondition = await Condition.findByIdAndDelete(conditionId);
-    // console.log("deletedCondition", deletedCondition);
 
     const variantsQuestions = await VariantQuestion.find();
 
     const associatedConditionLabels = await ConditionLabel.find({
       conditionNameId: conditionId,
     });
-    // console.log("associatedConditionLabels", associatedConditionLabels);
 
     // call deleteImages function for each conditionLabel of the condition and unlink its images
     associatedConditionLabels.map((conditionLabel) => {
@@ -623,9 +610,6 @@ export const createCondtionLabel = async (req, res) => {
     });
     const cLCategory = await Category.findById(category);
     // console.log("cLCategory", cLCategory);
-    // console.log("allConditionLabels", allConditionLabels);
-
-    // const variantsQuestions = await VariantQuestion.find();
 
     // Extract existing condition names
     const existingConditionLabels = allConditionLabels.map(
@@ -633,7 +617,6 @@ export const createCondtionLabel = async (req, res) => {
         cl.conditionNameId == conditionNameId &&
         cl.conditionLabel == conditionLabel
     );
-    // console.log("existingConditionLabels", existingConditionLabels);
 
     let laptopDesktopCheck =
       cLCategory.name === "Laptop" || cLCategory.name === "Desktop";
