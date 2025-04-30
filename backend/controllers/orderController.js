@@ -63,15 +63,30 @@ export const createOrder = async (req, res) => {
     let order = await Order.create(orderData);
     // let order = await Order.create(req.body);
     order.save();
-    console.log("created order", order);
+    // console.log("created order", order);
 
     const product = await Product.findById(order.productId);
-    console.log("product", product);
+    // console.log("product", product);
+
+    // const filteredDeductionsHTML =
+    //   order.deductions && order.deductions.length > 0
+    //     ? order.deductions
+    //         .map((deduction) => `<li>${deduction.conditionLabel}</li>`)
+    //         .join("")
+    //     : "<li>Specifications not selected</li>";
 
     const filteredDeductionsHTML =
-      order.deductions && order.deductions.length > 0
-        ? order.deductions
-            .map((deduction) => `<li>${deduction.conditionLabel}</li>`)
+      order.finalDeductionSet && order.finalDeductionSet.length > 0
+        ? order.finalDeductionSet
+            .map(
+              ({ type, conditions }) =>
+                `<p class="deduction-data-title deduction-data">${type}:</p>
+              <ul class="deduction-data">
+                ${conditions
+                  ?.map((condition) => `<li>${condition.conditionLabel}</li>`)
+                  .join("")}
+              </ul>`
+            )
             .join("")
         : "<li>Specifications not selected</li>";
 
@@ -99,6 +114,15 @@ export const createOrder = async (req, res) => {
       
             .order-detail h1 {
               font-size: small;
+            }
+
+            .deduction-data {
+              padding: 2px;
+              margin: 0px;
+            }
+            
+            .deduction-data-title {
+              font-weight: 800;
             }
       
             /* Mobile Styles */
@@ -251,9 +275,7 @@ export const createOrder = async (req, res) => {
               <tr>
                 <th>Selected Specification</th>
                 <td>
-                  <ol>
-                    ${filteredDeductionsHTML}
-                  </ol>
+                  ${filteredDeductionsHTML}
                 </td>
               </tr>
 
