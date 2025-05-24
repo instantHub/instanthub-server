@@ -1,12 +1,12 @@
 import Brand from "../models/brandModel.js";
 import Category from "../models/categoryModel.js";
 import Product from "../models/productModel.js";
-import path from "path";
-import fs from "fs";
+
+import { deleteImage } from "../utils/deleteImage.js";
 
 export const getAllBrands = async (req, res) => {
   try {
-    const brand = await Brand.find().populate("category", "name image");
+    const brand = await Brand.find().populate("category");
     console.log(brand);
 
     res.status(200).json(brand);
@@ -15,28 +15,47 @@ export const getAllBrands = async (req, res) => {
   }
 };
 
-export const getBrands = async (req, res) => {
-  console.log("getBrands Controller");
+export const getBrand = async (req, res) => {
+  console.log("getBrand Controller");
 
-  const catId = req.params.catId;
-  console.log("catId from brandController", catId);
+  const { brandId } = req.params;
+  console.log("brandId", brandId);
+
   try {
-    // const categoryWithBrands = await Category.findById(catId).populate(
-    //   "brands"
-    // );
-
-    // const brands = categoryWithBrands.brands;
-    // console.log("brands from brandController", brands);
-
-    const brands = await Brand.find({
-      category: catId,
-    }).populate("category");
-
-    // console.log(brands);
+    // Step 2: Find brands linked to this category
+    const brands = await Brand.findById(brandId).populate("category");
 
     res.status(200).json(brands);
   } catch (error) {
-    res.status(404).json({ message: error.message });
+    console.error("Error in getBrands:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const getBrands = async (req, res) => {
+  console.log("getBrands Controller");
+
+  const { categoryUniqueURL } = req.params;
+  console.log("Category slug from brandController", categoryUniqueURL);
+
+  try {
+    // Step 1: Get category by uniqueURL
+    const category = await Category.findOne({ uniqueURL: categoryUniqueURL });
+    console.log("category", category);
+
+    if (!category) {
+      return res.status(404).json({ message: "Category not found" });
+    }
+
+    // Step 2: Find brands linked to this category
+    const brands = await Brand.find({ category: category._id }).populate(
+      "category"
+    );
+
+    res.status(200).json(brands);
+  } catch (error) {
+    console.error("Error in getBrands:", error);
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -167,29 +186,6 @@ export const deleteBrand = async (req, res) => {
       deletedProducts.deletedCount,
       " associated product"
     );
-
-    // Delete the corresponding image file from the uploads folder
-    function deleteImage(image) {
-      const __dirname = path.resolve();
-      const imagePath = path.join(__dirname, image);
-      console.log("imagePath", image);
-
-      try {
-        fs.unlink(imagePath, (err) => {
-          if (err) {
-            if (err.code === "ENOENT") {
-              console.log(`Image ${imagePath} does not exist.`);
-            } else {
-              console.error(`Error deleting image ${imagePath}:`, err);
-            }
-          } else {
-            console.log(`Image ${imagePath} deleted successfully.`);
-          }
-        });
-      } catch (err) {
-        console.error(`Error deleting image ${imagePath}:`, err);
-      }
-    }
 
     return res.status(201).json(deletedBrand);
   } catch (error) {

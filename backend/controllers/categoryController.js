@@ -1,60 +1,105 @@
 import Brand from "../models/brandModel.js";
 import Category from "../models/categoryModel.js";
 import Product from "../models/productModel.js";
-import path from "path";
-import fs from "fs";
+
 import Condition from "../models/conditionModel.js";
 import ConditionLabel from "../models/conditionLabelModel.js";
+import { slugify } from "../utils/slugify.js";
+import { deleteImage } from "../utils/deleteImage.js";
+
+// export const addCategory = async (req, res) => {
+//   try {
+//     let categories = await Category.find();
+//     if (categories.length > 0) {
+//       let checking = false;
+
+//       categories.map((cat, i) => {
+//         if (cat.name.toLowerCase() === req.body.name.toLowerCase()) {
+//           checking = true;
+//         }
+
+//         // if (cat.name === req.body.name) {
+//         //   checking = true;
+//         // }
+//       });
+
+//       if (checking == false) {
+//         let category = await Category.create({
+//           name: req.body.name,
+//           uniqueURL: req.body.uniqueURL,
+//           image: req.body.image,
+//         });
+//         category.save();
+//         res.status(200).json(category);
+//       } else {
+//         res
+//           .status(200)
+//           .send({ msg: "category (" + req.body.name + ") already exist " });
+//       }
+//     } else {
+//       let category = await Category.create({
+//         name: req.body.name,
+//         uniqueURL: req.body.uniqueURL,
+//         image: req.body.image,
+//       });
+//       category.save();
+//       res.status(200).json(category);
+//     }
+//   } catch (error) {
+//     res.status(404).json({ message: error.message });
+//   }
+// };
 
 export const addCategory = async (req, res) => {
   try {
-    let categories = await Category.find();
-    if (categories.length > 0) {
-      let checking = false;
+    const { name, uniqueURL, image } = req.body;
 
-      categories.map((cat, i) => {
-        if (cat.name.toLowerCase() === req.body.name.toLowerCase()) {
-          checking = true;
-        }
+    // Check if a category with the same name already exists (case-insensitive)
+    const existingCategory = await Category.findOne({
+      name: { $regex: new RegExp(`^${name}$`, "i") },
+    });
 
-        // if (cat.name === req.body.name) {
-        //   checking = true;
-        // }
-      });
-
-      if (checking == false) {
-        let category = await Category.create({
-          name: req.body.name,
-          uniqueURL: req.body.uniqueURL,
-          image: req.body.image,
-        });
-        category.save();
-        res.status(200).json(category);
-      } else {
-        res
-          .status(200)
-          .send({ msg: "category (" + req.body.name + ") already exist " });
-      }
-    } else {
-      let category = await Category.create({
-        name: req.body.name,
-        uniqueURL: req.body.uniqueURL,
-        image: req.body.image,
-      });
-      category.save();
-      res.status(200).json(category);
+    if (existingCategory) {
+      return res
+        .status(409)
+        .json({ msg: `Category (${name}) already exists.` });
     }
+
+    const slug = slugify(name);
+    console.log("slug", slug);
+
+    const newCategory = await Category.create({ name, uniqueURL, image, slug });
+    return res.status(201).json(newCategory);
   } catch (error) {
-    res.status(404).json({ message: error.message });
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+export const getCategories = async (req, res) => {
+  console.log("getCategories Controller");
+
+  try {
+    const categories = await Category.find().populate("brands", "name");
+    // console.log('categories',categories);
+    res.status(200).json(categories);
+  } catch (error) {
+    res
+      .status(404)
+      .json({ message: "Error in GET categories" + error.message });
   }
 };
 
 export const getCategory = async (req, res) => {
   console.log("getCategory Controller");
 
+  const { categoryId } = req.params;
+
   try {
-    const categories = await Category.find().populate("brands", "name");
-    res.status(200).json(categories);
+    const category = await Category.findById(categoryId).populate(
+      "brands",
+      "name"
+    );
+    res.status(200).json(category);
   } catch (error) {
     res
       .status(404)
@@ -64,15 +109,19 @@ export const getCategory = async (req, res) => {
 
 export const updateCategory = async (req, res) => {
   console.log("Update Category controller");
-  const catId = req.params.catId;
-  console.log(catId);
+  const { categoryId } = req.params;
+  console.log(categoryId);
 
   console.log("body", req.body);
 
   try {
-    const updatedCategory = await Category.findByIdAndUpdate(catId, req.body, {
-      new: true,
-    });
+    const updatedCategory = await Category.findByIdAndUpdate(
+      categoryId,
+      req.body,
+      {
+        new: true,
+      }
+    );
     return res.status(201).json(updatedCategory);
   } catch (error) {
     return res.status(500).json({ message: "Internal server error.", error });
@@ -151,7 +200,6 @@ export const deleteCategory = async (req, res) => {
     associatedConditionLabels.map((conditionLabel) => {
       if (conditionLabel.conditionLabelImg)
         deleteImage(conditionLabel.conditionLabelImg);
-      
     });
 
     // 12. Delete the associated conditionLabel
@@ -164,29 +212,6 @@ export const deleteCategory = async (req, res) => {
       deletedConditionLabels.deletedCount,
       " associated ConditionLabels"
     );
-
-    // Delete the corresponding image file from the uploads folder
-    function deleteImage(image) {
-      const __dirname = path.resolve();
-      const imagePath = path.join(__dirname, image);
-      console.log("imagePath", image);
-
-      try {
-        fs.unlink(imagePath, (err) => {
-          if (err) {
-            if (err.code === "ENOENT") {
-              console.log(`Image ${imagePath} does not exist.`);
-            } else {
-              console.error(`Error deleting image ${imagePath}:`, err);
-            }
-          } else {
-            console.log(`Image ${imagePath} deleted successfully.`);
-          }
-        });
-      } catch (err) {
-        console.error(`Error deleting image ${imagePath}:`, err);
-      }
-    }
 
     res.status(200).json({
       DeletedCategory: deletedCategory,

@@ -1,7 +1,12 @@
 import ServiceOrder from "../../models/serviceOrderModel.js";
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
-import { HOSTINGER_MAILER } from "../../utils/helper.js";
+import {
+  HOSTINGER_MAILER,
+  INSTANTHUB_GMAIL,
+  SERVICE_ORDER_EMAIL,
+  SUPPORT_EMAIL,
+} from "../../constants/email.js";
 dotenv.config();
 
 export const getServicerOrders = async (req, res) => {
@@ -380,9 +385,9 @@ export const createServiceOrder = async (req, res) => {
     // Email content
     const mailOptions = {
       // from: process.env.USER, // Sender email address
-      from: "service-orders@instanthub.in", // Sender email address
+      from: SERVICE_ORDER_EMAIL, // Sender email address
       to: req.body.email, // Recipient email address
-      cc: "instanthub.in@gmail.com", // CC email address (can be a string or an array of strings)
+      cc: INSTANTHUB_GMAIL, // CC email address (can be a string or an array of strings)
       subject: `Your Order #${serviceOrderId} has been placed ${order.customerName}`, // Subject line
 
       html: emailBody,
@@ -763,9 +768,9 @@ export const serviceOrderCompleted = async (req, res) => {
     // Email content
     const mailOptions = {
       // from: process.env.USER, // Sender email address
-      from: "service-orders@instanthub.in", // Sender email address
+      from: SERVICE_ORDER_EMAIL, // Sender email address
       to: updatedServiceOrder.email, // Recipient email address
-      cc: "instanthub.in@gmail.com", // CC email address (can be a string or an array of strings)
+      cc: INSTANTHUB_GMAIL, // CC email address (can be a string or an array of strings)
       subject: `Your Order #${updatedServiceOrder.serviceOrderId} has been placed ${updatedServiceOrder.customerName}`, // Subject line
       html: emailBody,
     };
@@ -816,9 +821,9 @@ export const cancelServiceOrder = async (req, res) => {
     const mailOptions = {
       // from: "instanthub.in@gmail.com", // Sender email address
 
-      from: "support@instanthub.in", // Sender email address
+      from: SUPPORT_EMAIL, // Sender email address
       to: updateOrder.email, // Recipient email address
-      cc: "instanthub.in@gmail.com", // CC email address (can be a string or an array of strings)
+      cc: INSTANTHUB_GMAIL, // CC email address (can be a string or an array of strings)
       subject: `Your Order #${updateOrder.serviceOrderId} has been cancelled ${updateOrder.customerName}`, // Subject line
       text: `Dear Customer,
   

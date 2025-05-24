@@ -1,6 +1,7 @@
 import Series from "../models/seriesModel.js";
 import path from "path";
 import fs from "fs";
+import Brand from "../models/brandModel.js";
 
 export const getSeries = async (req, res) => {
   console.log("getSeries Controller");
@@ -18,14 +19,16 @@ export const getSeries = async (req, res) => {
 
 export const getSeriesByBrand = async (req, res) => {
   console.log("getSeriesByBrand Controller");
-  const { brandId } = req.params;
-  console.log(brandId);
+  const { brandUniqueURL } = req.params;
+  console.log("brandUniqueURL", brandUniqueURL);
 
   try {
-    const brandSeries = await Series.find({ brand: brandId });
+    const brand = await Brand.findOne({ uniqueURL: brandUniqueURL });
+    console.log("brand:", brand);
+    const brandSeries = await Series.find({ brand: brand._id });
     //   .populate("category", "name")
     //   .populate("brand", "name");
-    console.log(brandSeries);
+    console.log("brandSeries:", brandSeries);
     res.status(200).json(brandSeries);
   } catch (error) {
     res.status(404).json({ message: error.message });

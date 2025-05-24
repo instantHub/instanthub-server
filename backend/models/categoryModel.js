@@ -20,18 +20,17 @@ const categorySchema = mongoose.Schema(
         ref: "Brand",
       },
     ],
-    // questions: {
-    //   type: mongoose.Schema.Types.ObjectId,
-    //   ref: "Question",
-    // },
   },
   { timestamps: true }
 );
+
+// db.categories.createIndex({ uniqueURL: 1 }, { unique: true });
 
 const virtual = categorySchema.virtual("id");
 virtual.get(function () {
   return this._id;
 });
+
 categorySchema.set("toJSON", {
   virtuals: true,
   versionKey: false,

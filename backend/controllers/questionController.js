@@ -3,10 +3,10 @@ import Product from "../models/productModel.js";
 import Condition from "../models/conditionModel.js";
 import ConditionLabel from "../models/conditionLabelModel.js";
 import { VariantQuestion } from "../models/variantQuestionModel.js";
-import path from "path";
-import fs from "fs";
+
 import Brand from "../models/brandModel.js";
 import Processor from "../models/processorModel.js";
+import { deleteImage } from "../utils/deleteImage.js";
 
 // Get Conditions
 export const getConditions = async (req, res) => {
@@ -432,10 +432,10 @@ export const deleteCondition = async (req, res) => {
       conditionNameId: conditionId,
     });
 
-    // call deleteImages function for each conditionLabel of the condition and unlink its images
+    // call deleteImage function for each conditionLabel of the condition and unlink its images
     associatedConditionLabels.map((conditionLabel) => {
       if (conditionLabel.conditionLabelImg) {
-        deleteImages(conditionLabel.conditionLabelImg);
+        deleteImage(conditionLabel.conditionLabelImg);
       } else {
         console.log("Image not available");
       }
@@ -551,22 +551,6 @@ export const deleteCondition = async (req, res) => {
         }
       );
       console.log("productsUpdated", productsUpdated);
-    }
-
-    // Delete the corresponding image file from the uploads folder
-    function deleteImages(conditionLabelImg) {
-      const __dirname = path.resolve();
-      const imagePath = path.join(__dirname, conditionLabelImg);
-      console.log("imagePath", conditionLabelImg);
-
-      fs.unlink(imagePath, (err) => {
-        // fs.unlink(deletedLabel.conditionLabelImg, (err) => {
-        if (err) {
-          console.error("Error deleting image:", err);
-          return res.status(500).json({ message: "Error deleting image" });
-        }
-        console.log("Image deleted successfully");
-      });
     }
 
     return res.status(201).json(deletedCondition);
@@ -1093,7 +1077,7 @@ export const deleteConditionLabel = async (req, res) => {
 
     // Check if image is available
     if (deletedLabel.conditionLabelImg) {
-      deleteImages(deletedLabel.conditionLabelImg);
+      deleteImage(deletedLabel.conditionLabelImg);
     } else {
       console.log("Image not available");
     }
@@ -1220,29 +1204,6 @@ export const deleteConditionLabel = async (req, res) => {
         }
       );
       console.log("productsUpdated", productsUpdated);
-    }
-
-    // Delete the corresponding image file from the uploads folder
-    function deleteImages(conditionLabelImg) {
-      const __dirname = path.resolve();
-      const imagePath = path.join(__dirname, conditionLabelImg);
-      console.log("imagePath", conditionLabelImg);
-
-      try {
-        fs.unlink(imagePath, (err) => {
-          if (err) {
-            if (err.code === "ENOENT") {
-              console.log(`Image ${imagePath} does not exist.`);
-            } else {
-              console.error(`Error deleting image ${imagePath}:`, err);
-            }
-          } else {
-            console.log(`Image ${imagePath} deleted successfully.`);
-          }
-        });
-      } catch (err) {
-        console.error(`Error deleting image ${imagePath}:`, err);
-      }
     }
 
     return res.status(201).json(deletedLabel);
