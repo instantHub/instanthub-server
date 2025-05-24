@@ -3,9 +3,12 @@ import Brand from "../models/brandModel.js";
 import Category from "../models/categoryModel.js";
 import Condition from "../models/conditionModel.js";
 import ConditionLabel from "../models/conditionLabelModel.js";
-import path from "path";
-import fs from "fs";
+
 import Processor from "../models/processorModel.js";
+import { isLaptopDesktop } from "../utils/helper.js";
+import { APPLE, DESKTOP, LAPTOP, MOBILE } from "../constants/general.js";
+import { slugify } from "../utils/slugify.js";
+import { deleteImage } from "../utils/deleteImage.js";
 
 export const getAllProducts = async (req, res) => {
   console.log("getAllProducts Controller");
@@ -48,48 +51,40 @@ export const getAllProducts = async (req, res) => {
 };
 
 export const getProductsByBrand = async (req, res) => {
-  console.log("GetProductsByBrand Controller");
+  const { brandUniqueURL } = req.params;
+  console.log("brandUniqueURL:", brandUniqueURL);
+
   try {
-    const search = req.query.search || "";
-    // console.log(search);
+    // 1. Find brand by slug
+    const brand = await Brand.findOne({ uniqueURL: brandUniqueURL });
+    if (!brand) {
+      return res.status(404).json({ message: "Brand not found" });
+    }
 
-    const query = {
-      name: { $regex: search, $options: "i" },
-    };
-
-    const brandId = req.params.brandId;
-    console.log(brandId);
-
-    // Find products matching the search query
-    const products = await Product.find(query)
-      .where("brand")
-      .equals(brandId)
+    // 2. Use brand._id to find products
+    const products = await Product.find({ brand: brand._id })
       .select("-processorBasedDeduction -variantDeductions")
-      .populate("category", "name")
-      .populate("brand", "name");
-
-    //
-    // const products = await Product.find(query)
-    //   .where("brand")
-    //   .equals(brandId)
-    //   .populate("-processorBasedDeduction");
+      .populate("category")
+      .populate("brand");
 
     res.status(200).json(products);
   } catch (error) {
-    res.status(404).json({ message: error.message });
+    console.error("Error fetching products by brand slug:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
 export const getProductDetails = async (req, res) => {
   console.log("productsController GetProductDetails");
   try {
-    const prodId = req.params.prodId;
-    console.log(prodId);
-    const product = await Product.findById(prodId)
-      .populate("category", "name")
-      .populate("brand", "name");
+    const { productUniqueURL } = req.params;
+    console.log("GetProductDetails productUniqueURL", productUniqueURL);
+    // const product = await Product.findById(prodId)
+    const product = await Product.findOne({ uniqueURL: productUniqueURL })
+      .populate("category")
+      .populate("brand");
 
-    // console.log(product);
+    console.log("GetProductDetails product", product);
 
     res.status(200).json(product);
   } catch (error) {
@@ -99,119 +94,79 @@ export const getProductDetails = async (req, res) => {
 
 export const createProduct = async (req, res) => {
   console.log("createProduct Controller");
-  // console.log(req.body);
-  // console.log(req.body.series);
+  const { name, brand, category, image, uniqueURL, variants, status, series } =
+    req.body;
+
+  const refinedUniqueURL = slugify(uniqueURL);
+
   try {
-    const products = await Product.find({ brand: req.body.brand });
-    const productBrand = await Brand.findById(req.body.brand);
-    const productCategory = await Category.findById(req.body.category);
-    const conditionsList = await Condition.find({
-      category: req.body.category,
-    });
-    const conditionLabelsList = await ConditionLabel.find({
-      category: req.body.category,
-    });
+    const [
+      existingProducts,
+      productBrand,
+      productCategory,
+      conditionsList,
+      conditionLabelsList,
+    ] = await Promise.all([
+      Product.find({ brand }),
+      Brand.findById(brand),
+      Category.findById(category),
+      Condition.find({ category }),
+      ConditionLabel.find({ category }),
+    ]);
 
-    // console.log("productCategory", productCategory);
+    const isMobile = productCategory.name === MOBILE;
 
-    if (products.length > 0) {
-      let duplicate = false;
+    const isDuplicate = existingProducts.some(
+      (p) => p.name.toLowerCase() === name.toLowerCase()
+    );
 
-      products.map((product) => {
-        // console.log(product.name);
-        if (product.name.toLowerCase() === req.body.name.toLowerCase()) {
-          duplicate = true;
-        }
+    if (isDuplicate) {
+      return res.status(200).send({
+        success: false,
+        data: "Duplicate productName",
+        message: `Product ${name} already exists`,
       });
-      console.log(duplicate);
+    }
 
-      if (duplicate == false) {
-        // TESTING
+    const product = new Product({
+      name,
+      uniqueURL: refinedUniqueURL,
+      image,
+      category,
+      brand,
+      variants,
+      status,
+      ...(series && { series }),
+      // ...(req.body.series !== null && { series: req.body.series }),
+    });
 
-        // Create Product
-        let product = await Product.create({
-          name: req.body.name,
-          uniqueURL: req.body.uniqueURL,
-          image: req.body.image,
-          category: req.body.category,
-          brand: req.body.brand,
-          variants: req.body.variants,
-          status: req.body.status,
-          ...(req.body.series !== null && { series: req.body.series }),
-        });
-        await product.save();
+    if (existingProducts.length > 0) {
+      if (isLaptopDesktop(productCategory.name)) {
+        console.log(
+          "Creating Laptop/Desktop with deductions from existing product"
+        );
 
-        let laptopDesktopCheck =
-          productCategory.name === "Laptop" ||
-          productCategory.name === "Desktop";
-        console.log("laptopDesktopCheck", laptopDesktopCheck);
+        // TODO: Need to update this code for a first laptop product to create initial simpleDeduction & initial processorBasedDeduction
 
-        let deductionsList;
-        if (laptopDesktopCheck) {
-          console.log(
-            "creating Laptop, & adding Deductions from existing laptop"
-          );
-
-          // TODO: Need to update this code for a first laptop product to create initial simpleDeduction & initial processorBasedDeduction
-          // let deductions = [
-          //   {
-          //     conditionId: "",
-          //     conditionName: "",
-          //     conditionLabels: [
-          //       {
-          //         conditionLabelId: "",
-          //         conditionLabel: "",
-          //         conditionLabelImg: "",
-          //       },
-          //     ],
-          //   },
-          // ];
-
-          // deductionsList = await createOthersDeductions(
-          //   deductions,
-          //   conditionsList,
-          //   conditionLabelsList
-          // );
-
-          // console.log("New deductions for Others: ", deductionsList);
-          // product.simpleDeductions = deductionsList;
-
-          // ALTERNATIVE Updating simpleDeductions and processorBasedDeduction of a new created laptop from an existing laptop
-          const existingLaptop = await Product.findOne({
-            category: productCategory._id,
-            brand: product.brand,
-          });
-
-          console.log("Existing Laptop/Desktop", existingLaptop);
-
-          if (existingLaptop) {
-            // update simpleDeduction
-            product.simpleDeductions = existingLaptop.simpleDeductions;
-
-            // update processorBasedDeduction
-            product.processorBasedDeduction =
-              existingLaptop.processorBasedDeduction;
-          } else {
-            console.log(
-              "No Existing Product of this Category and Brand to add deductions"
-            );
-          }
-        } else if (productCategory.name === "Mobile") {
-          console.log("Mobiles Deductions");
-          deductionsList = await createDeductions(
-            product.variants,
-            conditionsList,
-            conditionLabelsList
-          );
-
-          console.log("New deductions for Mobile: ", deductionsList);
-          product.variantDeductions = deductionsList;
+        const existingLaptop = await Product.findOne({ category, brand });
+        if (existingLaptop) {
+          product.simpleDeductions = existingLaptop.simpleDeductions;
+          product.processorBasedDeduction =
+            existingLaptop.processorBasedDeduction;
         } else {
-          console.log(
-            "Others Deductions for all other products apart from mobiles and laptops"
-          );
-          // let deductions = [
-          let deductions = [
+          console.log("No existing laptop/desktop to copy deductions from");
+        }
+      } else if (isMobile) {
+        console.log("Creating Mobile with variant deductions");
+        product.variantDeductions = await createDeductions(
+          variants,
+          conditionsList,
+          conditionLabelsList
+        );
+      } else {
+        console.log("Creating Other product type with simple deductions");
+        product.simpleDeductions = await createOthersDeductions(
+          [
             {
               conditionId: "",
               conditionName: "",
@@ -223,328 +178,145 @@ export const createProduct = async (req, res) => {
                 },
               ],
             },
-          ];
-
-          deductionsList = await createOthersDeductions(
-            deductions,
-            conditionsList,
-            conditionLabelsList
-          );
-
-          console.log("New deductions for Others: ", deductionsList);
-          product.simpleDeductions = deductionsList;
-        }
-
-        await product.save();
-
-        // push the new product into its brand's products array & save
-        productBrand.products.push(product);
-        productBrand.save();
-
-        res.status(200).json(product);
-      } else if (duplicate == true) {
-        // TODO Task, Unique Name Validation not working
-        res.status(200).send({
-          success: false,
-          data: "Duplicate productName",
-          message: "Product " + req.body.name + " already exist ",
-        });
-      }
-    } else {
-      console.log(`Creating First Product of this Brand ${productBrand.name}`);
-      // ALTERNATIVE Updating simpleDeductions and processorBasedDeduction of a new created laptop from an existing laptop
-      const EXISTING_CAT_BR_PROD = await Product.findOne({
-        category: productCategory._id,
-        brand: productBrand._id,
-      });
-
-      const EXISTING_CAT_PROD = await Product.findOne({
-        category: productCategory._id,
-      }).populate("brand", "name");
-
-      // console.log("Existing Laptop/Desktop category System", EXISTING_CAT_PROD);
-
-      // Create Product
-      let product = await Product.create({
-        name: req.body.name,
-        uniqueURL: req.body.uniqueURL,
-        image: req.body.image,
-        category: req.body.category,
-        brand: req.body.brand,
-        variants: req.body.variants,
-        status: req.body.status,
-        ...(req.body.series !== null && { series: req.body.series }),
-      });
-      await product.save();
-
-      // console.log("req.body brand: ", productBrand);
-
-      let laptopDesktopCheck =
-        productCategory.name === "Laptop" || productCategory.name === "Desktop";
-      console.log("laptopDesktopCheck", laptopDesktopCheck);
-
-      let deductionsList;
-
-      if (laptopDesktopCheck) {
-        console.log(
-          "creating new system & adding Deductions from existing system"
-        );
-
-        let isNewProdApple = productBrand.name === "Apple";
-
-        if (isNewProdApple) {
-          console.log("Newest Apple Prod");
-          const appleProd = await Product.findOne({
-            category: product.category,
-            brand: product.brand,
-          });
-
-          product.simpleDeductions = appleProd.simpleDeductions;
-          product.processorBasedDeduction = appleProd.processorBasedDeduction;
-        } else {
-          console.log("Newest Laptop Prod other than Apple");
-
-          let appleBrand = await Brand.findOne({
-            category: product.category,
-            name: "Apple",
-          }).select("category name _id");
-
-          console.log("Apple Brand Detail", appleBrand);
-
-          const windowProd = await Product.findOne({
-            category: product.category,
-            brand: { $ne: appleBrand._id },
-          });
-
-          product.simpleDeductions = windowProd.simpleDeductions;
-          product.processorBasedDeduction = windowProd.processorBasedDeduction;
-        }
-        // let isExistingCatProdApple = EXISTING_CAT_PROD.brand.name === "Apple";
-
-        // const CREATE_APPLE_PROD = isNewProdApple && isExistingCatProdApple;
-        // const CREATE_WINDOWS_PROD = !isNewProdApple && !isExistingCatProdApple;
-
-        // console.log("isNewProdApple", isNewProdApple);
-        // console.log("isExistingCatProdApple", isExistingCatProdApple);
-
-        // console.log(
-        //   "Existing Laptop/Desktop category brand System",
-        //   EXISTING_CAT_BR_PROD
-        // );
-
-        // if (EXISTING_CAT_PROD) {
-        //   if (CREATE_WINDOWS_PROD) {
-        //     console.log("Creating new windows laptop");
-        //     // update simpleDeduction
-        //     product.simpleDeductions = EXISTING_CAT_PROD.simpleDeductions;
-
-        //     // update processorBasedDeduction
-        //     product.processorBasedDeduction =
-        //       EXISTING_CAT_PROD.processorBasedDeduction;
-        //   }
-        //   // else if (isNewProdApple) {
-        //   //   if (CREATE_APPLE_PROD) {
-        //   //     console.log("Creating Apple(IOS) laptop");
-        //   //   } else {
-        //   //     console.log("Creating new Apple(IOS) laptop");
-        //   //   }
-        //   // }
-        // } else {
-        //   console.log(
-        //     `Creating new product in this ${productCategory.name} category, with no deductions`
-        //   );
-        // }
-      } else if (productCategory.name === "Mobile") {
-        console.log("Mobiles Deductions");
-        deductionsList = await createDeductions(
-          product.variants,
+          ],
           conditionsList,
           conditionLabelsList
         );
+      }
+    } else {
+      console.log(`Creating First Product for brand: ${productBrand.name}`);
+      if (isLaptopDesktop(productCategory.name)) {
+        const isApple = productBrand.name === APPLE;
 
-        console.log("New deductions for Mobile: ", deductionsList);
-
-        // Add deductions to the product
-        product.variantDeductions = deductionsList;
+        if (isApple) {
+          const appleProd = await Product.findOne({ category, brand });
+          if (appleProd) {
+            product.simpleDeductions = appleProd.simpleDeductions;
+            product.processorBasedDeduction = appleProd.processorBasedDeduction;
+          }
+        } else {
+          const appleBrand = await Brand.findOne({
+            category,
+            name: APPLE,
+          }).select("category name _id");
+          const windowsProd = await Product.findOne({
+            category,
+            brand: { $ne: appleBrand._id },
+          });
+          if (windowsProd) {
+            product.simpleDeductions = windowsProd.simpleDeductions;
+            product.processorBasedDeduction =
+              windowsProd.processorBasedDeduction;
+          }
+        }
+      } else if (isMobile) {
+        product.variantDeductions = await createDeductions(
+          variants,
+          conditionsList,
+          conditionLabelsList
+        );
       } else {
         console.log(
           "Others Deductions for all other products apart from mobiles and laptops"
         );
-        // let deductions = [
-        let deductions = [
-          {
-            conditionId: "",
-            conditionName: "",
-            conditionLabels: [
-              {
-                conditionLabelId: "",
-                conditionLabel: "",
-                conditionLabelImg: "",
-              },
-            ],
-          },
-        ];
-
-        deductionsList = await createOthersDeductions(
-          deductions,
+        product.simpleDeductions = await createOthersDeductions(
+          [
+            {
+              conditionId: "",
+              conditionName: "",
+              conditionLabels: [
+                {
+                  conditionLabelId: "",
+                  conditionLabel: "",
+                  conditionLabelImg: "",
+                },
+              ],
+            },
+          ],
           conditionsList,
           conditionLabelsList
         );
-
-        console.log("New deductions for Others: ", deductionsList);
-        product.simpleDeductions = deductionsList;
       }
-
-      await product.save();
-
-      // push the new product into its brand's products array & save
-      productBrand.products.push(product);
-      productBrand.save();
-
-      res.status(200).json(product);
     }
+
+    await product.save();
+    productBrand.products.push(product);
+    await productBrand.save();
+
+    return res.status(200).json(product);
   } catch (error) {
-    console.log("Error while creating a product", error);
+    console.error("Error while creating a product:", error);
     res.status(404).json({ message: error.message });
   }
 };
 
 export const updateProduct = async (req, res) => {
   console.log("updateProduct Controller");
-  // console.log(req.body);
-  // const prodId = req.params.prodId;
-  const productId = req.params.productId;
-  console.log("productId", req.params);
-  // console.log("New Variants: ", req.body.variants);
-  // console.log("Old Variants: ", req.body.oldVariants);
+  console.log(req.body);
+
+  const productSlug = req.params.productSlug;
+  console.log("productSlug", productSlug);
 
   try {
-    // const products = await Product.find({ brand: req.body.brand });
-    // Query to find products with the given brand excluding the product with the specified productId
+    const [productCategory, conditionsList, conditionLabelsList] =
+      await Promise.all([
+        Category.findById(req.body.category),
+        Condition.find({ category: req.body.category }),
+        ConditionLabel.find({ category: req.body.category }),
+      ]);
+
     const products = await Product.find({
       brand: req.body.brand,
-      _id: { $ne: productId }, // Exclude the product with the specified productId
-    });
-    console.log("remaining products", products);
-
-    const productCategory = await Category.findById(req.body.category);
-    console.log("productCategory", productCategory);
-    const conditionsList = await Condition.find({
-      category: req.body.category,
-    });
-    const conditionLabelsList = await ConditionLabel.find({
-      category: req.body.category,
+      _id: { $ne: req.body.productID },
     });
 
-    if (products.length > 0) {
-      let duplicate = false;
+    const isDuplicate = products.some(
+      (p) => p.name.toLowerCase() === req.body.name.toLowerCase()
+    );
 
-      products.map((product) => {
-        // console.log(typeof product.name);
-        if (product.name.toLowerCase() === req.body.name.toLowerCase()) {
-          duplicate = true;
-        }
+    console.log("isDuplicate", isDuplicate);
+
+    if (isDuplicate) {
+      return res.status(200).send({
+        success: false,
+        data: "Duplicate productName",
+        message: `Product name ${req.body.name} already exists`,
       });
-      console.log("duplicate", duplicate);
-
-      if (duplicate == false) {
-        // // Update the variantName property in the deductions array
-        // updatedProduct.deductions.forEach((deduction, index) => {
-        //   deduction.variantName = req.body.variants[index].name;
-        // });
-
-        // // Save the updated product with modified deductions
-        // await updatedProduct.save();
-
-        // Retrieve the current product including its variants
-        let product = await Product.findById(productId);
-
-        // console.log("product", product);
-        // Update the name, uniqueURL, and image fields
-        product.name = req.body.name;
-        product.uniqueURL = req.body.uniqueURL;
-        product.image = req.body.image;
-        product.status = req.body.status;
-
-        // Extract new and old variants from req.body
-        const newVariants = req.body.variants;
-        const oldVariants = product.variants;
-        console.log("newVariants", newVariants);
-        console.log("oldVariants", oldVariants);
-
-        // Updating Variant based on Product Category
-        if (productCategory.name !== "Mobile") {
-          console.log("NON Mobile product");
-          product.variants[0].price = newVariants[0].price;
-          await product.save();
-        } else if (productCategory.name === "Mobile") {
-          console.log("Mobile product");
-          // Update existing variants, add new variants, and remove deleted variants
-          const updatedProduct = await updateVariants(
-            product,
-            newVariants,
-            oldVariants,
-            req.body.oldVariants,
-            conditionsList,
-            conditionLabelsList
-          );
-        }
-
-        res.status(200).json(product);
-      } else if (duplicate == true) {
-        // TODO Task, Unique Name Validation not working
-        res.status(200).send({
-          success: false,
-          data: "Duplicate productName",
-          message: "Product name " + req.body.name + " already exists",
-        });
-      }
-    } else {
-      console.log("ELSE");
-      // let updatedProduct = await Product.findByIdAndUpdate(productId, {
-      //   name: req.body.name,
-      //   uniqueURL: req.body.uniqueURL,
-      //   image: req.body.image,
-      //   variants: req.body.variants,
-      // });
-      // updatedProduct.save();
-
-      // Retrieve the current product including its variants
-      let product = await Product.findById(productId);
-      // console.log("product", product);
-
-      // Update the name, uniqueURL, and image fields
-      product.name = req.body.name;
-      product.uniqueURL = req.body.uniqueURL;
-      product.image = req.body.image;
-
-      // Extract new and old variants from req.body
-      const newVariants = req.body.variants;
-      const oldVariants = product.variants;
-      console.log("newVariants", newVariants);
-      console.log("oldVariants", oldVariants);
-
-      let updatedProduct;
-
-      if (productCategory.name !== "Mobile") {
-        console.log("NON Mobile product");
-        product.variants[0].price = newVariants[0].price;
-        await product.save();
-      } else if (productCategory.name === "Mobile") {
-        console.log("Mobile product");
-        // Update existing variants, add new variants, and remove deleted variants
-        updatedProduct = await updateVariants(
-          product,
-          newVariants,
-          oldVariants,
-          req.body.oldVariants,
-          conditionsList,
-          conditionLabelsList
-        );
-      }
-
-      res.status(200).json(product);
     }
+
+    // const product = await Product.findById(productSlug);
+    const product = await Product.findOne({ uniqueURL: productSlug });
+
+    const { variants: newVariants, oldVariants: oldVariantsFromBody } =
+      req.body;
+    const oldVariants = product.variants;
+
+    // Update shared fields
+    product.name = req.body.name;
+    product.uniqueURL = req.body.uniqueURL;
+    product.image = req.body.image;
+    product.status = req.body.status;
+
+    if (productCategory.name !== MOBILE) {
+      product.variants[0].price = newVariants[0].price;
+      await product.save();
+    } else {
+      await updateVariants(
+        product,
+        newVariants,
+        oldVariants,
+        oldVariantsFromBody,
+        conditionsList,
+        conditionLabelsList
+      );
+      await product.save();
+    }
+
+    // await product.save();
+
+    console.log("product", product);
+
+    res.status(200).json(product);
   } catch (error) {
     res.status(404).json({ message: error.message });
   }
@@ -564,44 +336,7 @@ export const deleteProduct = async (req, res) => {
   await brand.save();
 
   // Delete the corresponding image file from the uploads folder
-  const __dirname = path.resolve();
-  const imagePath = path.join(__dirname, deletedProduct.image);
-  console.log("imagePath", deletedProduct.image);
-
-  try {
-    fs.unlink(imagePath, (err) => {
-      if (err) {
-        if (err.code === "ENOENT") {
-          console.log(`Image ${imagePath} does not exist.`);
-        } else {
-          console.error(`Error deleting image ${imagePath}:`, err);
-        }
-      } else {
-        console.log(`Image ${imagePath} deleted successfully.`);
-      }
-    });
-  } catch (err) {
-    console.error(`Error deleting image ${imagePath}:`, err);
-  }
-
-  // try {
-  //   fs.unlink(imagePath, (err) => {
-  //     if (err) {
-  //       console.error("Error deleting image:", err);
-  //       return res.status(201).json({ message: "Error deleting image" });
-  //     }
-  //   });
-  //   // fs.unlink(imagePath);
-  //   // console.log("Image deleted successfully");
-  // } catch (err) {
-  //   if (err.code === "ENOENT") {
-  //     // Handle the case where the file doesn't exist
-  //     console.log(`Image ${imagePath} does not exist.`);
-  //   } else {
-  //     // Handle other errors
-  //     console.error(`Error deleting image ${imagePath}:`, err);
-  //   }
-  // }
+  deleteImage(deletedProduct.image);
 
   res.status(200).json({ data: deletedProduct });
 };

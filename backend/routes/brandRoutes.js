@@ -5,13 +5,19 @@ import {
   getAllBrands,
   updateBrand,
   deleteBrand,
+  getBrand,
 } from "../controllers/brandController.js";
 import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
 router.get("/", getAllBrands);
-router.get("/:catId", getBrands);
+
+router.get("/:categoryUniqueURL", getBrands);
+// router.get("/:slug", getBrands);
+
+router.get("/single/:brandId", getBrand);
+
 router.post("/add-brand", addBrand);
 router.put("/update-brand/:brandId", updateBrand);
 router.delete("/delete-brand/:brandId", deleteBrand);

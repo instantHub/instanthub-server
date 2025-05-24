@@ -5,6 +5,7 @@ const ServiceCategorySchema = new mongoose.Schema({
   image: String,
   inspectionCharges: { type: Number, required: true },
   status: { type: String, required: true },
+  uniqueURL: { type: String, required: true },
   type: { type: String, required: true },
 });
 
@@ -15,6 +16,7 @@ const BrandSchema = new mongoose.Schema({
     required: true,
   },
   name: { type: String, required: true },
+  uniqueURL: { type: String, required: true },
   image: String,
 });
 
@@ -30,6 +32,7 @@ const ProblemSchema = new mongoose.Schema({
   //   required: true,
   // },
   name: { type: String, unique: true, required: true },
+  uniqueURL: { type: String, required: true },
   description: String,
   image: String,
   price: Number,
@@ -42,6 +45,7 @@ const SubCategorySchema = new mongoose.Schema({
     required: true,
   },
   name: { type: String, unique: true, required: true },
+  uniqueURL: { type: String, required: true },
   image: String,
 });
 
@@ -57,6 +61,7 @@ const SubProductSchema = new mongoose.Schema({
     required: true,
   },
   name: { type: String, unique: true, required: true },
+  uniqueURL: { type: String, required: true },
   description: { type: String, unique: true, required: true },
   discount: { type: Number, required: true },
   price: { type: Number, required: true },

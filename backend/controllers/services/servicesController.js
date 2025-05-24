@@ -5,9 +5,17 @@ import {
   ServiceSubCategory,
   ServiceSubProduct,
 } from "../../models/servicesModel.js";
-import path from "path";
-import fs from "fs";
+
 import dotenv from "dotenv";
+import {
+  SERVICE_CATEGORY,
+  SERVICE_BRAND,
+  SERVICE_SUB_CATEGORY,
+  SERVICE_BRAND_PROBLEMS,
+  SERVICE_SUB_PRODUCT,
+  BRAND,
+} from "../../constants/services.js";
+import { deleteImage } from "../../utils/deleteImage.js";
 dotenv.config();
 
 export const getCategoryServices = async (req, res) => {
@@ -92,6 +100,7 @@ export const addServices = async (req, res) => {
     serviceFor,
     type,
     serviceName,
+    uniqueURL,
     inspectionCharges,
     status,
     serviceImage,
@@ -119,8 +128,8 @@ export const addServices = async (req, res) => {
   try {
     console.log("Try Block");
 
-    if (serviceFor === "serviceCategory") {
-      console.log("serviceCategory");
+    if (serviceFor === SERVICE_CATEGORY) {
+      console.log(SERVICE_CATEGORY);
       let serviceCategory = await ServiceCategory.findOne({
         name: serviceName,
       });
@@ -133,6 +142,7 @@ export const addServices = async (req, res) => {
         serviceCategory = await ServiceCategory.create({
           type,
           name: serviceName,
+          uniqueURL,
           inspectionCharges: inspectionCharges,
           status,
           image: serviceImage,
@@ -148,8 +158,8 @@ export const addServices = async (req, res) => {
           serviceCategory,
         });
       }
-    } else if (serviceFor === "serviceBrand" && type === "Brand") {
-      console.log("serviceBrand");
+    } else if (serviceFor === SERVICE_BRAND && type === BRAND) {
+      console.log(SERVICE_BRAND);
       let brand = await ServiceBrand.findOne({
         name: brandName,
         serviceCategoryId,
@@ -161,6 +171,7 @@ export const addServices = async (req, res) => {
         brand = await ServiceBrand.create({
           serviceCategoryId,
           name: brandName,
+          uniqueURL,
           image: brandImage,
         });
         await brand.save();
@@ -175,8 +186,8 @@ export const addServices = async (req, res) => {
           brand,
         });
       }
-    } else if (serviceFor === "serviceBrandProblem") {
-      console.log("serviceBrandProblem");
+    } else if (serviceFor === SERVICE_BRAND_PROBLEMS) {
+      console.log(SERVICE_BRAND_PROBLEMS);
       let problem = await ServiceProblem.findOne({
         name: brandProblemName,
         serviceBrandId,
@@ -186,6 +197,7 @@ export const addServices = async (req, res) => {
         problem = await ServiceProblem.create({
           serviceCategoryId,
           name: brandProblemName,
+          uniqueURL,
           image: brandProblemImage,
           // serviceBrandId,
           // description: brandProblemDescription,
@@ -204,10 +216,10 @@ export const addServices = async (req, res) => {
         });
       }
     } else if (
-      serviceFor === "serviceSubCategory" &&
+      serviceFor === SERVICE_SUB_CATEGORY &&
       type === "ServiceSubCategory"
     ) {
-      console.log("serviceSubCategory");
+      console.log(SERVICE_SUB_CATEGORY);
       let serviceSubCategory = await ServiceSubCategory.findOne({
         name: subServiceName,
         serviceCategoryId,
@@ -220,6 +232,7 @@ export const addServices = async (req, res) => {
           // serviceCategoryId: serviceCategory._id,
           serviceCategoryId,
           name: subServiceName,
+          uniqueURL,
           image: subServiceImage,
         });
         await serviceSubCategory.save();
@@ -234,8 +247,8 @@ export const addServices = async (req, res) => {
           serviceSubCategory,
         });
       }
-    } else if (serviceFor === "serviceSubProduct") {
-      console.log("serviceSubProduct");
+    } else if (serviceFor === SERVICE_SUB_PRODUCT) {
+      console.log(SERVICE_SUB_PRODUCT);
       let subProduct = await ServiceSubProduct.findOne({
         name: productName,
         subServiceId,
@@ -248,6 +261,7 @@ export const addServices = async (req, res) => {
           serviceCategoryId,
           subServiceId,
           name: productName,
+          uniqueURL,
           description: subProdDesc,
           discount: prodDisPer,
           price: productPrice,
@@ -289,6 +303,7 @@ export const updateService = async (req, res) => {
     serviceFrom,
     type,
     name,
+    uniqueURL,
     inspectionCharges,
     status,
     image,
@@ -300,8 +315,8 @@ export const updateService = async (req, res) => {
   // brandProblemImage;
 
   try {
-    if (serviceFrom === "serviceCategory") {
-      console.log("serviceCategory");
+    if (serviceFrom === SERVICE_CATEGORY) {
+      console.log(SERVICE_CATEGORY);
       // let serviceCategory = await ServiceCategory.findOne({
       //   name,
       // });
@@ -314,6 +329,7 @@ export const updateService = async (req, res) => {
           serviceId,
           {
             name,
+            uniqueURL,
             inspectionCharges,
             status,
             image,
@@ -330,8 +346,8 @@ export const updateService = async (req, res) => {
           .status(500)
           .json({ message: "Service Category Not Found", serviceCategory });
       }
-    } else if (serviceFrom === "serviceBrand") {
-      console.log("serviceBrand");
+    } else if (serviceFrom === SERVICE_BRAND) {
+      console.log(SERVICE_BRAND);
       let brand = await ServiceBrand.findById(serviceId);
       console.log("existing Brand", brand);
 
@@ -340,6 +356,7 @@ export const updateService = async (req, res) => {
           serviceId,
           {
             name,
+            uniqueURL,
             image,
           },
           { new: true }
@@ -352,8 +369,8 @@ export const updateService = async (req, res) => {
       } else {
         res.status(500).json({ message: "Service Brand Not Found", brand });
       }
-    } else if (serviceFrom === "serviceBrandProblem") {
-      console.log("serviceBrandProblem");
+    } else if (serviceFrom === SERVICE_BRAND_PROBLEMS) {
+      console.log(SERVICE_BRAND_PROBLEMS);
       let problem = await ServiceProblem.findById(serviceId);
       console.log("existing problem", problem);
       if (problem) {
@@ -361,6 +378,7 @@ export const updateService = async (req, res) => {
           serviceId,
           {
             name,
+            uniqueURL,
             image,
           },
           { new: true }
@@ -375,8 +393,8 @@ export const updateService = async (req, res) => {
       } else {
         res.status(500).json({ message: "Service Problem Not Found..!" });
       }
-    } else if (serviceFrom === "serviceSubCategory") {
-      console.log("serviceSubCategory");
+    } else if (serviceFrom === SERVICE_SUB_CATEGORY) {
+      console.log(SERVICE_SUB_CATEGORY);
       let serviceSubCategory = await ServiceSubCategory.findById(serviceId);
       console.log("existing serviceSubCategory", serviceSubCategory);
 
@@ -385,6 +403,7 @@ export const updateService = async (req, res) => {
           serviceId,
           {
             name,
+            uniqueURL,
             image,
           },
           { new: true }
@@ -398,8 +417,8 @@ export const updateService = async (req, res) => {
       } else {
         res.status(500).json({ message: "Sub Service Category Not Found..!" });
       }
-    } else if (serviceFrom === "serviceSubProduct") {
-      console.log("serviceSubProduct");
+    } else if (serviceFrom === SERVICE_SUB_PRODUCT) {
+      console.log(SERVICE_SUB_PRODUCT);
       let subProduct = await ServiceSubProduct.findById(serviceId);
       console.log("existing subProduct", subProduct);
       if (subProduct) {
@@ -407,6 +426,7 @@ export const updateService = async (req, res) => {
           serviceId,
           {
             name,
+            uniqueURL,
             description,
             discount,
             price,
@@ -441,7 +461,7 @@ export const deleteService = async (req, res) => {
     const serviceCategory = await ServiceCategory.findById(serviceId);
     console.log("serviceCategory", serviceCategory);
 
-    if (serviceFrom === "serviceCategory") {
+    if (serviceFrom === SERVICE_CATEGORY) {
       console.log("From serviceCategory");
       if (serviceType === "DirectService") {
         const serviceToDelete = await ServiceCategory.findById(serviceId);
@@ -451,9 +471,9 @@ export const deleteService = async (req, res) => {
           serviceId
         );
         console.log("deletedService", deletedService);
-        deleteImages(serviceToDelete.image);
+        deleteImage(serviceToDelete.image);
         return res.status(201).json(`Service Deleted ${deletedService}`);
-      } else if (serviceType === "Brand") {
+      } else if (serviceType === BRAND) {
         const serviceToDelete = await ServiceCategory.findById(serviceId);
         console.log("Brand Service to delete", serviceToDelete);
 
@@ -462,7 +482,7 @@ export const deleteService = async (req, res) => {
           serviceId
         );
         console.log("deletedService", deletedService);
-        deleteImages(serviceToDelete.image);
+        deleteImage(serviceToDelete.image);
 
         // Begin Delete Associated Brands of the Service
         const associatedBrands = await ServiceBrand.find({
@@ -470,9 +490,9 @@ export const deleteService = async (req, res) => {
         });
         console.log("associatedBrands", associatedBrands);
 
-        // call deleteImages function for each conditionLabel of the condition and unlink its images
+        // call deleteImage function for each conditionLabel of the condition and unlink its images
         associatedBrands.map((brand) => {
-          deleteImages(brand.image);
+          deleteImage(brand.image);
         });
 
         const deletedBrands = await ServiceBrand.deleteMany({
@@ -491,9 +511,9 @@ export const deleteService = async (req, res) => {
         });
         console.log("associatedBrandProblems", associatedBrandProblems);
 
-        // call deleteImages function for each conditionLabel of the condition and unlink its images
+        // call deleteImage function for each conditionLabel of the condition and unlink its images
         associatedBrandProblems.map((bp) => {
-          deleteImages(bp.image);
+          deleteImage(bp.image);
         });
 
         const deletedBrandProblems = await ServiceProblem.deleteMany({
@@ -517,7 +537,7 @@ export const deleteService = async (req, res) => {
           serviceId
         );
         console.log("deletedService", deletedService);
-        deleteImages(serviceToDelete.image);
+        deleteImage(serviceToDelete.image);
 
         // Begin Delete Associated Sub Services of the Service
         const associatedSubServices = await ServiceSubCategory.find({
@@ -525,9 +545,9 @@ export const deleteService = async (req, res) => {
         });
         console.log("associatedSubServices", associatedSubServices);
 
-        // call deleteImages function for each conditionLabel of the condition and unlink its images
+        // call deleteImage function for each conditionLabel of the condition and unlink its images
         associatedSubServices.map((ss) => {
-          deleteImages(ss.image);
+          deleteImage(ss.image);
         });
 
         const deletedSubServices = await ServiceSubCategory.deleteMany({
@@ -546,9 +566,9 @@ export const deleteService = async (req, res) => {
         });
         console.log("associatedProducts", associatedProducts);
 
-        // call deleteImages function for each conditionLabel of the condition and unlink its images
+        // call deleteImage function for each conditionLabel of the condition and unlink its images
         associatedProducts.map((ssp) => {
-          deleteImages(ssp.image);
+          deleteImage(ssp.image);
         });
 
         const deletedSubProducts = await ServiceSubProduct.deleteMany({
@@ -564,14 +584,14 @@ export const deleteService = async (req, res) => {
 
         return res.status(201).json(`Service Deleted ${deletedService}`);
       }
-    } else if (serviceFrom === "serviceBrand") {
+    } else if (serviceFrom === SERVICE_BRAND) {
       console.log("From serviceBrand");
       // Begin Delete Brand of the Service
       const serviceBrand = await ServiceBrand.findById(serviceId);
       console.log("serviceBrand", serviceBrand);
 
-      // call deleteImages function to delete image of the Brand and unlink its image
-      deleteImages(serviceBrand.image);
+      // call deleteImage function to delete image of the Brand and unlink its image
+      deleteImage(serviceBrand.image);
 
       const deletedBrand = await ServiceBrand.findByIdAndDelete(serviceId);
       console.log("Deleted Brand", deletedBrand);
@@ -584,8 +604,8 @@ export const deleteService = async (req, res) => {
       const serviceProblem = await ServiceProblem.findById(serviceId);
       console.log("serviceProblem", serviceProblem);
 
-      // call deleteImages function to delete image of the Brand and unlink its image
-      deleteImages(serviceProblem.image);
+      // call deleteImage function to delete image of the Brand and unlink its image
+      deleteImage(serviceProblem.image);
 
       const deletedServiceProblem = await ServiceProblem.findByIdAndDelete(
         serviceId
@@ -594,14 +614,14 @@ export const deleteService = async (req, res) => {
       // END Associated Brands Delete
 
       return res.status(201).json(`Service Deleted ${serviceProblem}`);
-    } else if (serviceFrom === "serviceSubCategory") {
+    } else if (serviceFrom === SERVICE_SUB_CATEGORY) {
       console.log("From Service Sub Category");
       // Begin Delete serviceSubCategory of the Service
       const serviceSubCategory = await ServiceSubCategory.findById(serviceId);
-      console.log("serviceSubCategory", serviceSubCategory);
+      console.log(SERVICE_SUB_CATEGORY, serviceSubCategory);
 
-      // call deleteImages function to delete image of the Sub Service and unlink its image
-      deleteImages(serviceSubCategory.image);
+      // call deleteImage function to delete image of the Sub Service and unlink its image
+      deleteImage(serviceSubCategory.image);
 
       const deletedServiceSubCategory =
         await ServiceSubCategory.findByIdAndDelete(serviceId);
@@ -614,9 +634,9 @@ export const deleteService = async (req, res) => {
       });
       console.log("associatedProducts", associatedProducts);
 
-      // call deleteImages function for deleting each products of the subServiceCategory and unlink its images
+      // call deleteImage function for deleting each products of the subServiceCategory and unlink its images
       associatedProducts.map((ssp) => {
-        deleteImages(ssp.image);
+        deleteImage(ssp.image);
       });
 
       const deletedSubProducts = await ServiceSubProduct.deleteMany({
@@ -631,39 +651,21 @@ export const deleteService = async (req, res) => {
       // END Associated Products Delete
 
       return res.status(201).json(`Service Deleted ${serviceSubCategory}`);
-    } else if (serviceFrom === "serviceSubProduct") {
+    } else if (serviceFrom === SERVICE_SUB_PRODUCT) {
       console.log("From serviceSubProduct");
       // Begin Delete Problem of the Service
       const serviceProduct = await ServiceSubProduct.findById(serviceId);
       console.log("serviceProduct", serviceProduct);
 
-      // call deleteImages function to delete image of the Sub Service Product and unlink its image
-      deleteImages(serviceProduct.image);
+      // call deleteImage function to delete image of the Sub Service Product and unlink its image
+      deleteImage(serviceProduct.image);
 
       const deletedServiceProduct = await ServiceSubProduct.findByIdAndDelete(
         serviceId
       );
       console.log("Deleted Service Product", deletedServiceProduct);
-      // END Of Delete
 
       return res.status(201).json(`Service Deleted ${deletedServiceProduct}`);
-    }
-
-    // Delete the corresponding image file from the uploads folder
-    function deleteImages(image) {
-      console.log("In delete image");
-      const __dirname = path.resolve();
-      const imagePath = path.join(__dirname, image);
-      console.log("imagePath", image);
-
-      fs.unlink(imagePath, (err) => {
-        // fs.unlink(deletedLabel.conditionLabelImg, (err) => {
-        if (err) {
-          console.error("Error deleting image:", err);
-          return res.status(500).json({ message: "Error deleting image" });
-        }
-        console.log("Image deleted successfully");
-      });
     }
   } catch (error) {
     return res.status(500).json({ message: "Internal server error.", error });
