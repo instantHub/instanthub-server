@@ -4,55 +4,11 @@ import Product from "../models/productModel.js";
 
 import Condition from "../models/conditionModel.js";
 import ConditionLabel from "../models/conditionLabelModel.js";
-import { slugify } from "../utils/slugify.js";
 import { deleteImage } from "../utils/deleteImage.js";
 
-// export const addCategory = async (req, res) => {
-//   try {
-//     let categories = await Category.find();
-//     if (categories.length > 0) {
-//       let checking = false;
-
-//       categories.map((cat, i) => {
-//         if (cat.name.toLowerCase() === req.body.name.toLowerCase()) {
-//           checking = true;
-//         }
-
-//         // if (cat.name === req.body.name) {
-//         //   checking = true;
-//         // }
-//       });
-
-//       if (checking == false) {
-//         let category = await Category.create({
-//           name: req.body.name,
-//           uniqueURL: req.body.uniqueURL,
-//           image: req.body.image,
-//         });
-//         category.save();
-//         res.status(200).json(category);
-//       } else {
-//         res
-//           .status(200)
-//           .send({ msg: "category (" + req.body.name + ") already exist " });
-//       }
-//     } else {
-//       let category = await Category.create({
-//         name: req.body.name,
-//         uniqueURL: req.body.uniqueURL,
-//         image: req.body.image,
-//       });
-//       category.save();
-//       res.status(200).json(category);
-//     }
-//   } catch (error) {
-//     res.status(404).json({ message: error.message });
-//   }
-// };
-
-export const addCategory = async (req, res) => {
+export const createCategory = async (req, res) => {
   try {
-    const { name, uniqueURL, image } = req.body;
+    const { name, uniqueURL, image, categoryType } = req.body;
 
     // Check if a category with the same name already exists (case-insensitive)
     const existingCategory = await Category.findOne({
@@ -65,10 +21,12 @@ export const addCategory = async (req, res) => {
         .json({ msg: `Category (${name}) already exists.` });
     }
 
-    const slug = slugify(name);
-    console.log("slug", slug);
-
-    const newCategory = await Category.create({ name, uniqueURL, image, slug });
+    const newCategory = await Category.create({
+      name,
+      uniqueURL,
+      categoryType,
+      image,
+    });
     return res.status(201).json(newCategory);
   } catch (error) {
     return res.status(500).json({ message: error.message });

@@ -21,7 +21,11 @@ export const deleteCLImage = async (req, res) => {
     const cLCategory = await Category.findById(category);
     console.log("cLCategory", cLCategory);
 
-    if (cLCategory.name === "Mobile") {
+    const MULTI_VARIANTS = cLCategory.categoryType.multiVariants;
+    const SIMPLE = cLCategory.categoryType.simple;
+
+    // if (cLCategory.name === "Mobile") {
+    if (MULTI_VARIANTS) {
       const updatedProducts = await Product.updateMany(
         {
           category: category,
@@ -42,7 +46,8 @@ export const deleteCLImage = async (req, res) => {
         } // Array filters to match variant and condition
       );
       console.log("updatedProducts", updatedProducts);
-    } else if (cLCategory.name !== "Mobile") {
+      // } else if (cLCategory.name !== "Mobile") {
+    } else if (SIMPLE) {
       await Product.updateMany(
         {
           category: category, // Match by category

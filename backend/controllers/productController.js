@@ -5,8 +5,8 @@ import Condition from "../models/conditionModel.js";
 import ConditionLabel from "../models/conditionLabelModel.js";
 
 import Processor from "../models/processorModel.js";
-import { isLaptopDesktop } from "../utils/helper.js";
-import { APPLE, DESKTOP, LAPTOP, MOBILE } from "../constants/general.js";
+import { getCategoryType } from "../utils/helper.js";
+import { APPLE } from "../constants/general.js";
 import { slugify } from "../utils/slugify.js";
 import { deleteImage } from "../utils/deleteImage.js";
 
@@ -33,7 +33,7 @@ export const getAllProducts = async (req, res) => {
       .skip(skip)
       .limit(limit)
       .select("-processorBasedDeduction -simpleDeductions")
-      .populate("category", "name image")
+      .populate("category", "name image categoryType")
       .populate("brand", "name image");
 
     const totalProducts = await Product.countDocuments(query);
@@ -78,13 +78,13 @@ export const getProductDetails = async (req, res) => {
   console.log("productsController GetProductDetails");
   try {
     const { productUniqueURL } = req.params;
-    console.log("GetProductDetails productUniqueURL", productUniqueURL);
+    // console.log("GetProductDetails productUniqueURL", productUniqueURL);
     // const product = await Product.findById(prodId)
     const product = await Product.findOne({ uniqueURL: productUniqueURL })
       .populate("category")
       .populate("brand");
 
-    console.log("GetProductDetails product", product);
+    // console.log("GetProductDetails product", product);
 
     res.status(200).json(product);
   } catch (error) {
@@ -114,7 +114,11 @@ export const createProduct = async (req, res) => {
       ConditionLabel.find({ category }),
     ]);
 
-    const isMobile = productCategory.name === MOBILE;
+    // const isMobile = productCategory.name === MOBILE;
+
+    const { MULTI_VARIANTS, PROCESSOR_BASED } = await getCategoryType(
+      productCategory
+    );
 
     const isDuplicate = existingProducts.some(
       (p) => p.name.toLowerCase() === name.toLowerCase()
@@ -141,9 +145,10 @@ export const createProduct = async (req, res) => {
     });
 
     if (existingProducts.length > 0) {
-      if (isLaptopDesktop(productCategory.name)) {
+      // if (isLaptopDesktop(productCategory.name)) {
+      if (PROCESSOR_BASED) {
         console.log(
-          "Creating Laptop/Desktop with deductions from existing product"
+          "Creating PROCESSOR_BASED with deductions from existing product"
         );
 
         // TODO: Need to update this code for a first laptop product to create initial simpleDeduction & initial processorBasedDeduction
@@ -156,8 +161,8 @@ export const createProduct = async (req, res) => {
         } else {
           console.log("No existing laptop/desktop to copy deductions from");
         }
-      } else if (isMobile) {
-        console.log("Creating Mobile with variant deductions");
+      } else if (MULTI_VARIANTS) {
+        console.log("Creating MULTI_VARIANTS with variant deductions");
         product.variantDeductions = await createDeductions(
           variants,
           conditionsList,
@@ -185,7 +190,8 @@ export const createProduct = async (req, res) => {
       }
     } else {
       console.log(`Creating First Product for brand: ${productBrand.name}`);
-      if (isLaptopDesktop(productCategory.name)) {
+      // if (isLaptopDesktop(productCategory.name)) {
+      if (PROCESSOR_BASED) {
         const isApple = productBrand.name === APPLE;
 
         if (isApple) {
@@ -199,26 +205,26 @@ export const createProduct = async (req, res) => {
             category,
             name: APPLE,
           }).select("category name _id");
+
           const windowsProd = await Product.findOne({
             category,
             brand: { $ne: appleBrand._id },
           });
+
           if (windowsProd) {
             product.simpleDeductions = windowsProd.simpleDeductions;
             product.processorBasedDeduction =
               windowsProd.processorBasedDeduction;
           }
         }
-      } else if (isMobile) {
+      } else if (MULTI_VARIANTS) {
         product.variantDeductions = await createDeductions(
           variants,
           conditionsList,
           conditionLabelsList
         );
       } else {
-        console.log(
-          "Others Deductions for all other products apart from mobiles and laptops"
-        );
+        console.log("Simple Deductions for all other products");
         product.simpleDeductions = await createOthersDeductions(
           [
             {
@@ -297,7 +303,12 @@ export const updateProduct = async (req, res) => {
     product.image = req.body.image;
     product.status = req.body.status;
 
-    if (productCategory.name !== MOBILE) {
+    const { MULTI_VARIANTS, PROCESSOR_BASED } = await getCategoryType(
+      productCategory
+    );
+
+    // if (productCategory.name !== MOBILE) {
+    if (!MULTI_VARIANTS) {
       product.variants[0].price = newVariants[0].price;
       await product.save();
     } else {
@@ -375,7 +386,7 @@ export const updateLaptopConfigurationsPriceDrop = async (req, res) => {
     const productId = req.params.productId;
     console.log("productId", productId);
     const type = req.query.type;
-    // console.log("type", type);
+    console.log("type", type);
     const brand = req.query.brand;
     console.log("brand from req.query", brand);
 
@@ -418,7 +429,7 @@ export const updateLaptopConfigurationsPriceDrop = async (req, res) => {
 
       console.log("productUpdated from alllaptopconfig", result);
     } else if (type.toLowerCase().includes("singlelaptopconfig")) {
-      console.log("Updating SINGLE Laptop CONFIGURATIONS");
+      console.log("Updating SINGLE Laptop CONFIGURATIONS: singlelaptopconfig");
 
       // Update the product with the complete updated data
       const productUpdated = await Product.findByIdAndUpdate(
@@ -427,7 +438,7 @@ export const updateLaptopConfigurationsPriceDrop = async (req, res) => {
         { new: true }
       );
       await productUpdated.save();
-      console.log("productUpdated from singlelaptopconfig", productUpdated);
+      console.log("productUpdated", productUpdated);
     } else if (type.toLowerCase().includes("singlelaptopconditions")) {
       console.log("*********************************");
       console.log("Updating Single Processor Based Problems");
