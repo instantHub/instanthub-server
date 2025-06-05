@@ -43,7 +43,13 @@ export const createCondtions = async (req, res) => {
       conditionCategory.name === "Laptop" ||
       conditionCategory.name === "Desktop";
 
-    console.log("laptopDesktopCheck", laptopDesktopCheck);
+    const MULTI_VARIANTS = conditionCategory.categoryType.multiVariants;
+    const PROCESSOR_BASED = conditionCategory.categoryType.processorBased;
+
+    console.log("MULTI_VARIANTS", MULTI_VARIANTS);
+    console.log("PROCESSOR_BASED", PROCESSOR_BASED);
+
+    // console.log("laptopDesktopCheck", laptopDesktopCheck);
 
     const configCheck =
       conditionName.toLowerCase().includes("processor") ||
@@ -53,7 +59,8 @@ export const createCondtions = async (req, res) => {
     console.log("configCheck", configCheck);
 
     // Before creating a condition for Laptop/Desktop at least one Windows & one IOS system must be created
-    if (laptopDesktopCheck) {
+    // if (laptopDesktopCheck) {
+    if (PROCESSOR_BASED) {
       const APPLE_BRAND = await Brand.findOne({
         category: conditionCategory.id,
         name: "Apple",
@@ -95,11 +102,12 @@ export const createCondtions = async (req, res) => {
           conditionName: "Processor",
         });
 
-        // console.log("PROCESSOR_CONDITION", PROCESSOR_CONDITION);
+        console.log("PROCESSOR_CONDITION", PROCESSOR_CONDITION);
 
         const PROCESSORS_LIST = await ConditionLabel.find({
           conditionNameId: PROCESSOR_CONDITION?._id,
         });
+        console.log("PROCESSORS_LIST", PROCESSORS_LIST);
 
         //
         let flag = PROCESSORS_LIST.length > 1 ? true : false;
@@ -108,6 +116,7 @@ export const createCondtions = async (req, res) => {
         if (flag) {
           console.log("Flag if PROCESSORS_LIST.length > 1", flag);
 
+          // NOTE: Each Apple processor should have Apple word in it
           let appleCL = PROCESSORS_LIST.find((p) =>
             p.conditionLabel.toLowerCase().includes("apple")
           );
@@ -165,8 +174,9 @@ export const createCondtions = async (req, res) => {
 
     console.log("newDeduction", newDeduction);
 
-    if (conditionCategory.name === "Mobile") {
-      console.log("Creating condition for Mobiles");
+    // if (conditionCategory.name === "Mobile") {
+    if (MULTI_VARIANTS) {
+      console.log("Creating condition for MULTI_VARIANTS");
       // Find all products of the specific category
       const productsUpdated = await Product.updateMany(
         {
@@ -186,7 +196,7 @@ export const createCondtions = async (req, res) => {
         vq.deductions.push(newDeduction);
         vq.save();
       }
-    } else if (laptopDesktopCheck) {
+    } else if (PROCESSOR_BASED) {
       console.log("Creating condition for Laptops");
 
       // Update "deductions" field of all the products of this category
@@ -255,15 +265,19 @@ export const updateCondition = async (req, res) => {
     const conditionCategory = await Category.findById(conditionFound.category);
     // console.log("conditionCategory", conditionCategory);
 
+    const MULTI_VARIANTS = conditionCategory.categoryType.multiVariants;
+    const PROCESSOR_BASED = conditionCategory.categoryType.processorBased;
+
     let laptopDesktopCheck =
       conditionCategory.name === "Laptop" ||
       conditionCategory.name === "Desktop";
 
-    console.log("laptopDesktopCheck", laptopDesktopCheck);
+    // console.log("laptopDesktopCheck", laptopDesktopCheck);
 
     // NEW APPROACH TO UPDATE PRODUCTS DEDUCTIONS CONDITION
-    if (conditionCategory.name === "Mobile") {
-      console.log("Updating condition of a mobile");
+    // if (conditionCategory.name === "Mobile") {
+    if (MULTI_VARIANTS) {
+      console.log("Updating condition of a MULTI_VARIANTS");
       // Find all products of the same category
       const productsUpdated = await Product.updateMany(
         {
@@ -317,8 +331,9 @@ export const updateCondition = async (req, res) => {
         });
         vq.save();
       }
-    } else if (laptopDesktopCheck) {
-      console.log("Laptops condition to update");
+      // } else if (laptopDesktopCheck) {
+    } else if (PROCESSOR_BASED) {
+      console.log("PROCESSOR_BASED condition to update");
       const configCheck =
         conditionFound.conditionName.toLowerCase().includes("processor") ||
         conditionFound.conditionName.toLowerCase().includes("ram") ||
@@ -375,7 +390,7 @@ export const updateCondition = async (req, res) => {
         console.log("processorsUpdated", processorsUpdated);
       }
     } else {
-      console.log("Other category condition, updating in products");
+      console.log("Simple category condition, updating in products");
       const productsUpdated = await Product.updateMany(
         {
           category: conditionFound.category, // Match by category
@@ -426,6 +441,9 @@ export const deleteCondition = async (req, res) => {
     const conditionCategory = await Category.findById(category);
     const deletedCondition = await Condition.findByIdAndDelete(conditionId);
 
+    const MULTI_VARIANTS = conditionCategory.categoryType.multiVariants;
+    const PROCESSOR_BASED = conditionCategory.categoryType.processorBased;
+
     const variantsQuestions = await VariantQuestion.find();
 
     const associatedConditionLabels = await ConditionLabel.find({
@@ -456,7 +474,9 @@ export const deleteCondition = async (req, res) => {
       conditionCategory.name === "Desktop";
 
     // Step 2: Update products to remove the deleted condition
-    if (conditionCategory.name.toLowerCase().includes("mobile")) {
+    // if (conditionCategory.name.toLowerCase().includes("mobile")) {
+    if (MULTI_VARIANTS) {
+      console.log("Inside MULTI_VARIANTS");
       // Find all products of the specific category
       const productsUpdated = await Product.updateMany(
         {
@@ -483,8 +503,9 @@ export const deleteCondition = async (req, res) => {
         }
         vq.save();
       }
-    } else if (laptopDesktopCheck) {
-      console.log("Laptop/Desktop", laptopDesktopCheck);
+      // } else if (laptopDesktopCheck) {
+    } else if (PROCESSOR_BASED) {
+      console.log("Inside PROCESSOR_BASED");
 
       const configCheck =
         deletedCondition.conditionName.toLowerCase().includes("processor") ||
@@ -538,7 +559,7 @@ export const deleteCondition = async (req, res) => {
         console.log("processorUpdated", processorUpdated);
       }
     } else {
-      console.log("Other category condition, deleting in products");
+      console.log("Simple category condition, deleting in products");
       const productsUpdated = await Product.updateMany(
         {
           category: category, // Match by category
@@ -605,8 +626,12 @@ export const createCondtionLabel = async (req, res) => {
     let laptopDesktopCheck =
       cLCategory.name === "Laptop" || cLCategory.name === "Desktop";
 
+    const MULTI_VARIANTS = cLCategory.categoryType.multiVariants;
+    const PROCESSOR_BASED = cLCategory.categoryType.processorBased;
+
     // Before creating a condition label for Laptop/Desktop at least one Windows & one IOS system must be created
-    if (laptopDesktopCheck) {
+    // if (laptopDesktopCheck) {
+    if (PROCESSOR_BASED) {
       const APPLE_BRAND = await Brand.findOne({
         category: cLCategory.id,
         name: "Apple",
@@ -666,8 +691,9 @@ export const createCondtionLabel = async (req, res) => {
     });
     console.log("created newConditionLabel", newConditionLabel);
 
-    if (cLCategory.name === "Mobile") {
-      console.log("Updating created condition label into Mobiles");
+    // if (cLCategory.name === "Mobile") {
+    if (MULTI_VARIANTS) {
+      console.log("Updating created condition label into MULTI_VARIANTS");
       // Update "deductions" field of all products of the specific category
       const updatedProducts = await Product.updateMany(
         {
@@ -713,8 +739,9 @@ export const createCondtionLabel = async (req, res) => {
         }
       );
       console.log("updatedVariantQuestions", updatedVariantQuestions);
-    } else if (laptopDesktopCheck) {
-      console.log("Pushing created condition label into Laptops");
+      // } else if (laptopDesktopCheck) {
+    } else if (PROCESSOR_BASED) {
+      console.log("Pushing created condition label into PROCESSOR_BASED");
 
       // console.log("category", category, "conditionNameId", conditionNameId);
 
@@ -838,7 +865,7 @@ export const createCondtionLabel = async (req, res) => {
         console.log("processorsUpdated", processorsUpdated);
       }
     } else {
-      console.log("Other category conditionLabel, updating in all products");
+      console.log("Simple category conditionLabel, creation in all products");
 
       const updatedProducts = await Product.updateMany(
         {
@@ -895,8 +922,12 @@ export const updateConditionLabel = async (req, res) => {
     let laptopDesktopCheck =
       cLCategory.name === "Laptop" || cLCategory.name === "Desktop";
 
-    if (cLCategory.name === "Mobile") {
-      console.log("Updating condition label into all Mobile products");
+    const MULTI_VARIANTS = cLCategory.categoryType.multiVariants;
+    const PROCESSOR_BASED = cLCategory.categoryType.processorBased;
+
+    // if (cLCategory.name === "Mobile") {
+    if (MULTI_VARIANTS) {
+      console.log("Updating condition label into all MULTI_VARIANTS products");
       const updatedProducts = await Product.updateMany(
         {
           category: category,
@@ -938,7 +969,8 @@ export const updateConditionLabel = async (req, res) => {
           ],
         }
       );
-    } else if (laptopDesktopCheck) {
+      // } else if (laptopDesktopCheck) {
+    } else if (PROCESSOR_BASED) {
       console.log("Updating condition label into all Laptop products");
       const condition = await Condition.findById(
         updatedConditionLabel.conditionNameId
@@ -1024,7 +1056,7 @@ export const updateConditionLabel = async (req, res) => {
         console.log("processorsUpdated", processorsUpdated);
       }
     } else {
-      console.log("Other category conditionLabel, updating in all products");
+      console.log("Simple category conditionLabel, updating in all products");
       const productsUpdated = await Product.updateMany(
         {
           category: category, // Match by category
@@ -1087,7 +1119,12 @@ export const deleteConditionLabel = async (req, res) => {
     let laptopDesktopCheck =
       cLCategory.name === "Laptop" || cLCategory.name === "Desktop";
 
-    if (cLCategory.name === "Mobile") {
+    const MULTI_VARIANTS = cLCategory.categoryType.multiVariants;
+    const PROCESSOR_BASED = cLCategory.categoryType.processorBased;
+
+    // if (cLCategory.name === "Mobile") {
+    if (MULTI_VARIANTS) {
+      console.log("Delete inside MULTI_VARIANTS");
       const updatedProducts = await Product.updateMany(
         {
           category: category,
@@ -1123,7 +1160,9 @@ export const deleteConditionLabel = async (req, res) => {
           arrayFilters: [{ "label.conditionLabelId": conditionLabelId }],
         }
       );
-    } else if (laptopDesktopCheck) {
+      // } else if (laptopDesktopCheck) {
+    } else if (PROCESSOR_BASED) {
+      console.log("Delete inside PROCESSOR_BASED");
       const condition = await Condition.findById(deletedLabel.conditionNameId);
       console.log("condition of the conditionLabel", condition);
       const configCheck =
@@ -1190,7 +1229,7 @@ export const deleteConditionLabel = async (req, res) => {
         console.log("processorsUpdated", processorsUpdated);
       }
     } else {
-      console.log("Other category conditionLabel, deleting from all products");
+      console.log("Delete inside Simple category conditionLabel");
 
       const productsUpdated = await Product.updateMany(
         {

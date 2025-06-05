@@ -14,6 +14,11 @@ const categorySchema = mongoose.Schema(
       type: String,
       required: true,
     },
+    categoryType: {
+      multiVariants: { type: Boolean, default: false },
+      processorBased: { type: Boolean, default: false },
+      simple: { type: Boolean, default: false },
+    },
     brands: [
       {
         type: mongoose.Schema.Types.ObjectId,
