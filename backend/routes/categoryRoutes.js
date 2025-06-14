@@ -12,7 +12,9 @@ const router = express.Router();
 router.get("/", getCategories);
 router.get("/:categoryId", getCategory);
 router.post("/", createCategory);
-router.put("/update-category/:categoryId", updateCategory);
-router.delete("/delete-category/:catId", deleteCategory);
+router.put("/:categoryId", updateCategory);
+router.delete("/:catId", deleteCategory);
+// router.put("/update-category/:categoryId", updateCategory);
+// router.delete("/delete-category/:catId", deleteCategory);
 
 export default router;
