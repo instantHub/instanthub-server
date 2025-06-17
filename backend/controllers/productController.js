@@ -33,8 +33,8 @@ export const getAllProducts = async (req, res) => {
       .skip(skip)
       .limit(limit)
       .select("-processorBasedDeduction -simpleDeductions")
-      .populate("category", "name image categoryType")
-      .populate("brand", "name image");
+      .populate("category", "name image categoryType uniqueURL")
+      .populate("brand", "name image uniqueURL");
 
     const totalProducts = await Product.countDocuments(query);
 
@@ -57,15 +57,16 @@ export const getProductsByBrand = async (req, res) => {
   try {
     // 1. Find brand by slug
     const brand = await Brand.findOne({ uniqueURL: brandUniqueURL });
+
     if (!brand) {
       return res.status(404).json({ message: "Brand not found" });
     }
 
     // 2. Use brand._id to find products
     const products = await Product.find({ brand: brand._id })
-      .select("-processorBasedDeduction -variantDeductions")
-      .populate("category")
-      .populate("brand");
+      .select("-processorBasedDeduction -variantDeductions -simpleDeductions")
+      .populate("category", "-brands -createdAt -updatedAt")
+      .populate("brand", "-products -series -createdAt -updatedAt");
 
     res.status(200).json(products);
   } catch (error) {
@@ -81,14 +82,18 @@ export const getProductDetails = async (req, res) => {
     // console.log("GetProductDetails productUniqueURL", productUniqueURL);
     // const product = await Product.findById(prodId)
     const product = await Product.findOne({ uniqueURL: productUniqueURL })
-      .populate("category")
-      .populate("brand");
+      .populate("category", "-brands -createdAt -updatedAt")
+      .populate("brand", "-products -series -createdAt -updatedAt");
 
     // console.log("GetProductDetails product", product);
 
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
     res.status(200).json(product);
   } catch (error) {
-    res.status(404).json({ message: error.message });
+    res.status(500).json({ message: error.message });
   }
 };
 

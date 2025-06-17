@@ -37,7 +37,10 @@ export const getOneOrders = async (req, res) => {
 
   try {
     const orderId = req.params.orderId;
-    const order = await Order.findById(orderId).populate("productId", "name");
+    const order = await Order.findById(orderId).populate("productId", [
+      "name",
+      "category",
+    ]);
     // console.log(order);
     res.status(200).json(order);
   } catch (error) {
@@ -380,58 +383,3 @@ export const assignAgent = async (req, res) => {
     });
   }
 };
-
-// Old nodemailer code
-{
-  // const transporter = nodemailer.createTransport({
-  //   // Development
-  //   // service: "gmail",
-  //   // host: "smtp.gmail.com", // Replace with your SMTP server
-  //   host: "smtp.hostinger.com", // Replace with your SMTP server
-  //   port: 465, // Use 587 for TLS or 465 for SSL
-  //   secure: true, // true for port 465, false for 587
-  //   auth: {
-  //     // Production
-  //     user: "support@instanthub.in", // Your domain email
-  //     pass: process.env.SUPPORT_PASSWORD, // Your domain email password
-  //     // Development
-  //     // user: "instanthub.in@gmail.com", // Your domain email
-  //     // pass: process.env.APP_PASSWORD, // Your domain email password
-  //   },
-  // });
-}
-
-// Accessories filter in filterdata
-{
-  // .filter(
-  //   (deduction) =>
-  //     !order.accessoriesAvailable.some(
-  //       (accessory) =>
-  //         accessory.conditionLabel === deduction.conditionLabel
-  //     )
-  // )
-}
-
-// Accessories in CreateOrder before "Selected Specification"
-{
-  /* <tr>
-  <th>Accessories</th>
-  <td>
-    <ol>
-      $
-      {order.accessoriesAvailable && order.accessoriesAvailable.length > 0
-        ? order.accessoriesAvailable
-            .map((accessory) => `<li>${accessory.conditionLabel}</li>`)
-            .join("")
-        : "<li>No accessories</li>"}
-    </ol>
-  </td>
-</tr>; */
-}
-
-// Accessories in StockIn
-{
-  //   accessoriesAvailable: updatedOrder.accessoriesAvailable?.map(
-  //   (a) => a.conditionLabel
-  // )
-}
