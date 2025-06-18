@@ -5,6 +5,7 @@ import Product from "../models/productModel.js";
 import Condition from "../models/conditionModel.js";
 import ConditionLabel from "../models/conditionLabelModel.js";
 import { deleteImage } from "../utils/deleteImage.js";
+import Order from "../models/orderModel.js";
 
 export const createCategory = async (req, res) => {
   try {
@@ -50,17 +51,21 @@ export const getCategories = async (req, res) => {
 export const getCategory = async (req, res) => {
   console.log("getCategory Controller");
 
-  const { categoryId } = req.params;
+  const { categoryUniqueURL } = req.params;
 
   try {
-    const category = await Category.findById(categoryId).populate(
-      "brands",
-      "name"
-    );
+    const category = await Category.findOne({
+      uniqueURL: categoryUniqueURL,
+    }).populate("brands", ["name", "image", "uniqueURL"]);
+
+    if (!category) {
+      return res.status(404).json({ message: "Category not found" });
+    }
+
     res.status(200).json(category);
   } catch (error) {
     res
-      .status(404)
+      .status(500)
       .json({ message: "Error in GET categories" + error.message });
   }
 };
@@ -181,5 +186,36 @@ export const deleteCategory = async (req, res) => {
       message: "Internal server error while deleting Category.",
       error,
     });
+  }
+};
+
+export const topSellingProducts = async (req, res) => {
+  console.log("topSellingProducts Controller");
+  try {
+    const { categoryName } = req.params;
+
+    const products = await Order.find(
+      {
+        productCategory: categoryName,
+        "status.completed": true,
+      },
+      {
+        productId: 1, // include only the productId field
+        _id: 0, // exclude the Order document _id if desired
+      }
+    )
+      .populate({
+        path: "productId",
+        populate: [{ path: "category" }, { path: "brand" }],
+      })
+      .lean();
+
+    console.log("top selling products:", products.length);
+
+    res.status(200).json(products);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error in top selling products:" + error.message });
   }
 };

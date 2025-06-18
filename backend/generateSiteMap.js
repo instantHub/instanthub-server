@@ -4,7 +4,7 @@ import Brand from "./models/brandModel.js";
 import Category from "./models/categoryModel.js";
 import Product from "./models/productModel.js";
 
-const LOCATIONS = ["bangalore", "mysore"];
+const LOCATIONS = ["bengaluru", "mysore"];
 
 export const generateSitemap = (urls) => {
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
