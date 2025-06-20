@@ -10,7 +10,6 @@ import helmet from "helmet";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
 
-
 // Routers import
 import adminRoutes from "./routes/adminRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
@@ -37,6 +36,7 @@ import uploadServicesRoutes from "./routes/uploads/uploadServicesRoutes.js";
 import recycleRoutes from "./routes/recycleRoutes.js";
 import complaintRoutes from "./routes/complaintRoutes.js";
 import pricingRoutes from "./routes/pricingRoutes.js";
+import testimonialRoutes from "./routes/testimonialRoutes.js";
 
 import { generateSitemap, getDynamicUrls } from "./generateSiteMap.js";
 
@@ -132,8 +132,8 @@ app.use("/api/services", servicesRoutes);
 app.use("/api/upload/services", uploadServicesRoutes);
 app.use("/api/recycle", recycleRoutes);
 app.use("/api/complaint", complaintRoutes);
-
 app.use("/api/pricing", pricingRoutes);
+app.use("/api/testimonial", testimonialRoutes);
 
 // Delete Image Route
 app.use("/api/delete", deleteRoutes);

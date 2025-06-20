@@ -1,6 +1,4 @@
 import Coupon from "../models/couponModel.js";
-import path from "path";
-import fs, { stat } from "fs";
 
 export const getCoupon = async (req, res) => {
   console.log("getCoupon Controller");
