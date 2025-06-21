@@ -46,10 +46,6 @@ const ORDER_EMAIL_TEMPLATE = (orderId, order) => {
                 td {
                   padding: 8px;
                 }
-                .logo {
-                  width: 100px;
-                  height: 80px;
-                }
                 h2 {
                   color: #333;
                   font-size: 10.2px;
@@ -68,14 +64,14 @@ const ORDER_EMAIL_TEMPLATE = (orderId, order) => {
   
               .logo {
                 width: 120px;
-                height: 65px;
+                height: 105px;
               }
   
               /* Mobile Styles */
               @media only screen and (max-width: 600px) {
                 .logo {
                   width: 80px;
-                  height: 55px
+                  height: 70px
                 }
               }
   
@@ -102,7 +98,7 @@ const ORDER_EMAIL_TEMPLATE = (orderId, order) => {
             >
               <h1 class="sell" style="text-align: center">
               <img
-              src="https://api.instantpick.in/uploads/NavLogo.jpg"
+              src="https://api.instantpick.in/uploads/instanthub-logo.png"
               alt="Instant Hub"
               class="logo"
             />
@@ -177,9 +173,6 @@ const ORDER_EMAIL_TEMPLATE = (orderId, order) => {
                     </div>
                   </td>
                 </tr>
-        
-                
-  
   
                 <tr>
                   <th>Selected Specification</th>
@@ -246,74 +239,14 @@ const ORDER_RECEIVED_TEMPLATE = (updatedOrder) => {
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Order Summary</title>
-        <!-- <style>
-          table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-          }
-          th,
-          td {
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-          }
-          th {
-            text-align: left;
-            background-color: #f2f2f2;
-          }
-    
-          .thankyou-note {
-            font-size: 20px;
-          }
-    
-          /* Mobile Styles */
-          @media only screen and (max-width: 600px) {
-            h2 {
-              font-size: 10px;
-            }
-            table {
-              font-size: 14px;
-            }
-            th,
-            td {
-              padding: 8px;
-            }
-            .logo {
-              width: 100px;
-              height: 80px;
-            }
-            h2 {
-              color: #333;
-              font-size: 12.2px;
-            }
-            h3 {
-              color: #333;
-              font-size: 10.2px;
-            }
-            .sell {
-              font-size: 24px;
-            }
-    
-            .thankyou-note {
-              font-size: smaller;
-            }
-            .min-size {
-              font-size: 6px;
-            }
-          }
-    
-          @media only screen and (min-width: 601px) {
-            .logo {
-              width: 110px;
-              height: 90px;
-            }
-          }
-        </style> -->
-    
+        
         <style>
           h2 {
             color: #333;
             margin-bottom: 20px;
+          }
+          h3 {
+            font-size: 14px;
           }
           th,
           td {
@@ -341,10 +274,7 @@ const ORDER_RECEIVED_TEMPLATE = (updatedOrder) => {
             td {
               padding: 8px;
             }
-            .logo {
-              width: 100px;
-              height: 80px;
-            }
+           
             h2 {
               color: #333;
               font-size: 10.2px;
@@ -363,14 +293,14 @@ const ORDER_RECEIVED_TEMPLATE = (updatedOrder) => {
   
           .logo {
               width: 120px;
-              height: 65px;
-            }
+              height: 105px;
+          }
   
           /* Mobile Styles */
           @media only screen and (max-width: 600px) {
             .logo {
               width: 80px;
-              height: 55px
+              height: 70px
             }
           }
         </style>
@@ -396,7 +326,7 @@ const ORDER_RECEIVED_TEMPLATE = (updatedOrder) => {
         >
           <h2 class="sell" style="text-align: center">
             <img
-              src="https://api.instantpick.in/uploads/NavLogo.jpg"
+              src="https://api.instantpick.in/uploads/instanthub-logo.png"
               alt="Instant Hub"
               class="logo"
               />
@@ -457,6 +387,29 @@ const ORDER_RECEIVED_TEMPLATE = (updatedOrder) => {
                         : `<span> </span>`
                     }
                   </h4>
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <th>Device Info: </th>
+              <td>
+                <div style="display: flex; flex-direction: column">
+                  ${
+                    updatedOrder.deviceInfo.serialNumber &&
+                    `<h3>
+                     <span>Serial No: </span>
+                     <span>${updatedOrder.deviceInfo.serialNumber}</span>
+                  </h3>`
+                  }
+
+                  ${
+                    updatedOrder.deviceInfo.imeiNumber &&
+                    `<h3>
+                      <span> - IMEI No: </span>
+                      <span>${updatedOrder.deviceInfo.imeiNumber}</span>
+                    </h3>`
+                  }
                 </div>
               </td>
             </tr>

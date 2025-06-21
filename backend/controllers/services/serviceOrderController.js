@@ -180,7 +180,7 @@ export const createServiceOrder = async (req, res) => {
             >
               <h1 class="sell" style="text-align: center">
               <img
-              src="https://api.instantpick.in/uploads/NavLogo.jpg"
+              src="https://api.instantpick.in/uploads/instanthub-logo.png"
               alt="Instant Hub"
               class="logo"
             />
@@ -555,7 +555,7 @@ export const serviceOrderCompleted = async (req, res) => {
             >
               <h1 class="sell" style="text-align: center">
               <img
-              src="https://api.instantpick.in/uploads/NavLogo.jpg"
+              src="https://api.instantpick.in/uploads/instanthub-logo.png"
               alt="Instant Hub"
               class="logo"
             />

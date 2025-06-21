@@ -93,7 +93,7 @@ const RECYCLE_ORDER_TEMPLATE = (recycleOrderId, order) => {
         >
           <h1 class="sell" style="text-align: center">
           <img
-          src="https://api.instantpick.in/uploads/NavLogo.jpg"
+          src="https://api.instantpick.in/uploads/instanthub-logo.png"
           alt="Instant Hub"
           class="logo"
           />
@@ -383,7 +383,7 @@ const RECYCLE_ORDER_RECEIVED_TEMPLTE = (updatedOrder) => {
         >
           <h2 class="sell" style="text-align: center">
             <img
-              src="https://api.instantpick.in/uploads/NavLogo.jpg"
+              src="https://api.instantpick.in/uploads/instanthub-logo.png"
               alt="Instant Hub"
               class="logo"
             />
