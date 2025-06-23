@@ -32,6 +32,124 @@ export const getOrders = async (req, res) => {
   }
 };
 
+export const getOrdersCounts = async (req, res) => {
+  try {
+    const now = new Date();
+    const startOfDay = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate()
+    );
+    const endOfDay = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate() + 1
+    );
+
+    // Run all 6 queries in parallel for performance
+    const [
+      pending,
+      completed,
+      cancelled,
+      pendingToday,
+      completedToday,
+      cancelledToday,
+    ] = await Promise.all([
+      Order.countDocuments({ "status.pending": true }),
+      Order.countDocuments({ "status.completed": true }),
+      Order.countDocuments({ "status.cancelled": true }),
+
+      Order.countDocuments({
+        "status.pending": true,
+        createdAt: { $gte: startOfDay, $lt: endOfDay },
+      }),
+      Order.countDocuments({
+        "status.completed": true,
+        createdAt: { $gte: startOfDay, $lt: endOfDay },
+      }),
+      Order.countDocuments({
+        "status.cancelled": true,
+        createdAt: { $gte: startOfDay, $lt: endOfDay },
+      }),
+    ]);
+
+    res.status(200).json({
+      total: {
+        pending,
+        completed,
+        cancelled,
+      },
+      today: {
+        pending: pendingToday,
+        completed: completedToday,
+        cancelled: cancelledToday,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch order counts", error });
+  }
+};
+
+// 1. Get Todays Orders
+export const getTodaysOrders = async (req, res) => {
+  try {
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date();
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const orders = await Order.find({
+      createdAt: { $gte: startOfDay, $lte: endOfDay },
+    }).sort({ createdAt: -1 });
+
+    res.status(200).json(orders);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch today's orders", error });
+  }
+};
+
+// 2. Get Pending Orders
+export const getPendingOrders = async (req, res) => {
+  try {
+    // const orders = await Order.find({ status: "pending" }).sort({
+    const orders = await Order.find({ "status.pending": true }).sort({
+      createdAt: -1,
+    });
+    res.status(200).json(orders);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch pending orders", error });
+  }
+};
+
+// 3. Get Completed Orders
+export const getCompletedOrders = async (req, res) => {
+  try {
+    const orders = await Order.find({ "status.completed": true }).sort({
+      createdAt: -1,
+    });
+    res.status(200).json(orders);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Failed to fetch completed orders", error });
+  }
+};
+
+// 4. Get Cancelled Orders
+export const getCancelledOrders = async (req, res) => {
+  try {
+    const orders = await Order.find({ "status.cancelled": true }).sort({
+      createdAt: -1,
+    });
+    res.status(200).json(orders);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Failed to fetch cancelled orders", error });
+  }
+};
+
 export const getOneOrders = async (req, res) => {
   console.log("GetOrders controller");
 
@@ -383,3 +501,144 @@ export const assignAgent = async (req, res) => {
     });
   }
 };
+
+// /**
+//  * Get all orders categorized by status with counts
+//  * @route GET /api/orders/list
+//  * @access Private (adjust based on your auth middleware)
+//  */
+// export const getOrdersList = async (req, res) => {
+//   console.log("getOrdersList Controllers");
+//   try {
+//     // Get today's date range
+//     const today = new Date();
+//     const startOfDay = new Date(
+//       today.getFullYear(),
+//       today.getMonth(),
+//       today.getDate()
+//     );
+//     const endOfDay = new Date(
+//       today.getFullYear(),
+//       today.getMonth(),
+//       today.getDate() + 1
+//     );
+
+//     // MongoDB aggregation pipeline
+//     const ordersData = await Order.aggregate([
+//       {
+//         $facet: {
+//           // Get pending orders
+//           pendingOrders: [
+//             { $match: { "status.pending": true } },
+//             { $sort: { createdAt: -1 } }, // Most recent first
+//           ],
+
+//           // Get completed orders
+//           completedOrders: [
+//             { $match: { "status.completed": true } },
+//             { $sort: { createdAt: -1 } },
+//           ],
+
+//           // Get cancelled orders
+//           cancelledOrders: [
+//             { $match: { "status.cancelled": true } },
+//             { $sort: { createdAt: -1 } },
+//           ],
+
+//           // Get today's orders
+//           todaysOrders: [
+//             {
+//               $match: {
+//                 createdAt: {
+//                   $gte: startOfDay,
+//                   $lt: endOfDay,
+//                 },
+//               },
+//             },
+//             { $sort: { createdAt: -1 } },
+//           ],
+
+//           // Get counts for each status
+//           pendingCount: [
+//             { $match: { "status.pending": true } },
+//             { $count: "count" },
+//           ],
+
+//           completedCount: [
+//             { $match: { "status.completed": true } },
+//             { $count: "count" },
+//           ],
+
+//           cancelledCount: [
+//             { $match: { "status.cancelled": true } },
+//             { $count: "count" },
+//           ],
+
+//           todaysCount: [
+//             {
+//               $match: {
+//                 createdAt: {
+//                   $gte: startOfDay,
+//                   $lt: endOfDay,
+//                 },
+//               },
+//             },
+//             { $count: "count" },
+//           ],
+//         },
+//       },
+//       {
+//         $project: {
+//           orders: {
+//             pendingOrders: "$pendingOrders",
+//             completedOrders: "$completedOrders",
+//             cancelledOrders: "$cancelledOrders",
+//             todaysOrders: "$todaysOrders",
+//           },
+//           counts: {
+//             pending: {
+//               $ifNull: [{ $arrayElemAt: ["$pendingCount.count", 0] }, 0],
+//             },
+//             completed: {
+//               $ifNull: [{ $arrayElemAt: ["$completedCount.count", 0] }, 0],
+//             },
+//             cancelled: {
+//               $ifNull: [{ $arrayElemAt: ["$cancelledCount.count", 0] }, 0],
+//             },
+//             today: {
+//               $ifNull: [{ $arrayElemAt: ["$todaysCount.count", 0] }, 0],
+//             },
+//           },
+//         },
+//       },
+//     ]);
+
+//     const result = ordersData[0] || {
+//       orders: {
+//         pendingOrders: [],
+//         completedOrders: [],
+//         cancelledOrders: [],
+//         todaysOrders: [],
+//       },
+//       counts: {
+//         pending: 0,
+//         completed: 0,
+//         cancelled: 0,
+//         today: 0,
+//       },
+//     };
+
+//     res.status(200).json({
+//       success: true,
+//       message: "Orders retrieved successfully",
+//       data: result,
+//     });
+//   } catch (error) {
+//     console.error("Error fetching orders list:", error);
+//     res.status(500).json({
+//       success: false,
+//       message: "Failed to retrieve orders",
+//       error: error.message,
+//     });
+//   }
+// };

@@ -7,9 +7,20 @@ import {
   orderReceived,
   assignAgent,
   orderCancel,
+  getOrdersCounts,
+  getTodaysOrders,
+  getPendingOrders,
+  getCompletedOrders,
+  getCancelledOrders,
 } from "../controllers/orderController.js";
 
 const router = express.Router();
+
+router.get("/count", getOrdersCounts);
+router.get("/today", getTodaysOrders);
+router.get("/pending", getPendingOrders);
+router.get("/completed", getCompletedOrders);
+router.get("/cancelled", getCancelledOrders);
 
 router.get("/", getOrders);
 router.get("/:orderId", getOneOrders);
