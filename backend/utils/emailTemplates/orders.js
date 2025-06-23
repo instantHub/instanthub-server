@@ -396,19 +396,21 @@ const ORDER_RECEIVED_TEMPLATE = (updatedOrder) => {
               <td>
                 <div style="display: flex; flex-direction: column">
                   ${
-                    updatedOrder.deviceInfo.serialNumber &&
-                    `<h3>
+                    updatedOrder.deviceInfo.serialNumber
+                      ? `<h3>
                      <span>Serial No: </span>
                      <span>${updatedOrder.deviceInfo.serialNumber}</span>
                   </h3>`
+                      : ""
                   }
 
                   ${
-                    updatedOrder.deviceInfo.imeiNumber &&
-                    `<h3>
+                    updatedOrder.deviceInfo.imeiNumber
+                      ? `<h3>
                       <span> - IMEI No: </span>
                       <span>${updatedOrder.deviceInfo.imeiNumber}</span>
                     </h3>`
+                      : ""
                   }
                 </div>
               </td>

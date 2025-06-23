@@ -19,6 +19,7 @@ import {
   ORDER_EMAIL_TEMPLATE,
   ORDER_RECEIVED_TEMPLATE,
 } from "../utils/emailTemplates/orders.js";
+import { getTodayISTRange } from "../utils/getTodayISTRange.js";
 
 export const getOrders = async (req, res) => {
   console.log("GetOrders controller");
@@ -32,21 +33,87 @@ export const getOrders = async (req, res) => {
   }
 };
 
+// export const getOrdersCounts = async (req, res) => {
+//   try {
+//     const now = new Date();
+//     const startOfDay = new Date(
+//       now.getFullYear(),
+//       now.getMonth(),
+//       now.getDate()
+//     );
+//     const endOfDay = new Date(
+//       now.getFullYear(),
+//       now.getMonth(),
+//       now.getDate() + 1
+//     );
+
+//     // Run all 6 queries in parallel for performance
+//     const [
+//       pending,
+//       completed,
+//       cancelled,
+//       pendingToday,
+//       completedToday,
+//       cancelledToday,
+//     ] = await Promise.all([
+//       Order.countDocuments({ "status.pending": true }),
+//       Order.countDocuments({ "status.completed": true }),
+//       Order.countDocuments({ "status.cancelled": true }),
+
+//       Order.countDocuments({
+//         "status.pending": true,
+//         createdAt: { $gte: startOfDay, $lt: endOfDay },
+//       }),
+//       Order.countDocuments({
+//         "status.completed": true,
+//         createdAt: { $gte: startOfDay, $lt: endOfDay },
+//       }),
+//       Order.countDocuments({
+//         "status.cancelled": true,
+//         createdAt: { $gte: startOfDay, $lt: endOfDay },
+//       }),
+//     ]);
+
+//     res.status(200).json({
+//       total: {
+//         pending,
+//         completed,
+//         cancelled,
+//       },
+//       today: {
+//         pending: pendingToday,
+//         completed: completedToday,
+//         cancelled: cancelledToday,
+//       },
+//     });
+//   } catch (error) {
+//     res.status(500).json({ message: "Failed to fetch order counts", error });
+//   }
+// };
+
+// 1. Get Todays Orders
+// export const getTodaysOrders = async (req, res) => {
+//   try {
+//     const startOfDay = new Date();
+//     startOfDay.setHours(0, 0, 0, 0);
+
+//     const endOfDay = new Date();
+//     endOfDay.setHours(23, 59, 59, 999);
+
+//     const orders = await Order.find({
+//       createdAt: { $gte: startOfDay, $lte: endOfDay },
+//     }).sort({ createdAt: -1 });
+
+//     res.status(200).json(orders);
+//   } catch (error) {
+//     res.status(500).json({ message: "Failed to fetch today's orders", error });
+//   }
+// };
+
 export const getOrdersCounts = async (req, res) => {
   try {
-    const now = new Date();
-    const startOfDay = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate()
-    );
-    const endOfDay = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate() + 1
-    );
+    const { utcStartOfDay, utcEndOfDay } = getTodayISTRange();
 
-    // Run all 6 queries in parallel for performance
     const [
       pending,
       completed,
@@ -61,15 +128,15 @@ export const getOrdersCounts = async (req, res) => {
 
       Order.countDocuments({
         "status.pending": true,
-        createdAt: { $gte: startOfDay, $lt: endOfDay },
+        createdAt: { $gte: utcStartOfDay, $lte: utcEndOfDay },
       }),
       Order.countDocuments({
         "status.completed": true,
-        createdAt: { $gte: startOfDay, $lt: endOfDay },
+        createdAt: { $gte: utcStartOfDay, $lte: utcEndOfDay },
       }),
       Order.countDocuments({
         "status.cancelled": true,
-        createdAt: { $gte: startOfDay, $lt: endOfDay },
+        createdAt: { $gte: utcStartOfDay, $lte: utcEndOfDay },
       }),
     ]);
 
@@ -86,26 +153,27 @@ export const getOrdersCounts = async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ message: "Failed to fetch order counts", error });
+    res.status(500).json({
+      message: "Failed to fetch order counts",
+      error: error.message,
+    });
   }
 };
 
-// 1. Get Todays Orders
 export const getTodaysOrders = async (req, res) => {
   try {
-    const startOfDay = new Date();
-    startOfDay.setHours(0, 0, 0, 0);
-
-    const endOfDay = new Date();
-    endOfDay.setHours(23, 59, 59, 999);
+    const { utcStartOfDay, utcEndOfDay } = getTodayISTRange();
 
     const orders = await Order.find({
-      createdAt: { $gte: startOfDay, $lte: endOfDay },
+      createdAt: { $gte: utcStartOfDay, $lte: utcEndOfDay },
     }).sort({ createdAt: -1 });
 
     res.status(200).json(orders);
   } catch (error) {
-    res.status(500).json({ message: "Failed to fetch today's orders", error });
+    res.status(500).json({
+      message: "Failed to fetch today's orders",
+      error: error.message,
+    });
   }
 };
 

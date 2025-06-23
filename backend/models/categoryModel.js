@@ -25,6 +25,11 @@ const categorySchema = mongoose.Schema(
         ref: "Brand",
       },
     ],
+
+    // Add SEO fields
+    metaTitle: { type: String },
+    metaDescription: { type: String },
+    metaKeywords: { type: String },
   },
   { timestamps: true }
 );
