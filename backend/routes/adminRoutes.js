@@ -21,7 +21,7 @@ router.post("/logout", logout);
 // router.get("/admin-profile", protect, getAdminProfile);
 // router.put("/update-admin", protect, updateAdmin);
 
-router.get("/admin-profile", getAdminProfile);
+router.get("/admin-profile", protect, getAdminProfile);
 router.put("/update-admin", updateAdmin);
 
 // Dashboard Detail

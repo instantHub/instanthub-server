@@ -8,52 +8,118 @@ import Stock from "../models/stocksModel.js";
 import generateToken from "../utils/generateToken.js";
 import jwt from "jsonwebtoken";
 
+// export const registerAdmin = async (req, res) => {
+//   console.log("registerAdmin controller");
+//   console.log("req", req.body);
+//   const { name, email, password } = req.body;
+
+//   const adminExists = await Admin.findOne({ email });
+
+//   if (adminExists) {
+//     res.status(401).json({ msg: "Admin already exists" });
+//   }
+
+//   const admin = await Admin.create({
+//     name,
+//     email,
+//     password,
+//   });
+
+//   if (admin) {
+//     generateToken(res, admin._id);
+//     console.log("Cookies from registerAdmin:", req.cookies);
+
+//     res.status(201).json(admin);
+//   } else {
+//     res.status(401).json({ msg: "Invalid admin data" });
+//   }
+//   //   res.status(200).json({ msg: "registerAdmin Admin" });
+// };
+
 export const registerAdmin = async (req, res) => {
-  console.log("registerAdmin controller");
-  console.log("req", req.body);
-  const { name, email, password } = req.body;
+  try {
+    console.log("registerAdmin controller");
+    console.log("req", req.body);
+    const { name, email, password } = req.body;
 
-  const adminExists = await Admin.findOne({ email });
+    const adminExists = await Admin.findOne({ email });
 
-  if (adminExists) {
-    res.status(401).json({ msg: "Admin already exists" });
+    if (adminExists) {
+      return res.status(400).json({ msg: "Admin already exists" }); // Fixed: use return and 400 status
+    }
+
+    const admin = await Admin.create({
+      name,
+      email,
+      password,
+    });
+
+    if (admin) {
+      generateToken(res, admin); // Fixed: pass admin object, not admin._id
+      console.log("Cookie set for admin:", admin.email);
+
+      res.status(201).json({
+        _id: admin._id,
+        name: admin.name,
+        email: admin.email,
+        message: "Admin registered successfully",
+      });
+    } else {
+      res.status(400).json({ msg: "Invalid admin data" });
+    }
+  } catch (error) {
+    console.error("Register error:", error);
+    res.status(500).json({ msg: "Server error" });
   }
-
-  const admin = await Admin.create({
-    name,
-    email,
-    password,
-  });
-
-  if (admin) {
-    // generateToken(res, admin._id);
-    res.status(201).json(admin);
-  } else {
-    res.status(401).json({ msg: "Invalid admin data" });
-  }
-  //   res.status(200).json({ msg: "registerAdmin Admin" });
 };
 
 export const authAdmin = async (req, res) => {
-  console.log("authAdmin controller");
-  const { email, password } = req.body;
-  //   console.log(email, password);
+  try {
+    console.log("authAdmin controller");
+    const { email, password } = req.body;
 
-  const admin = await Admin.findOne({ email });
+    const admin = await Admin.findOne({ email });
 
-  if (admin && (await admin.matchPasswords(password))) {
-    // Since JWT token is getting saved now generate token and save it to browser cookie
-    generateToken(res, admin);
-    console.log("Cookies from authAdmin:", req.cookies);
-    // TODO cookies are being sent but not getting stored in browser
+    if (admin && (await admin.matchPasswords(password))) {
+      generateToken(res, admin);
+      console.log("Cookie set for login:", admin.email);
 
-    res.status(201).json(admin);
-  } else {
-    res.status(401).json({ message: "Invalid email or password" });
+      res.status(200).json({
+        // Fixed: use 200 for successful login
+        _id: admin._id,
+        name: admin.name,
+        email: admin.email,
+        message: "Login successful",
+      });
+    } else {
+      res.status(401).json({ message: "Invalid email or password" });
+    }
+  } catch (error) {
+    console.error("Auth error:", error);
+    res.status(500).json({ msg: "Server error" });
   }
-
-  //   res.status(200).json({ msg: "Auth Admin" });
 };
+
+// export const authAdmin = async (req, res) => {
+//   console.log("authAdmin controller");
+//   const { email, password } = req.body;
+//   //   console.log(email, password);
+
+//   const admin = await Admin.findOne({ email });
+
+//   if (admin && (await admin.matchPasswords(password))) {
+//     // Since JWT token is getting saved now generate token and save it to browser cookie
+//     generateToken(res, admin);
+//     console.log("Cookies from authAdmin:", req.cookies);
+//     // TODO cookies are being sent but not getting stored in browser
+
+//     res.status(201).json(admin);
+//   } else {
+//     res.status(401).json({ message: "Invalid email or password" });
+//   }
+
+//   //   res.status(200).json({ msg: "Auth Admin" });
+// };
 
 // route    POST /api/logout
 // @access   Private
@@ -74,8 +140,23 @@ export const getAdmin = async (req, res) => {
   console.log("getAdmin controller");
   try {
     // const { id } = req.params;
-    const admin = await Admin.findById(id);
-    res.status(200).json(admin);
+    // const admin = await Admin.findById(id);
+    // res.status(200).json(admin);
+
+    // req.admin is set by the protect middleware
+    const admin = req.admin;
+
+    if (!admin) {
+      return res.status(404).json({ message: "Admin not found" });
+    }
+
+    res.status(200).json({
+      _id: admin._id,
+      name: admin.name,
+      email: admin.email,
+      createdAt: admin.createdAt,
+      message: "Profile fetched successfully",
+    });
   } catch (error) {
     res.status(404).json({ message: error.message });
   }
