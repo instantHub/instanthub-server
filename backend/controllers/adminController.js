@@ -7,52 +7,31 @@ import RecycleOrder from "../models/recycleOrderModel.js";
 import Stock from "../models/stocksModel.js";
 import generateToken from "../utils/generateToken.js";
 import jwt from "jsonwebtoken";
-
-// export const registerAdmin = async (req, res) => {
-//   console.log("registerAdmin controller");
-//   console.log("req", req.body);
-//   const { name, email, password } = req.body;
-
-//   const adminExists = await Admin.findOne({ email });
-
-//   if (adminExists) {
-//     res.status(401).json({ msg: "Admin already exists" });
-//   }
-
-//   const admin = await Admin.create({
-//     name,
-//     email,
-//     password,
-//   });
-
-//   if (admin) {
-//     generateToken(res, admin._id);
-//     console.log("Cookies from registerAdmin:", req.cookies);
-
-//     res.status(201).json(admin);
-//   } else {
-//     res.status(401).json({ msg: "Invalid admin data" });
-//   }
-//   //   res.status(200).json({ msg: "registerAdmin Admin" });
-// };
+import crypto from "node:crypto";
 
 export const registerAdmin = async (req, res) => {
   try {
-    console.log("registerAdmin controller");
-    console.log("req", req.body);
-    const { name, email, password } = req.body;
+    const { name, email, password, role, department } = req.body;
 
-    const adminExists = await Admin.findOne({ email });
+    if (!name || !email || !password || !department) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
 
-    if (adminExists) {
-      return res.status(400).json({ msg: "Admin already exists" }); // Fixed: use return and 400 status
+    const existingAdmin = await Admin.findOne({ email });
+
+    if (existingAdmin) {
+      return res.status(409).json({ message: "Email already registered" });
     }
 
     const admin = await Admin.create({
       name,
       email,
       password,
+      role: role || "admin",
+      department,
     });
+
+    await admin.save();
 
     if (admin) {
       generateToken(res, admin); // Fixed: pass admin object, not admin._id
@@ -68,82 +47,222 @@ export const registerAdmin = async (req, res) => {
       res.status(400).json({ msg: "Invalid admin data" });
     }
   } catch (error) {
-    console.error("Register error:", error);
-    res.status(500).json({ msg: "Server error" });
+    console.error("Registration error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
-export const authAdmin = async (req, res) => {
+export const loginAdmin = async (req, res) => {
   try {
-    console.log("authAdmin controller");
+    console.log("loginAdmin controller");
     const { email, password } = req.body;
 
-    const admin = await Admin.findOne({ email });
+    // const admin = await Admin.findOne({ email });
 
-    if (admin && (await admin.matchPasswords(password))) {
-      generateToken(res, admin);
-      console.log("Cookie set for login:", admin.email);
+    const admin = await Admin.findOne({ email, isActive: true });
 
-      res.status(200).json({
-        // Fixed: use 200 for successful login
-        _id: admin._id,
+    if (!admin) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    if (admin.isLocked) {
+      return res.status(423).json({
+        message: "Account locked due to multiple failed attempts",
+      });
+    }
+
+    const isPasswordValid = await admin.matchPasswords(password);
+
+    if (!isPasswordValid) {
+      await admin.incLoginAttempts();
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    // Clean expired tokens and generate new ones
+    await admin.cleanExpiredTokens();
+    const { accessToken, refreshToken } = generateToken(res, admin);
+
+    // Store session token
+    const sessionToken = {
+      token: crypto.randomBytes(32).toString("hex"),
+      createdAt: new Date(),
+      // expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+      expiresAt: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000), // 7 days
+      ipAddress: req.ip || req.headers["x-forwarded-for"] || "unknown",
+      userAgent: req.headers["user-agent"],
+    };
+
+    admin.sessionTokens.push(sessionToken);
+    admin.lastLogin = new Date();
+    admin.loginAttempts = 0;
+    admin.lockUntil = undefined;
+    await admin.save();
+
+    // Set secure httpOnly cookies
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 15 * 60 * 1000, // 15 minutes
+      path: "/",
+    });
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      path: "/",
+    });
+
+    res.cookie("sessionToken", sessionToken.token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      path: "/",
+    });
+
+    res.json({
+      admin: {
+        id: admin._id,
         name: admin.name,
         email: admin.email,
-        message: "Login successful",
-      });
-    } else {
-      res.status(401).json({ message: "Invalid email or password" });
-    }
+        role: admin.role,
+        department: admin.department,
+        permissions: admin.permissions,
+        lastLogin: admin.lastLogin,
+      },
+    });
+
+    // if (admin && (await admin.matchPasswords(password))) {
+    //   generateToken(res, admin);
+    //   console.log("Cookie set for login:", admin.email);
+
+    //   res.status(200).json({
+    //     _id: admin._id,
+    //     name: admin.name,
+    //     email: admin.email,
+    //     message: "Login successful",
+    //   });
+    // } else {
+    //   res.status(401).json({ message: "Invalid email or password" });
+    // }
   } catch (error) {
     console.error("Auth error:", error);
     res.status(500).json({ msg: "Server error" });
   }
 };
 
-// export const authAdmin = async (req, res) => {
-//   console.log("authAdmin controller");
-//   const { email, password } = req.body;
-//   //   console.log(email, password);
+export const validateToken = async (req, res) => {
+  console.log("validateToken controller");
+  try {
+    const token = req.cookies.accessToken; // or however you named your cookie
+    console.log("accessToken from validateToken", token);
 
-//   const admin = await Admin.findOne({ email });
+    if (!token) {
+      return res.status(401).json({ error: "No token provided" });
+    }
 
-//   if (admin && (await admin.matchPasswords(password))) {
-//     // Since JWT token is getting saved now generate token and save it to browser cookie
-//     generateToken(res, admin);
-//     console.log("Cookies from authAdmin:", req.cookies);
-//     // TODO cookies are being sent but not getting stored in browser
+    // Verify JWT token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-//     res.status(201).json(admin);
-//   } else {
-//     res.status(401).json({ message: "Invalid email or password" });
-//   }
+    // Fetch fresh user data if needed
+    const admin = await Admin.findById(decoded.adminId);
 
-//   //   res.status(200).json({ msg: "Auth Admin" });
-// };
+    res.json({
+      admin: {
+        id: admin._id,
+        name: admin.name,
+        email: admin.email,
+        role: admin.role,
+        department: admin.department,
+        permissions: admin.permissions,
+        lastLogin: admin.lastLogin,
+      },
+      sessionExpiry: decoded.exp * 1000, // Convert to milliseconds
+    });
+  } catch (error) {
+    // Token is invalid or expired
+    res.status(401).json({ error: "Invalid token" });
+  }
+};
 
-// route    POST /api/logout
-// @access   Private
+export const refreshToken = async (req, res) => {
+  try {
+    const { refreshToken } = req.cookies;
+
+    if (!refreshToken) {
+      return res.status(401).json({ message: "No refresh token provided" });
+    }
+
+    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+    const admin = await Admin.findById(decoded.adminId);
+
+    if (!admin || !admin.isActive) {
+      return res.status(401).json({ message: "Invalid refresh token" });
+    }
+
+    // Generate new access token
+    const { accessToken } = generateToken(res, admin);
+
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 15 * 60 * 1000,
+      path: "/",
+    });
+
+    res.json({ message: "Token refreshed successfully" });
+  } catch (error) {
+    res.status(401).json({ message: "Invalid refresh token" });
+  }
+};
+
 export const logout = async (req, res) => {
-  // console.log("logout controller");
+  console.log("admin logout controller");
+  try {
+    const { sessionToken } = req.cookies;
+    console.log("req", req.body);
+    console.log("sessionToken", sessionToken);
 
-  // res.cookie("jwt", "", { httpOnly: true, expires: new Date(0) });
-  // // res.clearCookie('jwt', { path: '/' });
+    if (sessionToken) {
+      // Remove session token from database
+      await Admin.updateOne(
+        { _id: req.body.id },
+        { $pull: { sessionTokens: { token: sessionToken } } }
+      );
+    }
 
-  // res.status(200).json({ msg: "Admin logged out" });
+    // Clear cookies
+    res.clearCookie("accessToken");
+    res.clearCookie("refreshToken");
+    res.clearCookie("sessionToken");
 
-  console.log("logout controller");
-  res.cookie("jwt", "", { httpOnly: true, expires: new Date(0) });
-  res.status(200).json({ msg: "Admin logged out" });
+    res.status(200).json({ status: 200, message: "Logged out successfully" });
+  } catch (error) {
+    res.status(500).json({ status: 500, message: "Server error" });
+  }
+};
+
+// route    GET /api/admin-profile
+// @access   Private
+export const getAdminProfile = async (req, res) => {
+  // console.log("req.admin", req.admin);
+  try {
+    const admin = await Admin.findById(req.admin._id).select(
+      "-password -sessionTokens -twoFactorSecret"
+    );
+    res.json(admin);
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
 };
 
 export const getAdmin = async (req, res) => {
   console.log("getAdmin controller");
   try {
-    // const { id } = req.params;
-    // const admin = await Admin.findById(id);
-    // res.status(200).json(admin);
-
-    // req.admin is set by the protect middleware
     const admin = req.admin;
 
     if (!admin) {
@@ -160,14 +279,6 @@ export const getAdmin = async (req, res) => {
   } catch (error) {
     res.status(404).json({ message: error.message });
   }
-};
-
-// route    GET /api/admin-profile
-// @access   Private
-export const getAdminProfile = async (req, res) => {
-  console.log("getAdminProfile controller");
-  // console.log(req.admin);
-  res.status(200).json({ msg: "getAdminProfile Admin" });
 };
 
 export const updateAdmin = async (req, res) => {
