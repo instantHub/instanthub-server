@@ -103,21 +103,21 @@ export const loginAdmin = async (req, res) => {
     await admin.save();
 
     // Set secure httpOnly cookies
-    res.cookie("accessToken", accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 15 * 60 * 1000, // 15 minutes
-      path: "/",
-    });
+    // res.cookie("accessToken", accessToken, {
+    //   httpOnly: true,
+    //   secure: process.env.NODE_ENV === "production",
+    //   sameSite: "strict",
+    //   maxAge: 2 * 24 * 60 * 60 * 1000, // 15 minutes
+    //   path: "/",
+    // });
 
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      path: "/",
-    });
+    // res.cookie("refreshToken", refreshToken, {
+    //   httpOnly: true,
+    //   secure: process.env.NODE_ENV === "production",
+    //   sameSite: "strict",
+    //   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    //   path: "/",
+    // });
 
     res.cookie("sessionToken", sessionToken.token, {
       httpOnly: true,
@@ -150,6 +150,12 @@ export const validateToken = async (req, res) => {
     const token = req.cookies.accessToken; // or however you named your cookie
     console.log("accessToken from validateToken", token);
 
+    const decodedAccessToken = jwt.decode(token);
+    console.log(
+      "Token expires at:",
+      new Date(decodedAccessToken.exp * 1000).toString()
+    );
+
     if (!token) {
       return res.status(401).json({ error: "No token provided" });
     }
@@ -173,6 +179,7 @@ export const validateToken = async (req, res) => {
       sessionExpiry: decoded.exp * 1000, // Convert to milliseconds
     });
   } catch (error) {
+    console.log("error", error);
     // Token is invalid or expired
     res.status(401).json({ error: "Invalid token" });
   }
