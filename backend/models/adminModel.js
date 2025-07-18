@@ -43,20 +43,23 @@ const AdminSchema = new mongoose.Schema(
 
 // Virtual for account lock status
 AdminSchema.virtual("isLocked").get(function () {
-  return !!(this.lockUntil && this.lockUntil > Date.now());
+  // return !!(this.lockUntil && this.lockUntil > Date.now());
+  return false;
 });
 
 AdminSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
-    next();
+    return next();
   }
 
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
+  next();
 });
 
 AdminSchema.methods.matchPasswords = async function (enteredPassword) {
-  return await bcrypt.compare(enteredPassword, this.password);
+  const isMatch = await bcrypt.compare(enteredPassword, this.password);
+  return isMatch;
 };
 
 // Increment login attempts

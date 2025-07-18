@@ -13,7 +13,7 @@ const generateToken = (res, admin) => {
     secure: process.env.NODE_ENV === "production", // Fixed: should be true in production
     sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // Fixed: for cross-origin requests
     path: "/",
-    maxAge: 24 * 60 * 60 * 1000, //  minutes in milliseconds
+    // maxAge: 24 * 60 * 60 * 1000, //  minutes in milliseconds
   });
 
   const refreshToken = jwt.sign(

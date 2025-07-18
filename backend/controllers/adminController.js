@@ -56,10 +56,12 @@ export const loginAdmin = async (req, res) => {
   try {
     console.log("loginAdmin controller");
     const { email, password } = req.body;
+    console.log("data", email, password);
 
     // const admin = await Admin.findOne({ email });
 
     const admin = await Admin.findOne({ email, isActive: true });
+    console.log("admin", admin);
 
     if (!admin) {
       return res.status(401).json({ message: "Invalid credentials" });
@@ -75,7 +77,9 @@ export const loginAdmin = async (req, res) => {
 
     if (!isPasswordValid) {
       await admin.incLoginAttempts();
-      return res.status(401).json({ message: "Invalid credentials" });
+      return res
+        .status(401)
+        .json({ message: "Wrong Password, Invalid credentials" });
     }
 
     // Clean expired tokens and generate new ones
@@ -134,20 +138,6 @@ export const loginAdmin = async (req, res) => {
         lastLogin: admin.lastLogin,
       },
     });
-
-    // if (admin && (await admin.matchPasswords(password))) {
-    //   generateToken(res, admin);
-    //   console.log("Cookie set for login:", admin.email);
-
-    //   res.status(200).json({
-    //     _id: admin._id,
-    //     name: admin.name,
-    //     email: admin.email,
-    //     message: "Login successful",
-    //   });
-    // } else {
-    //   res.status(401).json({ message: "Invalid email or password" });
-    // }
   } catch (error) {
     console.error("Auth error:", error);
     res.status(500).json({ msg: "Server error" });
@@ -282,29 +272,42 @@ export const getAdmin = async (req, res) => {
 };
 
 export const updateAdmin = async (req, res) => {
-  console.log("updateAdmin controller");
-  console.log("req", req.body);
-  const { name, email, password, _id } = req.body;
+  try {
+    console.log("updateAdmin controller");
+    const { name, email, password, id } = req.body;
 
-  const adminExists = await Admin.findById(_id);
+    // Find the admin by ID
+    const admin = await Admin.findById(id);
+    console.log("admin found", admin);
 
-  if (adminExists) {
-    adminExists.name = name || adminExists.name;
-    adminExists.email = email || adminExists.email;
-    adminExists.name = name || adminExists.name;
-
-    if (password) {
-      adminExists.password = password;
+    if (!admin) {
+      return res.status(404).json({ message: "Admin not found" });
     }
 
-    const updatedAdmin = await adminExists.save();
+    // Optionally check if email is being updated and already taken
+    if (email && email !== admin.email) {
+      const emailTaken = await Admin.findOne({ email });
+      if (emailTaken) {
+        return res.status(400).json({ message: "Email already in use" });
+      }
+      admin.email = email;
+    }
+
+    admin.name = name || admin.name;
+
+    if (password) {
+      admin.password = password; // pre-save hook will hash it
+    }
+
+    const updatedAdmin = await admin.save();
 
     res
       .status(200)
-      .json({ updatedAdmin, message: "Admin Updated successfully" });
+      .json({ updatedAdmin, message: "Admin updated successfully" });
+  } catch (error) {
+    console.error("Error updating admin:", error);
+    res.status(500).json({ message: "Server error" });
   }
-
-  //   res.status(200).json({ msg: "registerAdmin Admin" });
 };
 
 // Dashboard Route
