@@ -1,13 +1,7 @@
 import OTP from "../models/otpModel.js";
 import OTPCollected from "../models/otpCollectedModel.js";
-// import path from "path";
-// import fs from "fs";
-// import fast2sms from "fast-two-sms";
 import dotenv from "dotenv";
-// import axios from "axios";
 dotenv.config();
-// import {fast2sms}
-// import twilio from "twilio";
 
 export const getOTP = async (req, res) => {
   console.log("getOTP controller");
@@ -15,7 +9,8 @@ export const getOTP = async (req, res) => {
 
   try {
     const otp = await OTP.find({ mobileNumber: mobileNo });
-    // console.log(otp);
+    otp.purpose = purpose;
+    await otp.save();
     res.status(200).json({ otp });
   } catch (error) {
     res
@@ -28,10 +23,8 @@ export const generateOTP = async (req, res) => {
   console.log("generateOTP controller");
 
   try {
-    const mobileNo = req.body.mobileNo;
-    console.log(req.body);
-    // const otp = await OTP.find();
-    // console.log(otp);
+    const { mobileNo, purpose } = req.body;
+    console.log("mobileNo, purpose ", mobileNo, purpose);
 
     // Check count of OTPs generated for the mobile number within the last 24 hours
     const startTime = new Date();
@@ -46,12 +39,6 @@ export const generateOTP = async (req, res) => {
     });
     // console.log("otpCollectedByNo", otpCollectedByNo);
 
-    // const count = await OTP.countDocuments({
-    //   mobileNumber: mobileNo,
-    //   createdAt: { $gte: startTime },
-    // });
-    // console.log("count", count);
-
     if (numberPresent) {
       if (numberPresent.totalOTPsTaken < 5) {
         // console.log("less than 5 OTPS");
@@ -60,6 +47,7 @@ export const generateOTP = async (req, res) => {
         console.log("otpValue when number is present", otpValue);
         const otpData = {
           otp: otpValue,
+          purpose: purpose,
           totalOTPsTaken: numberPresent.totalOTPsTaken + 1,
         };
         console.log("otpData", otpData);
@@ -73,13 +61,13 @@ export const generateOTP = async (req, res) => {
         );
 
         await updatedOTP.save();
-        // console.log("updatedOTP", updatedOTP);
+        console.log("updatedOTP", updatedOTP);
 
         //   Adding userNumber and totalOTPsTaken to OTPCollected model
         if (otpCollectedByNo) {
           let updatedUserNumber = await OTPCollected.findByIdAndUpdate(
             otpCollectedByNo._id,
-            { totalOTPsTaken: otpCollectedByNo.totalOTPsTaken + 1 },
+            { totalOTPsTaken: otpCollectedByNo.totalOTPsTaken + 1, purpose },
             {
               new: true,
             }
@@ -88,6 +76,7 @@ export const generateOTP = async (req, res) => {
         } else if (!otpCollectedByNo) {
           let userNumber = await OTPCollected.create({
             mobileNumber: mobileNo,
+            purpose,
             totalOTPsTaken: 1,
           });
           await userNumber.save();
@@ -112,6 +101,7 @@ export const generateOTP = async (req, res) => {
       const otpData = {
         mobileNumber: mobileNo,
         otp: otpValue,
+        purpose,
         totalOTPsTaken: 1,
       };
       console.log("otpData", otpData);
@@ -124,7 +114,7 @@ export const generateOTP = async (req, res) => {
       if (otpCollectedByNo) {
         let updatedUserNumber = await OTPCollected.findByIdAndUpdate(
           otpCollectedByNo._id,
-          { totalOTPsTaken: otpCollectedByNo.totalOTPsTaken + 1 },
+          { totalOTPsTaken: otpCollectedByNo.totalOTPsTaken + 1, purpose },
           {
             new: true,
           }
@@ -133,6 +123,7 @@ export const generateOTP = async (req, res) => {
       } else if (!otpCollectedByNo) {
         let userNumber = await OTPCollected.create({
           mobileNumber: mobileNo,
+          purpose,
           totalOTPsTaken: 1,
         });
         await userNumber.save();
@@ -142,35 +133,6 @@ export const generateOTP = async (req, res) => {
         .status(200)
         .json({ success: true, data: otp, message: "generated otp success" }); // Return the generated OTP
     }
-
-    // // Check if the count is less than 10
-    // if (count < 5) {
-    //   console.log("less than 5 OTPS");
-    //   // Generate OTP and save it to the database
-    //   const otpValue = Math.floor(100000 + Math.random() * 900000).toString(); // Generate a 6-digit OTP
-    //   console.log("otpValue", otpValue);
-    //   const otpData = {
-    //     mobileNumber: mobileNo,
-    //     otp: otpValue,
-    //   };
-    //   console.log("otpData", otpData);
-
-    //   let otp = await OTP.create(otpData);
-    //   //   let order = await Order.create(orderData);
-
-    //   //   console.log("object", otp);
-    //   await otp.save();
-    //   //   console.log("object", otp);
-
-    //   res
-    //     .status(200)
-    //     .json({ success: true, data: otp, message: "generated otp success" }); // Return the generated OTP
-    // } else {
-    //   console.log("More than 5 OTPs exceeded");
-    //   res.status(201).json({ message: "Exceeded OTP limit. Try again later." });
-
-    //   //   throw new Error("Exceeded OTP limit. Try again later."); // Throw error if limit exceeded
-    // }
   } catch (error) {
     res
       .status(404)
