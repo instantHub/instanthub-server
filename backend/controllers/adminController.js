@@ -11,9 +11,9 @@ import crypto from "node:crypto";
 
 export const registerAdmin = async (req, res) => {
   try {
-    const { name, email, password, role, department } = req.body;
+    const { name, email, password, role } = req.body;
 
-    if (!name || !email || !password || !department) {
+    if (!name || !email || !password) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
@@ -28,15 +28,11 @@ export const registerAdmin = async (req, res) => {
       email,
       password,
       role: role || "admin",
-      department,
     });
 
     await admin.save();
 
     if (admin) {
-      generateToken(res, admin); // Fixed: pass admin object, not admin._id
-      console.log("Cookie set for admin:", admin.email);
-
       res.status(201).json({
         _id: admin._id,
         name: admin.name,
@@ -133,7 +129,6 @@ export const loginAdmin = async (req, res) => {
         name: admin.name,
         email: admin.email,
         role: admin.role,
-        department: admin.department,
         permissions: admin.permissions,
         lastLogin: admin.lastLogin,
       },
@@ -172,7 +167,6 @@ export const validateToken = async (req, res) => {
         name: admin.name,
         email: admin.email,
         role: admin.role,
-        department: admin.department,
         permissions: admin.permissions,
         lastLogin: admin.lastLogin,
       },
@@ -257,6 +251,19 @@ export const getAdminProfile = async (req, res) => {
   }
 };
 
+export const getAllAdmins = async (req, res) => {
+  console.log("getAllAdmins controller");
+  try {
+    const admins = await Admin.find(
+      {},
+      "-password -sessionTokens -refreshToken"
+    );
+    res.status(200).json(admins);
+  } catch (err) {
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
 export const getAdmin = async (req, res) => {
   console.log("getAdmin controller");
   try {
@@ -279,46 +286,34 @@ export const getAdmin = async (req, res) => {
 };
 
 export const updateAdmin = async (req, res) => {
+  const { id } = req.params;
   try {
-    console.log("updateAdmin controller");
-    const { name, email, password, id } = req.body;
-
-    // Find the admin by ID
-    const admin = await Admin.findById(id);
-    console.log("admin found", admin);
-
-    if (!admin) {
+    const updatedAdmin = await Admin.findByIdAndUpdate(id, req.body, {
+      new: true,
+      runValidators: true,
+    });
+    if (!updatedAdmin)
       return res.status(404).json({ message: "Admin not found" });
-    }
+    res.status(200).json(updatedAdmin);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
 
-    // Optionally check if email is being updated and already taken
-    if (email && email !== admin.email) {
-      const emailTaken = await Admin.findOne({ email });
-      if (emailTaken) {
-        return res.status(400).json({ message: "Email already in use" });
-      }
-      admin.email = email;
-    }
+export const deleteAdmin = async (req, res) => {
+  console.log("deleteAdmin controller");
 
-    admin.name = name || admin.name;
-
-    if (password) {
-      admin.password = password; // pre-save hook will hash it
-    }
-
-    const updatedAdmin = await admin.save();
-
-    res
-      .status(200)
-      .json({ updatedAdmin, message: "Admin updated successfully" });
-  } catch (error) {
-    console.error("Error updating admin:", error);
-    res.status(500).json({ message: "Server error" });
+  const { id } = req.params;
+  console.log("id", id);
+  try {
+    await Admin.findByIdAndDelete(id);
+    res.status(200).json({ message: "Admin deleted" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };
 
 // Dashboard Route
-
 export const dashboardDetail = async (req, res) => {
   console.log("dashboardDetail controller");
 

@@ -139,24 +139,7 @@ app.use("/api/testimonial", testimonialRoutes);
 // Delete Image Route
 app.use("/api/delete", deleteRoutes);
 
-// Cookie Testing
-// app.get("/contact", (req, res) => {
-//   res.cookie("Test", "Yusuf");
-//   res.send(`Hello Contact page`);
-// });
-
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-
-// if (process.env.NODE_ENV === "production") {
-//   //*Set static folder up in production
-//   app.use(express.static(path.join(__dirname, "frontend", "dist")));
-
-//   // app.use(express.static('client/build'));
-
-//   app.get("*", (req, res) =>
-//     res.sendFile(path.resolve(__dirname, "frontend", "dist", "index.html"))
-//   );
-// }
 
 app.get("/sitemap.xml", async (req, res) => {
   try {
@@ -181,10 +164,6 @@ mongoose
     app.listen(PORT, () => console.log(`Port is listening @ ${PORT}`));
   })
   .catch((error) => console.log(`${error} connection failed!`));
-
-// app.listen(PORT, () => {
-//   console.log(`Port is listening @ ${PORT}`);
-// });
 
 // Penkek-8megra-xyrcod
 

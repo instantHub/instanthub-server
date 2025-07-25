@@ -8,12 +8,19 @@ import {
   registerAdmin,
   updateAdmin,
   validateToken,
+  getAllAdmins,
+  deleteAdmin,
 } from "../controllers/adminController.js";
 import { protect, authenticate } from "../middleware/index.js";
 
 const router = express.Router();
 
 router.get("/", getAdmin);
+
+router.get("/admins", getAllAdmins);
+router.put("/:id", updateAdmin);
+router.delete("/:id", deleteAdmin);
+
 router.get("/validate-token", validateToken);
 router.post("/register", registerAdmin);
 router.post("/auth", loginAdmin);
@@ -24,7 +31,6 @@ router.post("/logout", logout);
 // router.put("/update-admin", protect, updateAdmin);
 
 router.get("/admin-profile", authenticate, getAdminProfile);
-router.put("/update-admin", updateAdmin);
 
 // Dashboard Detail
 router.get("/admin/dashboard", dashboardDetail);
