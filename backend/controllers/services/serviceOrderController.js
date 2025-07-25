@@ -38,22 +38,10 @@ export const getServiceOrder = async (req, res) => {
 export const createServiceOrder = async (req, res) => {
   console.log("CreateOrder controller");
   try {
-    // const {
-    //   productId,
-    //   customerName,
-    //   email,
-    //   phone,
-    //   address,
-    //   pinCode,
-    //   deductions,
-    //   offerPrice,
-    //   status,
-    // } = req.body;
-
     // console.log(req.body);
     const totalOrders = await ServiceOrder.find();
     console.log("totalOrders", totalOrders.length);
-    // console.log("totalOrders", totalOrders.count);
+
     // Generating Order ID
     const today = new Date(); // Current date
     const year = today.getFullYear().toString().slice(-2); // Last two digits of the year

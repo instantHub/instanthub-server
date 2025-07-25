@@ -6,6 +6,10 @@ const otpCollectedSchema = mongoose.Schema(
       type: Number,
       required: true,
     },
+    purpose: {
+      type: String,
+      required: true,
+    },
     totalOTPsTaken: {
       type: Number,
     },

@@ -5,7 +5,7 @@ const protect = async (req, res, next) => {
   let token;
 
   // Get token from cookies
-  token = req.cookies.jwt;
+  token = req.cookies.accessToken;
 
   if (token) {
     try {
@@ -24,7 +24,7 @@ const protect = async (req, res, next) => {
       console.error("Token verification failed:", error);
 
       // Clear the invalid/expired cookie
-      res.clearCookie("jwt", {
+      res.clearCookie("accessToken", {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
@@ -43,5 +43,16 @@ const protect = async (req, res, next) => {
     });
   }
 };
+
+// const rateLimit = require("express-rate-limit");
+
+// // Rate limiting for login attempts
+// const loginLimiter = rateLimit({
+//   windowMs: 15 * 60 * 1000, // 15 minutes
+//   max: 5, // 5 attempts per window
+//   message: "Too many login attempts, please try again later",
+//   standardHeaders: true,
+//   legacyHeaders: false,
+// });
 
 export { protect };
