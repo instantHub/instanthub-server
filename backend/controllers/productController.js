@@ -642,6 +642,12 @@ const createDeductions = async (
         conditionId: condition.id,
         conditionName: condition.conditionName,
         page: condition.page,
+        keyword: condition?.keyword,
+        description: condition?.description,
+        isMandatory: condition?.isMandatory,
+        isYesNoType: condition?.isYesNoType,
+        multiSelect: condition?.multiSelect,
+        showLabelsImage: condition?.showLabelsImage,
         conditionLabels,
       });
     }
@@ -661,12 +667,17 @@ const createOthersDeductions = async (
   conditionsList,
   conditionLabelsList
 ) => {
-  console.log("createOthersDeductions", deductions);
   // Map conditions and condition labels to deductions array
   deductions = conditionsList.map((condition) => ({
     conditionId: condition.id,
     conditionName: condition.conditionName,
     page: condition.page,
+    description: condition?.description,
+    keyword: condition?.keyword,
+    isMandatory: condition?.isMandatory,
+    isYesNoType: condition?.isYesNoType,
+    multiSelect: condition?.multiSelect,
+    showLabelsImage: condition?.showLabelsImage,
     conditionLabels: conditionLabelsList
       .filter((label) => label.conditionNameId == condition.id)
       .map((label) => ({
@@ -677,6 +688,7 @@ const createOthersDeductions = async (
         // priceDrop: 0, // Default price drop, can be updated later
       })),
   }));
+  console.log("createOthersDeductions", deductions);
 
   return Promise.all(deductions);
 };
@@ -798,11 +810,16 @@ const addNewDeduction = async (
           priceDrop: 0,
           operation: "Subtrack",
         }));
-
       variantDeductions.push({
         conditionId: condition.id,
         conditionName: condition.conditionName,
         page: condition.page,
+        keyword: condition?.keyword,
+        description: condition?.description,
+        isMandatory: condition?.isMandatory,
+        isYesNoType: condition?.isYesNoType,
+        multiSelect: condition?.multiSelect,
+        showLabelsImage: condition?.showLabelsImage,
         conditionLabels,
       });
     }

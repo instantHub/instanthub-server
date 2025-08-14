@@ -1,15 +1,14 @@
 import mongoose from "mongoose";
 
-const ServiceCategorySchema = new mongoose.Schema({
+const ServiceCategorySchema = mongoose.Schema({
   name: { type: String, unique: true, required: true },
   image: String,
   inspectionCharges: { type: Number, required: true },
   status: { type: String, required: true },
   uniqueURL: { type: String, required: true },
-  type: { type: String, required: true },
 });
 
-const BrandSchema = new mongoose.Schema({
+const BrandSchema = mongoose.Schema({
   serviceCategoryId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "ServiceCategory",
@@ -20,14 +19,13 @@ const BrandSchema = new mongoose.Schema({
   image: String,
 });
 
-const ProblemSchema = new mongoose.Schema({
+const ProblemSchema = mongoose.Schema({
   serviceCategoryId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "ServiceCategory",
     required: true,
   },
   name: { type: String, unique: true, required: true },
-  uniqueURL: { type: String, required: true },
   description: String,
   image: String,
   price: Number,
