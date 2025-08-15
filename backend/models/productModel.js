@@ -128,6 +128,30 @@ const productSchema = mongoose.Schema(
         ],
       },
     ],
+
+    metaTitle: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: 60,
+    },
+    metaDescription: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: 160,
+    },
+    metaKeywords: [
+      {
+        type: String,
+        trim: true,
+      },
+    ],
+    canonicalUrl: {
+      type: String,
+      trim: true,
+    },
+
     status: {
       type: String,
       required: true,
