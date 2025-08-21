@@ -216,20 +216,46 @@ const ORDER_EMAIL_TEMPLATE = (orderId, order) => {
         `;
 };
 
-const filteredDeductionsHTML = (order) =>
-  order.finalDeductionSet && order.finalDeductionSet.length > 0
-    ? order.finalDeductionSet
-        .map(
-          ({ type, conditions }) =>
-            `<p class="deduction-data-title deduction-data">${type}:</p>
-                <ul class="deduction-data">
-                  ${conditions
-                    ?.map((condition) => `<li>${condition.conditionLabel}</li>`)
-                    .join("")}
-                </ul>`
-        )
-        .join("")
-    : "<li>Specifications not selected</li>";
+// const filteredDeductionsHTML = (order) =>
+//   order.finalDeductionSet && order.finalDeductionSet.length > 0
+//     ? order.finalDeductionSet
+//         .map(
+//           ({ type, conditions }) =>
+//             `<p class="deduction-data-title deduction-data">${type}:</p>
+//                 <ul class="deduction-data">
+//                   ${conditions
+//                     ?.map((condition) => `<li>${condition.conditionLabel}</li>`)
+//                     .join("")}
+//                 </ul>`
+//         )
+//         .join("")
+//     : "<li>Specifications not selected</li>";
+
+const filteredDeductionsHTML = (order) => {
+  if (!order?.finalDeductionSet || order?.finalDeductionSet.length === 0) {
+    return "<li>Specifications not selected</li>";
+  }
+
+  return order.finalDeductionSet
+    .filter(
+      (deduction) =>
+        !deduction.type.toLowerCase().includes("bill") &&
+        !deduction.type.toLowerCase().includes("box")
+    )
+    .map(
+      ({ type, conditions }) => `
+        <p class="deduction-data-title deduction-data">${type}:</p>
+        <ul class="deduction-data">
+          ${
+            conditions
+              ?.map((condition) => `<li>${condition.conditionLabel}</li>`)
+              .join("") || ""
+          }
+        </ul>
+      `
+    )
+    .join("");
+};
 
 const ORDER_RECEIVED_TEMPLATE = (updatedOrder) => {
   return `<!DOCTYPE html>
