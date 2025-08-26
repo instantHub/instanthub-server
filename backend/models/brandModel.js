@@ -34,13 +34,13 @@ const brandSchema = mongoose.Schema(
 
     metaTitle: {
       type: String,
-      required: true,
+      // required: true,
       trim: true,
       maxlength: 60,
     },
     metaDescription: {
       type: String,
-      required: true,
+      // required: true,
       trim: true,
       maxlength: 160,
     },

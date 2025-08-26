@@ -29,13 +29,13 @@ const categorySchema = mongoose.Schema(
     // Add SEO fields
     metaTitle: {
       type: String,
-      required: true,
+      // required: true,
       trim: true,
       maxlength: 60,
     },
     metaDescription: {
       type: String,
-      required: true,
+      // required: true,
       trim: true,
       maxlength: 160,
     },

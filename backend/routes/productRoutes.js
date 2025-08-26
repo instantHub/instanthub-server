@@ -5,7 +5,6 @@ import {
   getAllProducts,
   getProductDetails,
   getProductsByBrand,
-  updateLaptopConfigurationsPriceDrop,
   updatePriceDrop,
   updateProduct,
 } from "../controllers/productController.js";
@@ -28,11 +27,5 @@ router.delete("/delete-product/:productId", deleteProduct);
 
 // route for updating Product's Deductions PRICEDROP value for a single Product
 router.put("/update-pricedrop/:productId", updatePriceDrop);
-
-// route for updating Product's Deductions PRICEDROP value for all Laptops products at once
-router.put(
-  "/updateLaptopConfigurationsPriceDrop/:productId",
-  updateLaptopConfigurationsPriceDrop
-);
 
 export default router;

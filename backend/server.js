@@ -39,6 +39,8 @@ import pricingRoutes from "./routes/pricingRoutes.js";
 import testimonialRoutes from "./routes/testimonialRoutes.js";
 import SEORoutes from "./routes/seoRoutes.js";
 import statsRoutes from "./routes/stats.routes.js";
+import questionsPricesRoutes from "./routes/questions/prices.routes.js";
+import variantQuestionsRoutes from "./routes/questions/variantQuestions.routes.js";
 
 import { generateSitemap, getDynamicUrls } from "./generateSiteMap.js";
 
@@ -58,12 +60,7 @@ app.use(helmet());
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(morgan("common"));
 app.use(bodyParser.json());
-// app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.urlencoded({ extended: true }));
-// app.use(cors());
-
-// Set CORS origin dynamically from an environment variable
-// const corsOrigin = process.env.CORS_ORIGIN || 'http://localhost:5173'; // Default to localhost
 
 const corsOrigin = process.env.CORS_ORIGIN || "https://www.instanthub.in"; // Default to instanthub.in
 // const corsOrigin = process.env.CORS_ORIGIN;
@@ -139,6 +136,8 @@ app.use("/api/pricing", pricingRoutes);
 app.use("/api/testimonial", testimonialRoutes);
 app.use("/api/seo", SEORoutes);
 app.use("/api/stats", statsRoutes);
+app.use("/api/questions/pricing", questionsPricesRoutes);
+app.use("/api/variant/questions", variantQuestionsRoutes);
 
 // Delete Image Route
 app.use("/api/delete", deleteRoutes);

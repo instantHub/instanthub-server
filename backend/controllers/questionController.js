@@ -39,17 +39,11 @@ export const createCondtions = async (req, res) => {
     const conditionCategory = await Category.findById(category);
     // console.log("category", conditionCategory);
 
-    let laptopDesktopCheck =
-      conditionCategory.name === "Laptop" ||
-      conditionCategory.name === "Desktop";
-
     const MULTI_VARIANTS = conditionCategory.categoryType.multiVariants;
     const PROCESSOR_BASED = conditionCategory.categoryType.processorBased;
 
     console.log("MULTI_VARIANTS", MULTI_VARIANTS);
     console.log("PROCESSOR_BASED", PROCESSOR_BASED);
-
-    // console.log("laptopDesktopCheck", laptopDesktopCheck);
 
     const configCheck =
       conditionName.toLowerCase().includes("processor") ||
@@ -59,7 +53,6 @@ export const createCondtions = async (req, res) => {
     console.log("configCheck", configCheck);
 
     // Before creating a condition for Laptop/Desktop at least one Windows & one IOS system must be created
-    // if (laptopDesktopCheck) {
     if (PROCESSOR_BASED) {
       const APPLE_BRAND = await Brand.findOne({
         category: conditionCategory.id,
@@ -158,7 +151,7 @@ export const createCondtions = async (req, res) => {
 
     console.log("newCondition", newCondition);
 
-    const variantsQuestions = await VariantQuestion.find();
+    const variantsQuestions = await VariantQuestion.find({ category });
 
     // Create new deductions to add into the products
     const conditionData = newCondition.toObject();
@@ -268,12 +261,6 @@ export const updateCondition = async (req, res) => {
     const MULTI_VARIANTS = conditionCategory.categoryType.multiVariants;
     const PROCESSOR_BASED = conditionCategory.categoryType.processorBased;
 
-    let laptopDesktopCheck =
-      conditionCategory.name === "Laptop" ||
-      conditionCategory.name === "Desktop";
-
-    // console.log("laptopDesktopCheck", laptopDesktopCheck);
-
     // NEW APPROACH TO UPDATE PRODUCTS DEDUCTIONS CONDITION
     // if (conditionCategory.name === "Mobile") {
     if (MULTI_VARIANTS) {
@@ -309,7 +296,9 @@ export const updateCondition = async (req, res) => {
 
       console.log("productsUpdated", productsUpdated);
 
-      const variantsQuestions = await VariantQuestion.find();
+      const variantsQuestions = await VariantQuestion.find({
+        category: conditionCategory.category,
+      });
       // console.log("variantsQuestions", variantsQuestions);
 
       // Update ConditionName from VARIANTS QUESTIONS as well
@@ -331,7 +320,6 @@ export const updateCondition = async (req, res) => {
         });
         vq.save();
       }
-      // } else if (laptopDesktopCheck) {
     } else if (PROCESSOR_BASED) {
       console.log("PROCESSOR_BASED condition to update");
       const configCheck =
@@ -444,7 +432,9 @@ export const deleteCondition = async (req, res) => {
     const MULTI_VARIANTS = conditionCategory.categoryType.multiVariants;
     const PROCESSOR_BASED = conditionCategory.categoryType.processorBased;
 
-    const variantsQuestions = await VariantQuestion.find();
+    const variantsQuestions = await VariantQuestion.find({
+      category,
+    });
 
     const associatedConditionLabels = await ConditionLabel.find({
       conditionNameId: conditionId,
@@ -468,10 +458,6 @@ export const deleteCondition = async (req, res) => {
       deletedConditionLabels.deletedCount,
       " associated conditionLabels"
     );
-
-    let laptopDesktopCheck =
-      conditionCategory.name === "Laptop" ||
-      conditionCategory.name === "Desktop";
 
     // Step 2: Update products to remove the deleted condition
     // if (conditionCategory.name.toLowerCase().includes("mobile")) {
@@ -503,7 +489,6 @@ export const deleteCondition = async (req, res) => {
         }
         vq.save();
       }
-      // } else if (laptopDesktopCheck) {
     } else if (PROCESSOR_BASED) {
       console.log("Inside PROCESSOR_BASED");
 
@@ -623,14 +608,10 @@ export const createCondtionLabel = async (req, res) => {
         cl.conditionLabel == conditionLabel
     );
 
-    let laptopDesktopCheck =
-      cLCategory.name === "Laptop" || cLCategory.name === "Desktop";
-
     const MULTI_VARIANTS = cLCategory.categoryType.multiVariants;
     const PROCESSOR_BASED = cLCategory.categoryType.processorBased;
 
     // Before creating a condition label for Laptop/Desktop at least one Windows & one IOS system must be created
-    // if (laptopDesktopCheck) {
     if (PROCESSOR_BASED) {
       const APPLE_BRAND = await Brand.findOne({
         category: cLCategory.id,
@@ -691,7 +672,6 @@ export const createCondtionLabel = async (req, res) => {
     });
     console.log("created newConditionLabel", newConditionLabel);
 
-    // if (cLCategory.name === "Mobile") {
     if (MULTI_VARIANTS) {
       console.log("Updating created condition label into MULTI_VARIANTS");
       // Update "deductions" field of all products of the specific category
@@ -723,7 +703,7 @@ export const createCondtionLabel = async (req, res) => {
 
       // Update Variants Questions Condition Labels as well
       const updatedVariantQuestions = await VariantQuestion.updateMany(
-        {},
+        { category },
         {
           $push: {
             "deductions.$[condition].conditionLabels": {
@@ -739,7 +719,6 @@ export const createCondtionLabel = async (req, res) => {
         }
       );
       console.log("updatedVariantQuestions", updatedVariantQuestions);
-      // } else if (laptopDesktopCheck) {
     } else if (PROCESSOR_BASED) {
       console.log("Pushing created condition label into PROCESSOR_BASED");
 
@@ -919,9 +898,6 @@ export const updateConditionLabel = async (req, res) => {
     const cLCategory = await Category.findById(category);
     // console.log("cLCategory", cLCategory);
 
-    let laptopDesktopCheck =
-      cLCategory.name === "Laptop" || cLCategory.name === "Desktop";
-
     const MULTI_VARIANTS = cLCategory.categoryType.multiVariants;
     const PROCESSOR_BASED = cLCategory.categoryType.processorBased;
 
@@ -953,7 +929,7 @@ export const updateConditionLabel = async (req, res) => {
 
       // Update Variants Questions Condition Labels as well
       await VariantQuestion.updateMany(
-        {},
+        { category },
         {
           $set: {
             "deductions.$[condition].conditionLabels.$[label].conditionLabel":
@@ -969,7 +945,6 @@ export const updateConditionLabel = async (req, res) => {
           ],
         }
       );
-      // } else if (laptopDesktopCheck) {
     } else if (PROCESSOR_BASED) {
       console.log("Updating condition label into all Laptop products");
       const condition = await Condition.findById(
@@ -1116,9 +1091,6 @@ export const deleteConditionLabel = async (req, res) => {
 
     // Step 2: Update products to remove the deleted conditionLabel
 
-    let laptopDesktopCheck =
-      cLCategory.name === "Laptop" || cLCategory.name === "Desktop";
-
     const MULTI_VARIANTS = cLCategory.categoryType.multiVariants;
     const PROCESSOR_BASED = cLCategory.categoryType.processorBased;
 
@@ -1148,7 +1120,7 @@ export const deleteConditionLabel = async (req, res) => {
 
       // Update Variants Questions Condition Labels as well
       await VariantQuestion.updateMany(
-        {},
+        { category },
         {
           $pull: {
             "deductions.$[].conditionLabels": {
@@ -1160,7 +1132,6 @@ export const deleteConditionLabel = async (req, res) => {
           arrayFilters: [{ "label.conditionLabelId": conditionLabelId }],
         }
       );
-      // } else if (laptopDesktopCheck) {
     } else if (PROCESSOR_BASED) {
       console.log("Delete inside PROCESSOR_BASED");
       const condition = await Condition.findById(deletedLabel.conditionNameId);
@@ -1251,94 +1222,18 @@ export const deleteConditionLabel = async (req, res) => {
   }
 };
 
-//  VARIANTS WISE QUESTIONS
-
-// Get a Single Products
-export const getSingleProduct = async (req, res) => {
+// Get a Single Product by Category
+export const getProductByCategory = async (req, res) => {
   console.log("getSingleProduct Controller");
 
-  const categories = await Category.find();
-  // console.log("categories", categories);
-
-  const category = categories.find((cat) =>
-    cat.name.toLowerCase().includes("mobile")
-  );
-  // console.log("category", category);
-
-  const product = await Product.findOne({ category: category._id });
-  // console.log("product", product);
-
-  return res.status(201).json(product);
-};
-
-// Get VariantQuestio
-export const getVariantsQuestions = async (req, res) => {
-  console.log("getVariantsQuestions Controller");
-  const variantsQuestions = await VariantQuestion.find();
-  // console.log("variantsQuestions", variantsQuestions);
-
-  return res.status(201).json(variantsQuestions);
-};
-
-// Create VariantQuestio
-export const createVariantQuestions = async (req, res) => {
-  console.log("createVariantQuestions Controller");
-  // console.log("req body", req.body);
-
-  // Check if dublicate variant name
-  const variantQuestions = await VariantQuestion.find();
-  const dublicate = variantQuestions.find((vq) => vq.name === req.body.name);
-  if (dublicate) {
-    console.log("Duplicate Variant Name");
-    return res.status(201).json({ message: "Duplicate Variant..!" });
-  }
-
-  // CREATION
-  const newVariantQuestion = await VariantQuestion.create(req.body);
-  newVariantQuestion.save();
-  // console.log("newVariantQuestion created", newVariantQuestion);
-
-  return res.status(201).json(newVariantQuestion);
-};
-
-// Update VariantQuestio
-export const updateVariantQuestions = async (req, res) => {
-  console.log("updateVariantQuestions Controller");
-  // console.log("req", req.body);
-
-  const variantQuestionsId = req.params.variantQuestionsId;
-
-  const updatedVariantData = {
-    name: req.body.name,
-    deductions: req.body.deductions,
-  };
-  // console.log("updatedVariantData", updatedVariantData);
-
-  const updatedVariant = await VariantQuestion.findByIdAndUpdate(
-    variantQuestionsId,
-    updatedVariantData,
-    { new: true }
-  );
-
-  updatedVariant.save();
-  // console.log("updatedVariant", updatedVariant);
-
-  return res.status(201).json(updatedVariant);
-};
-
-// Delete VariantQuestion
-export const deleteVariantQuestions = async (req, res) => {
-  console.log("deleteVariantQuestions controller");
-
-  const variantQuestionsId = req.params.variantQuestionsId;
-  // console.log("variantQuestionsId", variantQuestionsId);
   try {
-    const deletedVariant = await VariantQuestion.findByIdAndDelete(
-      variantQuestionsId
-    );
-    // console.log("deleted Variant", deletedVariant);
+    const { categoryId } = req.params;
+    console.log("categoryId", categoryId);
 
-    return res.status(201).json(deletedVariant);
+    const product = await Product.findOne({ category: categoryId });
+    // console.log("product", product);
+
+    return res.status(201).json(product);
   } catch (error) {
     return res.status(500).json({ message: "Internal server error.", error });
   }

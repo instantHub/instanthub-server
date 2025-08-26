@@ -8,13 +8,7 @@ import {
   updateConditionLabel,
   deleteConditionLabel,
   deleteCondition,
-
-  //Variant Questions
-  getVariantsQuestions,
-  createVariantQuestions,
-  updateVariantQuestions,
-  getSingleProduct,
-  deleteVariantQuestions,
+  getProductByCategory,
 } from "../controllers/questionController.js";
 
 const router = express.Router();
@@ -33,16 +27,6 @@ router.put("/update-conditionlabel/:conditionLabelId", updateConditionLabel);
 router.delete("/delete-conditionlabel", deleteConditionLabel);
 
 // Variant wise Questions
-router.get("/single-product", getSingleProduct);
-router.get("/variants-questions", getVariantsQuestions);
-router.post("/add-variant-questions", createVariantQuestions);
-router.put(
-  "/update-variant-questions/:variantQuestionsId",
-  updateVariantQuestions
-);
-router.delete(
-  "/delete-variant-questions/:variantQuestionsId",
-  deleteVariantQuestions
-);
+router.get("/single-product/:categoryId", getProductByCategory);
 
 export default router;
