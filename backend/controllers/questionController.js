@@ -297,7 +297,7 @@ export const updateCondition = async (req, res) => {
       console.log("productsUpdated", productsUpdated);
 
       const variantsQuestions = await VariantQuestion.find({
-        category: conditionCategory.category,
+        category: conditionCategory._id,
       });
       // console.log("variantsQuestions", variantsQuestions);
 
