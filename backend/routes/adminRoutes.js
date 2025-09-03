@@ -11,9 +11,12 @@ import {
   getAllAdmins,
   deleteAdmin,
 } from "../controllers/adminController.js";
-import { protect, authenticate } from "../middleware/index.js";
+import { authenticate } from "../middleware/index.js";
+import { sendInvoice } from "../controllers/sendBillToCustomer.js";
 
 const router = express.Router();
+
+router.post("/check/bill", sendInvoice);
 
 router.get("/", getAdmin);
 

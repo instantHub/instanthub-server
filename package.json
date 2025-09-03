@@ -32,6 +32,7 @@
     "nodemailer": "^6.9.13",
     "path": "^0.12.7",
     "pdfkit": "^0.15.0",
+    "puppeteer": "^24.17.1",
     "twilio": "^5.0.4"
   },
   "devDependencies": {

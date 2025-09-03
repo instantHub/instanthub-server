@@ -148,7 +148,7 @@ export const validateToken = async (req, res) => {
     const decodedAccessToken = jwt.decode(token);
     console.log(
       "Token expires at:",
-      new Date(decodedAccessToken.exp * 1000).toString()
+      new Date(decodedAccessToken?.exp * 1000).toString()
     );
 
     if (!token) {

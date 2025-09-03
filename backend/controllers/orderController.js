@@ -1,5 +1,4 @@
 import Order from "../models/orderModel.js";
-import Product from "../models/productModel.js";
 import path from "path";
 import fs from "fs";
 import nodemailer from "nodemailer";
@@ -17,9 +16,12 @@ import {
   ORDER_ASSIGN_AGENT_TEMPLATE,
   ORDER_CANCEL_TEMPLATE,
   ORDER_EMAIL_TEMPLATE,
+  ORDER_PDF,
+  ORDER_RECEIVED_PDF,
   ORDER_RECEIVED_TEMPLATE,
 } from "../utils/emailTemplates/orders.js";
 import { getTodayISTRange } from "../utils/getTodayISTRange.js";
+import { createOrderPDF } from "../utils/pdf.creation.js";
 
 export const getOrders = async (req, res) => {
   console.log("GetOrders controller");
@@ -32,83 +34,6 @@ export const getOrders = async (req, res) => {
     res.status(404).json({ message: error.message });
   }
 };
-
-// export const getOrdersCounts = async (req, res) => {
-//   try {
-//     const now = new Date();
-//     const startOfDay = new Date(
-//       now.getFullYear(),
-//       now.getMonth(),
-//       now.getDate()
-//     );
-//     const endOfDay = new Date(
-//       now.getFullYear(),
-//       now.getMonth(),
-//       now.getDate() + 1
-//     );
-
-//     // Run all 6 queries in parallel for performance
-//     const [
-//       pending,
-//       completed,
-//       cancelled,
-//       pendingToday,
-//       completedToday,
-//       cancelledToday,
-//     ] = await Promise.all([
-//       Order.countDocuments({ "status.pending": true }),
-//       Order.countDocuments({ "status.completed": true }),
-//       Order.countDocuments({ "status.cancelled": true }),
-
-//       Order.countDocuments({
-//         "status.pending": true,
-//         createdAt: { $gte: startOfDay, $lt: endOfDay },
-//       }),
-//       Order.countDocuments({
-//         "status.completed": true,
-//         createdAt: { $gte: startOfDay, $lt: endOfDay },
-//       }),
-//       Order.countDocuments({
-//         "status.cancelled": true,
-//         createdAt: { $gte: startOfDay, $lt: endOfDay },
-//       }),
-//     ]);
-
-//     res.status(200).json({
-//       total: {
-//         pending,
-//         completed,
-//         cancelled,
-//       },
-//       today: {
-//         pending: pendingToday,
-//         completed: completedToday,
-//         cancelled: cancelledToday,
-//       },
-//     });
-//   } catch (error) {
-//     res.status(500).json({ message: "Failed to fetch order counts", error });
-//   }
-// };
-
-// 1. Get Todays Orders
-// export const getTodaysOrders = async (req, res) => {
-//   try {
-//     const startOfDay = new Date();
-//     startOfDay.setHours(0, 0, 0, 0);
-
-//     const endOfDay = new Date();
-//     endOfDay.setHours(23, 59, 59, 999);
-
-//     const orders = await Order.find({
-//       createdAt: { $gte: startOfDay, $lte: endOfDay },
-//     }).sort({ createdAt: -1 });
-
-//     res.status(200).json(orders);
-//   } catch (error) {
-//     res.status(500).json({ message: "Failed to fetch today's orders", error });
-//   }
-// };
 
 export const getOrdersCounts = async (req, res) => {
   try {
@@ -240,7 +165,6 @@ export const createOrder = async (req, res) => {
     // console.log(req.body);
     const totalOrders = await Order.find();
     console.log("totalOrders", totalOrders.length);
-    // console.log("totalOrders", totalOrders.count);
 
     // Generating Order ID
     const today = new Date(); // Current date
@@ -262,19 +186,13 @@ export const createOrder = async (req, res) => {
     // console.log("orderData", orderData);
 
     let order = await Order.create(orderData);
-    // let order = await Order.create(req.body);
     order.save();
-    // console.log("created order", order);
 
-    const product = await Product.findById(order.productId);
-    // console.log("product", product);
+    // HTML template for invoice
+    const html = ORDER_PDF(order.orderId, order);
 
-    // const filteredDeductionsHTML =
-    //   order.deductions && order.deductions.length > 0
-    //     ? order.deductions
-    //         .map((deduction) => `<li>${deduction.conditionLabel}</li>`)
-    //         .join("")
-    //     : "<li>Specifications not selected</li>";
+    // Generate PDF using Puppeteer
+    const pdfBuffer = await createOrderPDF(html);
 
     const transporter = nodemailer.createTransport(HOSTINGER_MAILER);
 
@@ -284,8 +202,13 @@ export const createOrder = async (req, res) => {
       to: order.email, // Recipient email address
       cc: INSTANTHUB_GMAIL,
       subject: `Your Order #${orderId} has been placed ${order.customerName}`, // Subject line
-      // text: "Hello, This is a test email from Nodemailer!", // Plain text body
-      html: ORDER_EMAIL_TEMPLATE(orderId, order),
+      html: ORDER_EMAIL_TEMPLATE(order),
+      attachments: [
+        {
+          filename: `invoice-${order.orderId}.pdf`,
+          content: pdfBuffer,
+        },
+      ],
     };
 
     // Send email
@@ -372,6 +295,11 @@ export const orderReceived = async (req, res) => {
 
     stockIn.save();
 
+    const html = ORDER_RECEIVED_PDF(updatedOrder);
+
+    // Generate PDF using Puppeteer
+    const pdfBuffer = await createOrderPDF(html);
+
     // Create a transporter object using SMTP transport
     const transporter = nodemailer.createTransport(HOSTINGER_MAILER);
 
@@ -383,6 +311,12 @@ export const orderReceived = async (req, res) => {
       cc: INSTANTHUB_GMAIL, // CC email address (can be a string or an array of strings)
       subject: `Purchase Details for Order ${updatedOrder.orderId}`, // Subject line
       html: ORDER_RECEIVED_TEMPLATE(updatedOrder),
+      attachments: [
+        {
+          filename: `invoice-${updatedOrder.orderId}.pdf`,
+          content: pdfBuffer,
+        },
+      ],
     };
 
     // Send email
