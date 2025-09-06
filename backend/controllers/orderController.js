@@ -151,6 +151,7 @@ export const getOneOrders = async (req, res) => {
     const order = await Order.findById(orderId).populate("productId", [
       "name",
       "category",
+      "uniqueURL",
     ]);
     // console.log(order);
     res.status(200).json(order);

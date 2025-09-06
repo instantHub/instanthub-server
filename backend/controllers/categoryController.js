@@ -38,7 +38,10 @@ export const getCategories = async (req, res) => {
   console.log("getCategories Controller");
 
   try {
-    const categories = await Category.find().populate("brands", "name");
+    const categories = await Category.find().populate("brands", [
+      "name",
+      "uniqueURL",
+    ]);
     // console.log('categories',categories);
     res.status(200).json(categories);
   } catch (error) {
