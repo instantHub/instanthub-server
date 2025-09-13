@@ -410,8 +410,7 @@ const ORDER_EMAIL_TEMPLATE = (order) => {
             ${order.productName}
             ${
               order.productCategory.toLowerCase().includes("mobile")
-                ? `-
-            order.variant.variantName`
+                ? `- ${order.variant.variantName}`
                 : ""
             }
           </td>
