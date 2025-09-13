@@ -13,14 +13,15 @@ export const sendInvoice = async (req, res) => {
   console.log("sendInvoice controller called");
 
   try {
-    // Mock data
     const order = {
       variant: {
+        // variantName: "8/128 GB",
         variantName: "Price",
         price: 10000,
       },
       deviceInfo: {
         serialNumber: "PF3F71Q9",
+        imeiNumber: "IMEI3F71Q9",
       },
       addressDetails: {
         address:
@@ -41,16 +42,20 @@ export const sendInvoice = async (req, res) => {
       },
       orderId: "ORD250824AM72900930",
       productId: {
-        name: "Lenovo V Series",
+        // name: "Samsung Galaxy M12",
+        name: "Lenovo IdeaPad 3",
         category: "6644defb8c9bd24b014982cf",
         id: "668ecae8f1bc1562eac199e0",
       },
-      productName: "Lenovo V Series",
+      // productName: "Samsung Galaxy M12",
+      // productBrand: "Samsung",
+      // productCategory: "Mobile",
+      productName: "Lenovo IdeaPad 3",
       productBrand: "Lenovo",
       productCategory: "Laptop",
-      customerName: "AM YEAHIA ",
-      email: "amyeahia456@gmail.com",
-      phone: 9101718729,
+      customerName: "Shouaib Ahmed",
+      email: "shouaibahmed111@gmail.com",
+      phone: "8722220088",
       deductions: [],
       schedulePickUp: "August 24, 2025, 10 AM - 12 PM",
       paymentMode: "Instant Cash",
@@ -211,30 +216,26 @@ export const sendInvoice = async (req, res) => {
       id: "68aa678cf4d15512d7d20e83",
     };
 
-    // HTML template for invoice
-    // const html = ORDER_PDF(order.orderId, order);
-    const html = ORDER_RECEIVED_PDF(order);
+    // ORDER_RECEIVED_PDF
+    // const html = ORDER_RECEIVED_PDF(order);
 
-    // Generate PDF using Puppeteer
-    // const browser = await puppeteer.launch({
-    //   headless: "new",
-    //   args: ["--no-sandbox", "--disable-setuid-sandbox"],
-    // });
-    // const page = await browser.newPage();
-    // await page.setContent(html, { waitUntil: "networkidle0" });
-    // const pdfBuffer = await page.pdf({ format: "A4", printBackground: true });
-    // await browser.close();
+    // ORDER_PDF
+    const html = ORDER_PDF(order);
+
     const pdfBuffer = await createOrderPDF(html);
-
-    // Send via email (mock setup)
     const transporter = nodemailer.createTransport(HOSTINGER_MAILER);
 
     await transporter.sendMail({
       from: ORDERS_EMAIL,
+      // to: "instanthub.in@gmail.com",
       to: "yousuf337692qureshi@gmail.com",
       subject: `Your Invoice for Order #${order.orderId}`,
-      //   html: ORDER_EMAIL_TEMPLATE(order.orderId, order),
-      html: ORDER_RECEIVED_TEMPLATE(order),
+
+      // ORDER_RECEIVED_PDF
+      // html: ORDER_RECEIVED_TEMPLATE(order),
+
+      // ORDER_PDF
+      html: ORDER_EMAIL_TEMPLATE(order),
       attachments: [
         {
           filename: `invoice-${order.orderId}.pdf`,

@@ -190,7 +190,7 @@ export const createOrder = async (req, res) => {
     order.save();
 
     // HTML template for invoice
-    const html = ORDER_PDF(order.orderId, order);
+    const html = ORDER_PDF(order);
 
     // Generate PDF using Puppeteer
     const pdfBuffer = await createOrderPDF(html);

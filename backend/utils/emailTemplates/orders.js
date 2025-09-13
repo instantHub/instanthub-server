@@ -1,11 +1,11 @@
-const ORDER_PDF = (orderId, order) => {
+const ORDER_PDF = (order) => {
   return `<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Order Summary</title>
+    <title>Order Summary - PDF</title>
     <style>
       body {
         font-family: Arial, sans-serif;
@@ -67,8 +67,9 @@ const ORDER_PDF = (orderId, order) => {
       }
 
       th {
-        background-color: #f2f2f2;
-        text-align: left;
+        background-color: #7a84b0;
+        color: #fff;
+        text-align: center;
       }
 
       .note {
@@ -141,19 +142,13 @@ const ORDER_PDF = (orderId, order) => {
   </head>
   <body>
     <div class="container">
-      <img
-        src="https://api.instantpick.in/uploads/instanthub-logo.png"
-        alt="Instant Hub"
-        class="logo"
-      />
-
       <div class="title">Sell Receipt</div>
       <div class="subtitle">
         Congratulations, your order has been placed with InstantHub
       </div>
 
       <div class="md-text">
-        <p><strong>Order #:</strong> ${orderId}</p>
+        <p><strong>Order #:</strong> ${order.orderId}</p>
         <p>
           <strong>Website:</strong>
           <a href="https://instanthub.in">instanthub.in</a>
@@ -198,13 +193,13 @@ const ORDER_PDF = (orderId, order) => {
             </p>
 
             <div>${filteredDeductionsHTML(order)}</div>
-            <p class="md-text"><strong>Payment Mode:</strong> ${
-              order.paymentMode
-            }</p>
+            <p class="md-text">
+              <strong>Payment Mode:</strong> ${order.paymentMode}
+            </p>
           </td>
-          <td>₹ ${order.offerPrice}</td>
+          <td>${order.offerPrice}</td>
           <td>1</td>
-          <td>₹ ${order.offerPrice}</td>
+          <td>${order.offerPrice}</td>
         </tr>
       </table>
 
@@ -234,38 +229,232 @@ const ORDER_PDF = (orderId, order) => {
 };
 
 const ORDER_EMAIL_TEMPLATE = (order) => {
-  return `<div style="font-family: Arial, sans-serif; color: #333; line-height: 1.5;">
-      <h2 style="text-align:center; color:#2c3e50;">Thank You for Your Order!</h2>
-      <p>Dear <b>${order.customerName}</b>,</p>
-      <p>We’re pleased to confirm that we’ve received your order <b>#${order.orderId}</b>.</p>
-      <p>You can find your detailed invoice attached as a PDF. Below is a quick summary of your order:</p>
-      
-      <table style="width:100%; border-collapse:collapse; margin:20px 0;">
+  return `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Order Summary - Email</title>
+    <style>
+      .title {
+        font-size: 24px;
+      }
+
+      .congrats {
+        font-size: 15px;
+      }
+
+      h2 {
+        color: #333;
+        margin-bottom: 20px;
+      }
+
+      .customer-detail p {
+        font-size: small;
+      }
+
+      th,
+      td {
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+      }
+      th {
+        text-align: left;
+        background-color: #f2f2f2;
+      }
+
+      .md-text {
+        font-size: 13px;
+      }
+
+      .order-detail h1 {
+        font-size: small;
+      }
+
+      .note {
+        font-size: 13px;
+        color: #777;
+        margin: 5px 0;
+      }
+
+      .footer {
+        text-align: center;
+        margin-top: 30px;
+        color: #555;
+      }
+
+      .footer p {
+        margin: 4px 0;
+      }
+
+      .rights {
+        text-align: center;
+        font-size: 11px;
+        color: #aaa;
+      }
+
+      /* Mobile Styles */
+      @media only screen and (max-width: 600px) {
+        .title {
+          font-size: 15px;
+        }
+        .congrats {
+          font-size: 12px;
+        }
+        .container {
+          padding: 10px;
+        }
+        table {
+          font-size: 14px;
+        }
+        th,
+        td {
+          padding: 8px;
+        }
+        .logo {
+          width: 100px;
+          height: 80px;
+        }
+        h2 {
+          color: #333;
+          font-size: 10.2px;
+        }
+
+        img {
+          width: 70px;
+          height: 60px;
+        }
+      }
+
+      .logo-header {
+        display: flex;
+        align-items: center;
+        justify-content: start;
+        gap: 15%;
+      }
+    </style>
+  </head>
+  <body
+    style="
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f4f4f4;
+    "
+  >
+    <div
+      class="container"
+      style="
+        max-width: 600px;
+        margin: 0 auto;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      "
+    >
+      <div style="text-align: center">
+        <img
+          src="https://api.instanthub.in/uploads/instanthub-logo.png"
+          alt=""
+          style="width: 100px; height: 90px"
+        />
+      </div>
+
+      <h1 class="title" style="text-align: center">Sell Receipt</h1>
+      <h2 class="congrats" style="text-align: center">
+        Congradulations your order has been placed with InstantHub
+      </h2>
+      <h1 style="font-size: small">
+        <a href="https://instanthub.in">InstantHub</a>
+      </h1>
+
+      <div class="customer-detail">
+        <div>
+          <p>Order #${order.orderId}</p>
+          <p>Customer Name: ${order.customerName}</p>
+        </div>
+
+        <div>
+          <p>Email: ${order.email}</p>
+          <p>Ph # ${order.phone}</p>
+        </div>
+
+        <div>
+          <p>
+            <span>Seller Address: </span>
+            <span>
+              ${order.addressDetails.address}
+              ${order.addressDetails.state}
+              ${order.addressDetails.city}
+              ${order.addressDetails.pinCode}
+            </span>
+          </p>
+        </div>
+
+        <div>
+          <p>PickUp Scheduled ${order.schedulePickUp}</p>
+        </div>
+      </div>
+
+      <table
+        class="md-text"
+        style="width: 100%; border-collapse: collapse; margin: 20px 0"
+      >
         <tr>
-          <td style="border:1px solid #ddd; padding:8px;"><b>Product</b></td>
-          <td style="border:1px solid #ddd; padding:8px;">${order.productName}</td>
+          <td style="border: 1px solid #ddd; padding: 8px">
+            <b>Product Details</b>
+          </td>
+          <td style="border: 1px solid #ddd; padding: 8px">
+            ${order.productName}
+            ${
+              order.productCategory.toLowerCase().includes("mobile")
+                ? `-
+            order.variant.variantName`
+                : ""
+            }
+          </td>
         </tr>
+
         <tr>
-          <td style="border:1px solid #ddd; padding:8px;"><b>Quantity</b></td>
-          <td style="border:1px solid #ddd; padding:8px;">1</td>
+          <td style="border: 1px solid #ddd; padding: 8px">
+            <b>Problems</b>
+          </td>
+          <td style="border: 1px solid #ddd; padding: 8px">
+            ${filteredDeductionsHTML(order)}
+          </td>
         </tr>
+
         <tr>
-          <td style="border:1px solid #ddd; padding:8px;"><b>Offered Price</b></td>
-          <td style="border:1px solid #ddd; padding:8px;">₹ ${order.offerPrice}</td>
+          <td style="border: 1px solid #ddd; padding: 8px">
+            <b>Offered Price</b>
+          </td>
+          <td style="border: 1px solid #ddd; padding: 8px">
+            ${order.offerPrice}
+          </td>
         </tr>
       </table>
-      
-      <p><b>Pickup Scheduled:</b> ${order.schedulePickUp}</p>
-      <p>For any questions, feel free to reply to this email or call us at 
-         <a href="tel:+918722288017">+91 87222 88017</a>.
+
+      <p class="note">Thank you for selling your product and trusting us.</p>
+      <p class="note">
+        Your information is protected and secured, and it will be erased.
       </p>
-      <p style="margin-top:30px;">Best Regards, <br/> <b>InstantHub Team</b></p>
-      <hr/>
-      <p style="font-size:12px; color:#777; text-align:center;">
-        This is an automated email. Please do not reply directly.  
-        Visit <a href="https://instanthub.in" style="color:#007bff;">InstantHub.in</a> for more details.
+      <p class="note">
+        Visit us again
+        <a href="https://instanthub.in">instanthub.in</a>
       </p>
-    </div>`;
+
+      <div class="footer">
+        <p>Thanks & Regards</p>
+        <p><strong>Instant Hub</strong></p>
+      </div>
+
+      <p class="rights">&copy; 2025 InstantHub. All rights reserved.</p>
+    </div>
+  </body>
+</html>
+`;
 };
 
 const filteredDeductionsHTML = (order) => {
@@ -304,22 +493,21 @@ const filteredDeductionsHTML = (order) => {
     .join("");
 };
 
-const ORDER_RECEIVED_PDF = (updatedOrder) => {
+const ORDER_RECEIVED_PDF = (order) => {
   return `<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Purchase Receipt</title>
-
+    <title>Order Purchase Summary - PDF</title>
     <style>
       body {
         font-family: Arial, sans-serif;
         margin: 0;
         padding: 20px;
         background-color: #fff;
-        color: #333;
+        box-sizing: border-box;
       }
 
       .container {
@@ -330,6 +518,7 @@ const ORDER_RECEIVED_PDF = (updatedOrder) => {
 
       .logo {
         width: 120px;
+        height: auto;
         margin: 0 auto 10px;
         display: block;
       }
@@ -348,21 +537,67 @@ const ORDER_RECEIVED_PDF = (updatedOrder) => {
         margin-bottom: 20px;
       }
 
-      .section {
-        font-size: 13px;
-        margin-bottom: 15px;
+      a {
+        color: #007bff;
+        text-decoration: none;
       }
 
-      .section h4 {
-        margin: 5px 0;
+      .purchase-block {
+        margin-bottom: 20px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .purchase-block-details {
         font-size: 13px;
+        margin-top: 5px;
+      }
+
+      .block {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .block-header {
+        display: flex;
+        justify-content: space-around;
+      }
+
+      .block-title {
+        width: 100%;
+        font-size: 16px;
+        font-weight: bold;
+        background-color: #7a84b0;
+        color: white;
+        /* padding: 10px; */
+        text-align: center;
+      }
+
+      .inner-block {
+        width: 100%;
+        display: flex;
+        border: 1px solid #ddd;
+      }
+
+      .block-items {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .border-right {
+        border-right: 1px solid #ddd;
+      }
+
+      .border-bottom {
+        border-bottom: 1px solid #ddd;
       }
 
       table {
         width: 100%;
         border-collapse: collapse;
         margin: 20px 0;
-        font-size: 13px;
+        font-size: 14px;
       }
 
       th,
@@ -373,8 +608,12 @@ const ORDER_RECEIVED_PDF = (updatedOrder) => {
       }
 
       th {
-        background-color: #f2f2f2;
-        text-align: left;
+        text-align: center;
+        padding: 16px;
+      }
+
+      .padding-left {
+        padding-left: 10px;
       }
 
       .note {
@@ -391,6 +630,11 @@ const ORDER_RECEIVED_PDF = (updatedOrder) => {
 
       .footer p {
         margin: 4px 0;
+      }
+
+      .total {
+        text-align: right;
+        font-weight: bold;
       }
 
       .deduction-group {
@@ -414,11 +658,14 @@ const ORDER_RECEIVED_PDF = (updatedOrder) => {
         font-size: 11px;
       }
 
+      .md-text {
+        font-size: 13px;
+      }
+
       .rights {
         text-align: center;
         font-size: 11px;
         color: #aaa;
-        margin-top: 15px;
       }
 
       @media only screen and (max-width: 600px) {
@@ -426,7 +673,7 @@ const ORDER_RECEIVED_PDF = (updatedOrder) => {
           padding: 15px;
         }
         table {
-          font-size: 12px;
+          font-size: 12px !important;
         }
         .title {
           font-size: 18px;
@@ -439,100 +686,102 @@ const ORDER_RECEIVED_PDF = (updatedOrder) => {
   </head>
   <body>
     <div class="container">
-      <!-- Logo -->
-      <img
-        src="https://api.instantpick.in/uploads/instanthub-logo.png"
-        alt="Instant Hub"
-        class="logo"
-      />
+      <div class="title">Instant Hub</div>
 
-      <!-- Titles -->
-      <div class="title">Purchase Receipt</div>
       <div class="subtitle">
-        Thank you for selling your product and trusting InstantHub.
+        Thank you, your order has been completed with InstantHub.
       </div>
 
-      <!-- Order Info -->
-      <div class="section">
-        <p><strong>Order #:</strong> ${updatedOrder.orderId}</p>
-        <p>
-          <strong>Website:</strong>
-          <a href="https://instanthub.in">instanthub.in</a>
-        </p>
+      <div class="purchase-block">
+        <div class="block-title capitalize">
+          <p>Purchase Receipt</p>
+        </div>
+        <div class="purchase-block-details md-text">
+          <p><strong>Date:</strong> ${order.schedulePickUp}</p>
+          <p>${order.orderId}</p>
+          <p>${order.customerName}</p>
+          <p>
+            ${order.addressDetails.address}, ${order.addressDetails.state},
+            ${order.addressDetails.city}, ${order.addressDetails.pinCode}
+          </p>
+        </div>
       </div>
 
-      <!-- Customer & Seller Info -->
-      <div class="section">
-        <h4><strong>Customer Name:</strong> ${updatedOrder.customerName}</h4>
-        <h4><strong>Email:</strong> ${updatedOrder.email}</h4>
-        <h4><strong>Phone:</strong> ${updatedOrder.phone}</h4>
-        <h4>
-          <strong>Address:</strong>
-          ${updatedOrder.addressDetails.address},
-          ${updatedOrder.addressDetails.city},
-          ${updatedOrder.addressDetails.state} -
-          ${updatedOrder.addressDetails.pinCode}
-        </h4>
+      <div class="block md-text">
+        <div class="block-header block-title">
+          <p>Product Details</p>
+        </div>
+        <div class="inner-block md-text">
+          <div class="block-items border-right">
+            <div class="border-bottom padding-left">
+              <p>Product Name</p>
+            </div>
+            <div class="border-bottom padding-left">
+              <p>Product Variant</p>
+            </div>
+            <div class="padding-left">
+              <p>Product ${
+                order.productCategory.toLowerCase().includes("mobile")
+                  ? "IMEI Number"
+                  : "Serial Number"
+              } </p>
+            </div>
+          </div>
+
+          <div class="block-items">
+            <div class="border-bottom padding-left">
+              <p>${order.productName}</p>
+            </div>
+            <div class="border-bottom padding-left">
+              <p>${
+                order.productCategory.toLowerCase().includes("mobile")
+                  ? order.variant.variantName
+                  : "-"
+              }</p>
+            </div>
+            <div class="padding-left">
+              <p>
+                ${
+                  order.productCategory.toLowerCase().includes("mobile")
+                    ? order.deviceInfo?.imeiNumber
+                      ? order.deviceInfo?.imeiNumber
+                      : "-"
+                    : order.deviceInfo?.serialNumber
+                    ? order.deviceInfo?.serialNumber
+                    : "-"
+                }
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div class="section">
-        <h4>
-          <strong>Pickup Agent:</strong> ${
-            updatedOrder.pickedUpDetails.agentName
-          }
-        </h4>
-        <h4>
-          <strong>Pickup Time:</strong> ${
-            updatedOrder.pickedUpDetails.pickedUpDate
-          }
-        </h4>
-      </div>
-
-      <!-- Product Table -->
-      <table>
-        <tr>
-          <th>Product Details</th>
+      <table class="md-text">
+        <tr class="block-title">
+          <th>Item</th>
           <th>Price</th>
         </tr>
         <tr>
           <td>
-            <p>
-              <strong>${updatedOrder.productCategory}</strong> - ${
-    updatedOrder.productName
-  }
-            </p>
-            ${
-              updatedOrder.productCategory.toLowerCase().includes("mobile")
-                ? `
-            <p>${updatedOrder.variant.variantName}</p>
-            `
-                : ""
-            } ${
-    updatedOrder.deviceInfo?.serialNumber
-      ? `
-            <p>
-              <strong>Serial No:</strong>
-              ${updatedOrder.deviceInfo.serialNumber}
-            </p>
-            `
-      : ""
-  } ${
-    updatedOrder.deviceInfo?.imeiNumber
-      ? `
-            <p>
-              <strong>IMEI No:</strong> ${updatedOrder.deviceInfo.imeiNumber}
-            </p>
-            `
+            <strong>${order.productCategory}</strong> - ${order.productName} ${
+    order.productCategory.toLowerCase().includes("mobile")
+      ? ` (
+            ${order.variant.variantName} ) `
       : ""
   }
-            <div>${filteredDeductionsHTML(updatedOrder)}</div>
           </td>
-
-          <td>₹ ${updatedOrder.finalPrice}</td>
+          <td>${order.offerPrice}</td>
+        </tr>
+        <tr>
+          <td>Payment Mode</td>
+          <td>${order.paymentMode}</td>
+        </tr>
+        <tr>
+          <td>Final Price</td>
+          <td>${order.finalPrice}</td>
         </tr>
       </table>
 
-      <!-- Notes -->
       <p class="note">
         *This is a computer generated receipt. Signature not required.
       </p>
@@ -541,18 +790,14 @@ const ORDER_RECEIVED_PDF = (updatedOrder) => {
         <a href="tel:8722288017">8722288017</a>
       </p>
       <p class="note">
-        Your information is protected and secured, and it will be erased after
-        use.
-      </p>
-      <p class="note">
-        Visit us again at
-        <a href="https://instanthub.in">instanthub.in</a>
+        If you have any questions or concerns about your order, please email us
+        at
+        <a href="mailto:support@instanthub.in">support@instanthub.in</a>
       </p>
 
-      <!-- Footer -->
       <div class="footer">
         <p>Thanks & Regards</p>
-        <p><strong>InstantHub</strong></p>
+        <p><strong>Instant Hub</strong></p>
       </div>
 
       <p class="rights">&copy; 2025 InstantHub. All rights reserved.</p>
@@ -563,38 +808,195 @@ const ORDER_RECEIVED_PDF = (updatedOrder) => {
 };
 
 const ORDER_RECEIVED_TEMPLATE = (order) => {
-  return `<div style="font-family: Arial, sans-serif; color: #333; line-height: 1.5;">
-      <h2 style="text-align:center; color:#2c3e50;">Thank you for selling your product and trusting InstantHub!</h2>
-      <p>Dear <b>${order.customerName}</p>
-      <p>We’re pleased to confirm that your order #${order.orderId} has been succesfully completed.</p>
-      <p>You can find your detailed invoice attached as a PDF. Below is a quick summary of your order:</p>
-      
-      <table style="width:100%; border-collapse:collapse; margin:20px 0;">
+  return `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Order Purchase Summary - Email</title>
+
+    <style>
+      h2 {
+        color: #333;
+        margin-bottom: 20px;
+      }
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 10px;
+      }
+      th {
+        text-align: left;
+        background-color: #f2f2f2;
+      }
+
+      .customer-detail p {
+        font-size: small;
+      }
+
+      .note {
+        font-size: 13px;
+        color: #777;
+        margin: 5px 0;
+      }
+
+      .footer {
+        text-align: center;
+        margin-top: 30px;
+        color: #555;
+      }
+
+      .footer p {
+        margin: 4px 0;
+      }
+
+      .rights {
+        text-align: center;
+        font-size: 11px;
+        color: #aaa;
+      }
+
+      /* Mobile Styles */
+      @media only screen and (max-width: 600px) {
+        .container {
+          padding: 10px;
+        }
+        table {
+          font-size: 14px;
+        }
+        th,
+        td {
+          padding: 8px;
+        }
+        .logo {
+          width: 100px;
+          height: 80px;
+        }
+        h2 {
+          color: #333;
+          font-size: 10.2px;
+        }
+        .sell {
+          font-size: 15px;
+        }
+      }
+
+      .logo-header {
+        display: flex;
+        align-items: center;
+        justify-content: start;
+        gap: 15%;
+      }
+    </style>
+  </head>
+  <body
+    style="
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f4f4f4;
+    "
+  >
+    <div
+      class="container"
+      style="
+        max-width: 600px;
+        margin: 0 auto;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      "
+    >
+      <div class="sell" style="text-align: center">
+        <img
+          src="https://api.instanthub.in/uploads/instanthub-logo.png"
+          alt=""
+          style="width: 100px; height: 90px"
+        />
+      </div>
+      <h1 class="sell" style="text-align: center">Purchased Receipt</h1>
+
+      <div class="customer-detail">
+        <div>
+          <p>Order #${order.orderId}</p>
+          <p>Customer Name: ${order.customerName}</p>
+        </div>
+
+        <div>
+          <p>Email: ${order.email}</p>
+          <p>Ph # ${order.phone}</p>
+        </div>
+
+        <div>
+          <p>
+            <span>Seller Address: </span>
+            <span>
+              ${order.addressDetails.address}
+              ${order.addressDetails.state}
+              ${order.addressDetails.city}
+              ${order.addressDetails.pinCode}
+            </span>
+          </p>
+        </div>
+      </div>
+
+      <table
+        style="
+          width: 100%;
+          border-collapse: collapse;
+          margin: 20px 0;
+          font-size: small;
+        "
+      >
         <tr>
-          <td style="border:1px solid #ddd; padding:8px;"><b>Product</b></td>
-          <td style="border:1px solid #ddd; padding:8px;">${order.productName}</td>
+          <td><b>Product</b></td>
+          <td>${order.productName}</td>
         </tr>
         <tr>
-          <td style="border:1px solid #ddd; padding:8px;"><b>Quantity</b></td>
-          <td style="border:1px solid #ddd; padding:8px;">1</td>
+          <td>
+            <b>Agent Name</b>
+          </td>
+          <td>${order.pickedUpDetails.agentName}</td>
         </tr>
         <tr>
-          <td style="border:1px solid #ddd; padding:8px;"><b>Final Price</b></td>
-          <td style="border:1px solid #ddd; padding:8px;">₹ ${order.finalPrice}</td>
+          <td>
+            <b>Pick Up Time</b>
+          </td>
+          <td>${order.pickedUpDetails.pickedUpDate}</td>
+        </tr>
+        <tr>
+          <td><b>Quantity</b></td>
+          <td>1</td>
+        </tr>
+        <tr>
+          <td>
+            <b>Final Price</b>
+          </td>
+          <td>${order.finalPrice}</td>
         </tr>
       </table>
-      
-      <p><b>Pickup:</b> Completed</p>
-      <p>For any questions, feel free to reply to this email or call us at 
-         <a href="tel:+918722288017">+91 87222 88017</a>.
+
+      <p class="note">Thank you for selling your product and trusting us.</p>
+      <p class="note">
+        Your information is protected and secured, and it will be erased.
       </p>
-      <p style="margin-top:30px;">Best Regards, <br/> <b>InstantHub Team</b></p>
-      <hr/>
-      <p style="font-size:12px; color:#777; text-align:center;">
-        This is an automated email. Please do not reply directly.  
-        Visit <a href="https://instanthub.in" style="color:#007bff;">InstantHub.in</a> for more details.
+      <p class="note">
+        Visit us again
+        <a href="https://instanthub.in">instanthub.in</a>
       </p>
-    </div>`;
+
+      <div class="footer">
+        <p>Thanks & Regards</p>
+        <p><strong>Instant Hub</strong></p>
+      </div>
+
+      <p class="rights">&copy; 2025 InstantHub. All rights reserved.</p>
+    </div>
+  </body>
+</html>
+`;
 };
 
 const ORDER_CANCEL_TEMPLATE = (cancelReason) => {
