@@ -6,6 +6,7 @@ import Condition from "../models/conditionModel.js";
 import ConditionLabel from "../models/conditionLabelModel.js";
 import { deleteImage } from "../utils/deleteImage.js";
 import Order from "../models/orderModel.js";
+import { ORDER_STATUS } from "../constants/orders.js";
 
 export const createCategory = async (req, res) => {
   try {
@@ -200,7 +201,7 @@ export const topSellingProducts = async (req, res) => {
     const products = await Order.find(
       {
         productCategory: categoryName,
-        "status.completed": true,
+        status: ORDER_STATUS.COMPLETED,
       },
       {
         productId: 1, // include only the productId field

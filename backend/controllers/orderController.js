@@ -22,6 +22,8 @@ import {
 } from "../utils/emailTemplates/orders.js";
 import { getTodayISTRange } from "../utils/getTodayISTRange.js";
 import { createOrderPDF } from "../utils/pdf.creation.js";
+import { ORDER_STATUS } from "../constants/orders.js";
+import { deleteImage } from "../utils/deleteImage.js";
 
 export const getOrders = async (req, res) => {
   console.log("GetOrders controller");
@@ -47,20 +49,20 @@ export const getOrdersCounts = async (req, res) => {
       completedToday,
       cancelledToday,
     ] = await Promise.all([
-      Order.countDocuments({ "status.pending": true }),
-      Order.countDocuments({ "status.completed": true }),
-      Order.countDocuments({ "status.cancelled": true }),
+      Order.countDocuments({ status: ORDER_STATUS.PENDING }),
+      Order.countDocuments({ status: ORDER_STATUS.COMPLETED }),
+      Order.countDocuments({ status: ORDER_STATUS.CANCELLED }),
 
       Order.countDocuments({
-        "status.pending": true,
+        status: ORDER_STATUS.PENDING,
         createdAt: { $gte: utcStartOfDay, $lte: utcEndOfDay },
       }),
       Order.countDocuments({
-        "status.completed": true,
+        status: ORDER_STATUS.COMPLETED,
         createdAt: { $gte: utcStartOfDay, $lte: utcEndOfDay },
       }),
       Order.countDocuments({
-        "status.cancelled": true,
+        status: "cancelled",
         createdAt: { $gte: utcStartOfDay, $lte: utcEndOfDay },
       }),
     ]);
@@ -106,7 +108,7 @@ export const getTodaysOrders = async (req, res) => {
 export const getPendingOrders = async (req, res) => {
   try {
     // const orders = await Order.find({ status: "pending" }).sort({
-    const orders = await Order.find({ "status.pending": true }).sort({
+    const orders = await Order.find({ status: ORDER_STATUS.PENDING }).sort({
       createdAt: -1,
     });
     res.status(200).json(orders);
@@ -118,7 +120,7 @@ export const getPendingOrders = async (req, res) => {
 // 3. Get Completed Orders
 export const getCompletedOrders = async (req, res) => {
   try {
-    const orders = await Order.find({ "status.completed": true }).sort({
+    const orders = await Order.find({ status: ORDER_STATUS.COMPLETED }).sort({
       createdAt: -1,
     });
     res.status(200).json(orders);
@@ -132,7 +134,7 @@ export const getCompletedOrders = async (req, res) => {
 // 4. Get Cancelled Orders
 export const getCancelledOrders = async (req, res) => {
   try {
-    const orders = await Order.find({ "status.cancelled": true }).sort({
+    const orders = await Order.find({ status: ORDER_STATUS.CANCELLED }).sort({
       createdAt: -1,
     });
     res.status(200).json(orders);
@@ -172,15 +174,39 @@ export const createOrder = async (req, res) => {
     const year = today.getFullYear().toString().slice(-2); // Last two digits of the year
     const month = (today.getMonth() + 1).toString().padStart(2, "0"); // Month with leading zero if needed
     const day = today.getDate().toString().padStart(2, "0"); // Day with leading zero if needed
-    const CN = req.body.customerName
+    const CN = req.body.customerDetails.name
       .replace(/\s+/g, "")
       .slice(0, 2)
       .toUpperCase();
-    const PH = req.body.phone.toString().slice(-3);
+    const PH = req.body.customerDetails.phone.toString().slice(-3);
     const random = Math.floor(Math.random() * 1000); // Random number between 0 and 999
     const orderCount = totalOrders.length + 1;
 
-    const orderId = `ORD${year}${month}${day}${CN}${PH}00${orderCount}`; // Concatenate date and random number
+    // TODO: New Order ID creation request needs to be implemented
+    const MOBILE_CODE = "MB";
+    const LAPTOP_CODE = "LP";
+    const TABLET_CODE = "TB";
+    const DESKTOP_CODE = "DT";
+    const DSLR_CODE = "DS";
+
+    const codeMapping = {
+      mobile: MOBILE_CODE,
+      laptop: LAPTOP_CODE,
+      tablet: TABLET_CODE,
+      desktop: DESKTOP_CODE,
+      dslr: DSLR_CODE,
+    };
+
+    const categoryCode = req.body.productDetails.productCategory
+      ? codeMapping[req.body.productDetails.productCategory.toLowerCase()]
+      : "OT";
+
+    const orderId = `${categoryCode}${year}${month}${PH}${orderCount}`;
+
+    // MOBILE_CODE - YEAR - MONTH - PH - ORDER_COUNT
+    // MP2509971001
+
+    // const orderId = `ORD${year}${month}${day}${CN}${PH}00${orderCount}`; // Concatenate date and random number
 
     console.log("OrderID", orderId);
     const orderData = { ...req.body, orderId };
@@ -200,9 +226,9 @@ export const createOrder = async (req, res) => {
     // Email content
     const mailOptions = {
       from: ORDERS_EMAIL, // Sender email address
-      to: order.email, // Recipient email address
+      to: order.customerDetails.email, // Recipient email address
       cc: INSTANTHUB_GMAIL,
-      subject: `Your Order #${orderId} has been placed ${order.customerName}`, // Subject line
+      subject: `Your Order #${orderId} has been placed ${order.customerDetails.name}`, // Subject line
       html: ORDER_EMAIL_TEMPLATE(order),
       attachments: [
         {
@@ -239,27 +265,31 @@ export const orderReceived = async (req, res) => {
       customerProofBack,
       customerOptional1,
       customerOptional2,
-      pickedUpDetails,
+      // pickedUpDetails,
+      completedAt,
       deviceInfo,
       finalPrice,
       status,
     } = req.body;
 
     const updateObject = {
-      customerProofFront,
-      customerProofBack,
-      pickedUpDetails,
+      customerIDProof: {
+        front: customerProofFront,
+        back: customerProofBack,
+      },
+      // pickedUpDetails,
+      completedAt,
       deviceInfo,
       finalPrice,
       status,
     };
 
     if (customerOptional1 !== null) {
-      updateObject.customerOptional1 = customerOptional1;
+      updateObject.customerIDProof.optional1 = customerOptional1;
     }
 
     if (customerOptional2 !== null) {
-      updateObject.customerOptional2 = customerOptional2;
+      updateObject.customerIDProof.optional2 = customerOptional2;
     }
 
     const updatedOrder = await Order.findByIdAndUpdate(orderId, updateObject, {
@@ -273,19 +303,19 @@ export const orderReceived = async (req, res) => {
     const stockIn = await Stocks.create({
       orderId: updatedOrder.orderId,
       productDetails: {
-        productName: updatedOrder.productName,
-        productVariant: updatedOrder.variant.variantName,
-        productCategory: updatedOrder.productCategory,
+        productName: updatedOrder.productDetails.productName,
+        productVariant: updatedOrder.productDetails.variant.variantName,
+        productCategory: updatedOrder.productDetails.productCategory,
         serialNumber: updatedOrder.deviceInfo.serialNumber,
         imeiNumber: updatedOrder.deviceInfo.imeiNumber,
       },
       customerDetails: {
-        customerName: updatedOrder.customerName,
-        email: updatedOrder.email,
-        phone: updatedOrder.phone,
+        customerName: updatedOrder.customerDetails.name,
+        email: updatedOrder.customerDetails.email,
+        phone: updatedOrder.customerDetails.phone,
       },
 
-      pickedUpDetails: updatedOrder.pickedUpDetails,
+      // pickedUpDetails: updatedOrder.pickedUpDetails,
       status: {
         in: true,
         out: false,
@@ -308,7 +338,7 @@ export const orderReceived = async (req, res) => {
     const mailOptions = {
       // from: process.env.USER, // Sender email address
       from: ORDERS_EMAIL, // Sender email address
-      to: updatedOrder.email, // Recipient email address
+      to: updatedOrder.customerDetails.email, // Recipient email address
       cc: INSTANTHUB_GMAIL, // CC email address (can be a string or an array of strings)
       subject: `Purchase Details for Order ${updatedOrder.orderId}`, // Subject line
       html: ORDER_RECEIVED_TEMPLATE(updatedOrder),
@@ -346,7 +376,7 @@ export const orderCancel = async (req, res) => {
   const orderId = req.params.orderId;
   console.log("orderId", orderId);
 
-  const { status, cancelReason } = req.body;
+  const { status, cancellationDetails } = req.body;
   console.log("req.body", req.body);
   // console.log("status", status);
   // console.log("cancelReason", cancelReason);
@@ -354,7 +384,7 @@ export const orderCancel = async (req, res) => {
   try {
     const updateOrder = await Order.findByIdAndUpdate(
       orderId, // The ID of the order to update
-      { status, cancelReason }, // The fields to update
+      { status, cancellationDetails }, // The fields to update
       { new: true } // Option to return the updated document
     );
     console.log("updateOrder", updateOrder);
@@ -371,11 +401,11 @@ export const orderCancel = async (req, res) => {
       // from: "instanthub.in@gmail.com", // Sender email address
 
       from: SUPPORT_EMAIL, // Sender email address
-      to: updateOrder.email, // Recipient email address
+      to: updateOrder.customerDetails.email, // Recipient email address
       cc: INSTANTHUB_GMAIL, // CC email address (can be a string or an array of strings)
-      subject: `Your Order #${updateOrder.orderId} has been cancelled ${updateOrder.customerName}`, // Subject line
+      subject: `Your Order #${updateOrder.orderId} has been cancelled ${updateOrder.customerDetails.name}`, // Subject line
       // html: emailBody,
-      text: ORDER_CANCEL_TEMPLATE(cancelReason),
+      text: ORDER_CANCEL_TEMPLATE(cancellationDetails.cancelReason),
     };
 
     // Send email
@@ -411,36 +441,15 @@ export const deleteOrder = async (req, res) => {
     console.log("deleteOrder", deletedOrder);
 
     // 2. Delete image from uploads/ of the deleted Order
-    deleteImage(deletedOrder.customerProofFront);
-    deleteImage(deletedOrder.customerProofBack);
+    if (deletedOrder.customerIDProof.front)
+      deleteImage(deletedOrder.customerIDProof.front);
+    if (deletedOrder.customerIDProof.back)
+      deleteImage(deletedOrder.customerIDProof.back);
 
-    if (deletedOrder.customerOptional1)
-      deleteImage(deletedOrder.customerOptional1);
-    if (deletedOrder.customerOptional2)
-      deleteImage(deletedOrder.customerOptional2);
-
-    // Delete the corresponding image file from the uploads folder
-    function deleteImage(image) {
-      const __dirname = path.resolve();
-      const imagePath = path.join(__dirname, image);
-      console.log("imagePath", image);
-
-      try {
-        fs.unlink(imagePath, (err) => {
-          if (err) {
-            if (err.code === "ENOENT") {
-              console.log(`Image ${imagePath} does not exist.`);
-            } else {
-              console.error(`Error deleting image ${imagePath}:`, err);
-            }
-          } else {
-            console.log(`Image ${imagePath} deleted successfully.`);
-          }
-        });
-      } catch (err) {
-        console.error(`Error deleting image ${imagePath}:`, err);
-      }
-    }
+    if (deletedOrder.customerIDProof.optional1)
+      deleteImage(deletedOrder.customerIDProof.optional1);
+    if (deletedOrder.customerIDProof.optional2)
+      deleteImage(deletedOrder.customerIDProof.optional2);
 
     return res.status(201).json(deletedOrder);
   } catch (error) {
@@ -456,13 +465,13 @@ export const assignAgent = async (req, res) => {
   const orderId = req.params.orderId;
   // console.log("orderId", orderId);
 
-  const pickedUpDetails = req.body;
-  // console.log("req.body", req.body, pickedUpDetails);
+  const { assignmentStatus } = req.body;
+  console.log("req.body", assignmentStatus);
 
   try {
     const updateOrder = await Order.findByIdAndUpdate(
       orderId, // The ID of the order to update
-      { pickedUpDetails }, // The fields to update
+      { assignmentStatus }, // The fields to update
       { new: true } // Option to return the updated document
     );
     // console.log("updateOrder", updateOrder);
@@ -475,10 +484,8 @@ export const assignAgent = async (req, res) => {
 
     // Email content
     const mailOptions = {
-      // from: "instanthub.in@gmail.com", // Sender email address
-
       from: ORDERS_EMAIL, // Sender email address
-      to: updateOrder.email, // Recipient email address
+      to: updateOrder.customerDetails.email, // Recipient email address
       cc: INSTANTHUB_GMAIL, // CC email address (can be a string or an array of strings)
       subject: `Agent Has Been Assigned To Your Order #${updateOrder.orderId}`, // Subject line
       text: ORDER_ASSIGN_AGENT_TEMPLATE(updateOrder),
@@ -504,144 +511,3 @@ export const assignAgent = async (req, res) => {
     });
   }
 };
-
-// /**
-//  * Get all orders categorized by status with counts
-//  * @route GET /api/orders/list
-//  * @access Private (adjust based on your auth middleware)
-//  */
-// export const getOrdersList = async (req, res) => {
-//   console.log("getOrdersList Controllers");
-//   try {
-//     // Get today's date range
-//     const today = new Date();
-//     const startOfDay = new Date(
-//       today.getFullYear(),
-//       today.getMonth(),
-//       today.getDate()
-//     );
-//     const endOfDay = new Date(
-//       today.getFullYear(),
-//       today.getMonth(),
-//       today.getDate() + 1
-//     );
-
-//     // MongoDB aggregation pipeline
-//     const ordersData = await Order.aggregate([
-//       {
-//         $facet: {
-//           // Get pending orders
-//           pendingOrders: [
-//             { $match: { "status.pending": true } },
-//             { $sort: { createdAt: -1 } }, // Most recent first
-//           ],
-
-//           // Get completed orders
-//           completedOrders: [
-//             { $match: { "status.completed": true } },
-//             { $sort: { createdAt: -1 } },
-//           ],
-
-//           // Get cancelled orders
-//           cancelledOrders: [
-//             { $match: { "status.cancelled": true } },
-//             { $sort: { createdAt: -1 } },
-//           ],
-
-//           // Get today's orders
-//           todaysOrders: [
-//             {
-//               $match: {
-//                 createdAt: {
-//                   $gte: startOfDay,
-//                   $lt: endOfDay,
-//                 },
-//               },
-//             },
-//             { $sort: { createdAt: -1 } },
-//           ],
-
-//           // Get counts for each status
-//           pendingCount: [
-//             { $match: { "status.pending": true } },
-//             { $count: "count" },
-//           ],
-
-//           completedCount: [
-//             { $match: { "status.completed": true } },
-//             { $count: "count" },
-//           ],
-
-//           cancelledCount: [
-//             { $match: { "status.cancelled": true } },
-//             { $count: "count" },
-//           ],
-
-//           todaysCount: [
-//             {
-//               $match: {
-//                 createdAt: {
-//                   $gte: startOfDay,
-//                   $lt: endOfDay,
-//                 },
-//               },
-//             },
-//             { $count: "count" },
-//           ],
-//         },
-//       },
-//       {
-//         $project: {
-//           orders: {
-//             pendingOrders: "$pendingOrders",
-//             completedOrders: "$completedOrders",
-//             cancelledOrders: "$cancelledOrders",
-//             todaysOrders: "$todaysOrders",
-//           },
-//           counts: {
-//             pending: {
-//               $ifNull: [{ $arrayElemAt: ["$pendingCount.count", 0] }, 0],
-//             },
-//             completed: {
-//               $ifNull: [{ $arrayElemAt: ["$completedCount.count", 0] }, 0],
-//             },
-//             cancelled: {
-//               $ifNull: [{ $arrayElemAt: ["$cancelledCount.count", 0] }, 0],
-//             },
-//             today: {
-//               $ifNull: [{ $arrayElemAt: ["$todaysCount.count", 0] }, 0],
-//             },
-//           },
-//         },
-//       },
-//     ]);
-
-//     const result = ordersData[0] || {
-//       orders: {
-//         pendingOrders: [],
-//         completedOrders: [],
-//         cancelledOrders: [],
-//         todaysOrders: [],
-//       },
-//       counts: {
-//         pending: 0,
-//         completed: 0,
-//         cancelled: 0,
-//         today: 0,
-//       },
-//     };
-
-//     res.status(200).json({
-//       success: true,
-//       message: "Orders retrieved successfully",
-//       data: result,
-//     });
-//   } catch (error) {
-//     console.error("Error fetching orders list:", error);
-//     res.status(500).json({
-//       success: false,
-//       message: "Failed to retrieve orders",
-//       error: error.message,
-//     });
-//   }
-// };

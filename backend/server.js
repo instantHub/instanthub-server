@@ -40,6 +40,7 @@ import testimonialRoutes from "./routes/testimonialRoutes.js";
 import SEORoutes from "./routes/seoRoutes.js";
 import statsRoutes from "./routes/stats.routes.js";
 import questionsPricesRoutes from "./routes/questions/prices.routes.js";
+import partnerRoutes from "./routes/partnerRoutes.js";
 import variantQuestionsRoutes from "./routes/questions/variantQuestions.routes.js";
 
 import { generateSitemap, getDynamicUrls } from "./generateSiteMap.js";
@@ -109,7 +110,8 @@ app.use(function (req, res, next) {
 app.use(cookieParser());
 
 /* ROUTES */
-app.use("/api", adminRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/partners", partnerRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/category", categoryRoutes);
 app.use("/api/upload/categories", uploadCategoriesRoutes);

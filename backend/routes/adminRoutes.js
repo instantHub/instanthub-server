@@ -2,7 +2,6 @@ import express from "express";
 import {
   loginAdmin,
   dashboardDetail,
-  getAdmin,
   getAdminProfile,
   logout,
   registerAdmin,
@@ -16,26 +15,23 @@ import { sendInvoice } from "../controllers/sendBillToCustomer.js";
 
 const router = express.Router();
 
+router.post("/auth", loginAdmin);
+router.post("/logout", logout);
+
+router.use(authenticate);
+
 router.post("/check/bill", sendInvoice);
 
-router.get("/", getAdmin);
-
-router.get("/admins", getAllAdmins);
+router.get("/all-admin", getAllAdmins);
 router.put("/:id", updateAdmin);
 router.delete("/:id", deleteAdmin);
 
 router.get("/validate-token", validateToken);
 router.post("/register", registerAdmin);
-router.post("/auth", loginAdmin);
-router.post("/logout", logout);
 
-// Since JWT token is getting saved now in browser using protected routes
-// router.get("/admin-profile", protect, getAdminProfile);
-// router.put("/update-admin", protect, updateAdmin);
-
-router.get("/admin-profile", authenticate, getAdminProfile);
+router.get("/admin-profile", getAdminProfile);
 
 // Dashboard Detail
-router.get("/admin/dashboard", dashboardDetail);
+router.get("/dashboard", dashboardDetail);
 
 export default router;

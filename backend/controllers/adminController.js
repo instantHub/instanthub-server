@@ -98,23 +98,6 @@ export const loginAdmin = async (req, res) => {
     admin.lockUntil = undefined;
     await admin.save();
 
-    // Set secure httpOnly cookies
-    // res.cookie("accessToken", accessToken, {
-    //   httpOnly: true,
-    //   secure: process.env.NODE_ENV === "production",
-    //   sameSite: "strict",
-    //   maxAge: 2 * 24 * 60 * 60 * 1000, // 15 minutes
-    //   path: "/",
-    // });
-
-    // res.cookie("refreshToken", refreshToken, {
-    //   httpOnly: true,
-    //   secure: process.env.NODE_ENV === "production",
-    //   sameSite: "strict",
-    //   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    //   path: "/",
-    // });
-
     res.cookie("sessionToken", sessionToken.token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -122,6 +105,8 @@ export const loginAdmin = async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       path: "/",
     });
+
+    const decoded = jwt.verify(accessToken, process.env.JWT_SECRET);
 
     res.json({
       admin: {
@@ -131,6 +116,8 @@ export const loginAdmin = async (req, res) => {
         role: admin.role,
         permissions: admin.permissions,
         lastLogin: admin.lastLogin,
+        token: accessToken,
+        sessionExpiry: decoded.exp * 1000, // Convert to milliseconds
       },
     });
   } catch (error) {
@@ -245,6 +232,11 @@ export const getAdminProfile = async (req, res) => {
     const admin = await Admin.findById(req.admin._id).select(
       "-password -sessionTokens -twoFactorSecret"
     );
+
+    if (!admin) {
+      return res.status(404).json({ message: "Admin not found" });
+    }
+
     res.json(admin);
   } catch (error) {
     res.status(500).json({ message: "Server error" });
@@ -261,27 +253,6 @@ export const getAllAdmins = async (req, res) => {
     res.status(200).json(admins);
   } catch (err) {
     res.status(500).json({ message: "Server Error" });
-  }
-};
-
-export const getAdmin = async (req, res) => {
-  console.log("getAdmin controller");
-  try {
-    const admin = req.admin;
-
-    if (!admin) {
-      return res.status(404).json({ message: "Admin not found" });
-    }
-
-    res.status(200).json({
-      _id: admin._id,
-      name: admin.name,
-      email: admin.email,
-      createdAt: admin.createdAt,
-      message: "Profile fetched successfully",
-    });
-  } catch (error) {
-    res.status(404).json({ message: error.message });
   }
 };
 
@@ -319,18 +290,10 @@ export const dashboardDetail = async (req, res) => {
 
   try {
     const categories = await Category.find().select("name -_id");
-    // const cat = { count: categories.length, categories };
-    // console.log(cat);
+
     const categoriesCount = await Category.countDocuments();
     const brandsCount = await Brand.countDocuments();
     const productsCount = await Product.countDocuments();
-    // const ordersCount = await Order.countDocuments();
-    // const ordersPendingCount = await Order.countDocuments({
-    //   status: 'pending',
-    // });
-    // const ordersCompletedCount = await Order.countDocuments({
-    //   status: "received",
-    // });
 
     const EMPTY_ORDERS = {
       total: 0,
@@ -353,8 +316,6 @@ export const dashboardDetail = async (req, res) => {
     ]);
     const ordersCount = ordersCountArray[0] || EMPTY_ORDERS;
 
-    console.log("ordersCount", ordersCount);
-
     // Recycle Orders
     const recycleOrdersCountArray = await RecycleOrder.aggregate([
       {
@@ -369,15 +330,7 @@ export const dashboardDetail = async (req, res) => {
     ]);
     const recycleOrdersCount = recycleOrdersCountArray[0] || EMPTY_ORDERS;
 
-    console.log("recycleOrdersCount", recycleOrdersCount);
-
-    // const stocksCount = await Stock.countDocuments();
-    // const stocksInCount = await Stock.countDocuments({
-    //   stockStatus: "Stock In",
-    // });
-    // const stocksOutCount = await Stock.countDocuments({
-    //   stockStatus: "Stock Out",
-    // });
+    // console.log("recycleOrdersCount", recycleOrdersCount);
 
     const EMPTY_STOCK = {
       total: 0,
@@ -398,10 +351,7 @@ export const dashboardDetail = async (req, res) => {
       },
     ]);
     const stocksCount = stocksCountArray[0] || EMPTY_STOCK;
-    console.log("stocksCount", stocksCount);
-
-    // const products = await Product.find().populate({ category });
-    const productsCatWise = "";
+    // console.log("stocksCount", stocksCount);
 
     const productsCountByCategory = await Product.aggregate([
       {

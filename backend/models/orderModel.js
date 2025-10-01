@@ -2,113 +2,106 @@ import mongoose from "mongoose";
 
 const orderSchema = mongoose.Schema(
   {
-    orderId: {
-      type: String,
-      required: true,
-    },
+    orderId: { type: String, required: true, unique: true },
     productId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Product",
       required: true,
     },
-    productName: { type: String },
-    productBrand: { type: String },
-    productCategory: {
-      type: String,
-      required: true,
+    productDetails: {
+      productName: { type: String },
+      productBrand: { type: String },
+      productCategory: { type: String, required: true },
+      variant: { variantName: { type: String }, price: { type: Number } },
     },
-    variant: {
-      variantName: { type: String },
-      price: { type: Number },
-    },
+
     deviceInfo: {
       serialNumber: { type: String },
       imeiNumber: { type: String },
     },
-    customerName: {
-      type: String,
-    },
-    email: {
-      type: String,
-    },
-    phone: {
-      type: Number,
-    },
-    addressDetails: {
-      address: {
-        type: String,
-      },
-      state: {
-        type: String,
-      },
-      city: {
-        type: String,
-      },
-      pinCode: {
-        type: Number,
+
+    customerDetails: {
+      name: { type: String },
+      email: { type: String },
+      phone: { type: Number },
+      addressDetails: {
+        address: { type: String },
+        state: { type: String },
+        city: { type: String },
+        pinCode: { type: Number },
       },
     },
+
+    // TODO: check and remove if not needed
     deductions: [
       {
-        conditionLabel: {
-          type: String,
-        },
-        priceDrop: {
-          type: Number,
-        },
-        operation: {
-          type: String,
-        },
+        conditionLabel: { type: String },
+        priceDrop: { type: Number },
+        operation: { type: String },
       },
     ],
 
-    schedulePickUp: {
-      type: String,
-    },
-    pickedUpDetails: {
-      agentName: {
-        type: String,
-      },
-      pickedUpDate: {
-        type: String,
-      },
-      agentAssigned: { type: Boolean, default: false },
-    },
-    customerProofFront: {
-      type: String,
-    },
-    customerProofBack: {
-      type: String,
-    },
-    customerOptional1: {
-      type: String,
-    },
-    customerOptional2: {
-      type: String,
-    },
-    paymentMode: {
-      type: String,
-    },
-    offerPrice: {
-      type: Number,
-    },
-    finalPrice: {
-      type: Number,
+    customerIDProof: {
+      front: { type: String },
+      back: { type: String },
+      optional1: { type: String },
+      optional2: { type: String },
     },
 
     finalDeductionSet: { type: Array },
 
+    schedulePickUp: { type: String },
+    completedAt: { type: String },
+
     status: {
-      pending: { type: Boolean },
-      completed: { type: Boolean },
-      cancelled: { type: Boolean },
-    },
-    cancelReason: {
       type: String,
-      required: function () {
-        return this.status.cancelled; // Only required if the order is cancelled
+      enum: ["in-progress", "pending", "completed", "cancelled"],
+      default: "pending",
+    },
+
+    paymentMode: { type: String },
+    offerPrice: { type: Number },
+    finalPrice: { type: Number },
+
+    partner: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Partner",
+      default: null,
+    },
+
+    assignmentStatus: {
+      assigned: { type: Boolean, default: false },
+      assignedAt: { type: String },
+
+      assignedTo: {
+        name: { type: String },
+        role: {
+          type: String,
+          enum: ["partner", "executive"],
+        },
       },
-      default: null, // Default to null if not cancelled
+      assignedBy: {
+        name: { type: String },
+        role: {
+          type: String,
+          enum: ["admin", "partner"],
+        },
+      },
+    },
+
+    rescheduleStatus: {
+      rescheduled: { type: Boolean, default: false },
+      rescheduledBy: { type: String, default: null },
+      rescheduleReason: { type: String, default: null },
+      rescheduleCount: { type: Number, default: 0 },
+      lastRescheduledDate: { type: String, default: null },
+      previousScheduledDates: { type: Array, default: [] },
+    },
+
+    cancellationDetails: {
+      cancelledBy: { type: String, default: null },
+      cancelReason: { type: String, default: null },
+      cancelledAt: { type: String, default: null },
     },
   },
   { timestamps: true }

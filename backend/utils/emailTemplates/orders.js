@@ -162,12 +162,18 @@ const ORDER_PDF = (order) => {
         </tr>
         <tr class="md-text">
           <td>
-            ${order.customerName}<br />
-            <strong>Email:</strong> ${order.email}<br />
-            <strong>Phone:</strong> ${order.phone}<br />
-            <strong>Address:</strong> ${order.addressDetails.address},
-            ${order.addressDetails.state}, ${order.addressDetails.city}<br />
-            <strong>Pincode:</strong> ${order.addressDetails.pinCode}
+            ${order.customerDetails.name}<br />
+            <strong>Email:</strong> ${order.customerDetails.email}<br />
+            <strong>Phone:</strong> ${order.customerDetails.phone}<br />
+            <strong>Address:</strong> ${
+              order.customerDetails.addressDetails.address
+            },
+            ${order.customerDetails.addressDetails.state}, ${
+    order.customerDetails.addressDetails.city
+  }<br />
+            <strong>Pincode:</strong> ${
+              order.customerDetails.addressDetails.pinCode
+            }
           </td>
           <td><strong>Scheduled:</strong> ${order.schedulePickUp}</td>
         </tr>
@@ -183,11 +189,15 @@ const ORDER_PDF = (order) => {
         <tr>
           <td>
             <p class="md-text">
-              <strong>${order.productCategory}</strong> - ${order.productName}
+              <strong>${order.productDetails.productCategory}</strong> - ${
+    order.productDetails.productName
+  }
               ${
-                order.productCategory.toLowerCase().includes("mobile")
+                order.productDetails.productCategory
+                  .toLowerCase()
+                  .includes("mobile")
                   ? ` (
-              ${order.variant.variantName} ) `
+              ${order.productDetails.variant.variantName} ) `
                   : ""
               }
             </p>
@@ -373,22 +383,22 @@ const ORDER_EMAIL_TEMPLATE = (order) => {
       <div class="customer-detail">
         <div>
           <p>Order #${order.orderId}</p>
-          <p>Customer Name: ${order.customerName}</p>
+          <p>Customer Name: ${order.customerDetails.name}</p>
         </div>
 
         <div>
-          <p>Email: ${order.email}</p>
-          <p>Ph # ${order.phone}</p>
+          <p>Email: ${order.customerDetails.email}</p>
+          <p>Ph # ${order.customerDetails.phone}</p>
         </div>
 
         <div>
           <p>
             <span>Seller Address: </span>
             <span>
-              ${order.addressDetails.address}
-              ${order.addressDetails.state}
-              ${order.addressDetails.city}
-              ${order.addressDetails.pinCode}
+              ${order.customerDetails.addressDetails.address}
+              ${order.customerDetails.addressDetails.state}
+              ${order.customerDetails.addressDetails.city}
+              ${order.customerDetails.addressDetails.pinCode}
             </span>
           </p>
         </div>
@@ -407,10 +417,12 @@ const ORDER_EMAIL_TEMPLATE = (order) => {
             <b>Product Details</b>
           </td>
           <td style="border: 1px solid #ddd; padding: 8px">
-            ${order.productName}
+            ${order.productDetails.productName}
             ${
-              order.productCategory.toLowerCase().includes("mobile")
-                ? `- ${order.variant.variantName}`
+              order.productDetails.productCategory
+                .toLowerCase()
+                .includes("mobile")
+                ? `- ${order.productDetails.variant.variantName}`
                 : ""
             }
           </td>
@@ -464,7 +476,7 @@ const filteredDeductionsHTML = (order) => {
   return order.finalDeductionSet
     .filter((deduction) => {
       // Skip "bill" and "box" only for Laptop category
-      if (order.productCategory?.toLowerCase() === "laptop") {
+      if (order.productDetails.productCategory?.toLowerCase() === "laptop") {
         return (
           !deduction.type.toLowerCase().includes("bill") &&
           !deduction.type.toLowerCase().includes("box")
@@ -698,10 +710,14 @@ const ORDER_RECEIVED_PDF = (order) => {
         <div class="purchase-block-details md-text">
           <p><strong>Date:</strong> ${order.schedulePickUp}</p>
           <p>${order.orderId}</p>
-          <p>${order.customerName}</p>
+          <p>${order.customerDetails.name}</p>
           <p>
-            ${order.addressDetails.address}, ${order.addressDetails.state},
-            ${order.addressDetails.city}, ${order.addressDetails.pinCode}
+            ${order.customerDetails.addressDetails.address}, ${
+    order.customerDetails.addressDetails.state
+  },
+            ${order.customerDetails.addressDetails.city}, ${
+    order.customerDetails.addressDetails.pinCode
+  }
           </p>
         </div>
       </div>
@@ -720,7 +736,9 @@ const ORDER_RECEIVED_PDF = (order) => {
             </div>
             <div class="padding-left">
               <p>Product ${
-                order.productCategory.toLowerCase().includes("mobile")
+                order.productDetails.productCategory
+                  .toLowerCase()
+                  .includes("mobile")
                   ? "IMEI Number"
                   : "Serial Number"
               } </p>
@@ -729,19 +747,23 @@ const ORDER_RECEIVED_PDF = (order) => {
 
           <div class="block-items">
             <div class="border-bottom padding-left">
-              <p>${order.productName}</p>
+              <p>${order.productDetails.productName}</p>
             </div>
             <div class="border-bottom padding-left">
               <p>${
-                order.productCategory.toLowerCase().includes("mobile")
-                  ? order.variant.variantName
+                order.productDetails.productCategory
+                  .toLowerCase()
+                  .includes("mobile")
+                  ? order.productDetails.variant.variantName
                   : "-"
               }</p>
             </div>
             <div class="padding-left">
               <p>
                 ${
-                  order.productCategory.toLowerCase().includes("mobile")
+                  order.productDetails.productCategory
+                    .toLowerCase()
+                    .includes("mobile")
                     ? order.deviceInfo?.imeiNumber
                       ? order.deviceInfo?.imeiNumber
                       : "-"
@@ -762,10 +784,12 @@ const ORDER_RECEIVED_PDF = (order) => {
         </tr>
         <tr>
           <td>
-            <strong>${order.productCategory}</strong> - ${order.productName} ${
-    order.productCategory.toLowerCase().includes("mobile")
+            <strong>${order.productDetails.productCategory}</strong> - ${
+    order.productDetails.productName
+  } ${
+    order.productDetails.productCategory.toLowerCase().includes("mobile")
       ? ` (
-            ${order.variant.variantName} ) `
+            ${order.productDetails.variant.variantName} ) `
       : ""
   }
           </td>
@@ -920,22 +944,22 @@ const ORDER_RECEIVED_TEMPLATE = (order) => {
       <div class="customer-detail">
         <div>
           <p>Order #${order.orderId}</p>
-          <p>Customer Name: ${order.customerName}</p>
+          <p>Customer Name: ${order.customerDetails.name}</p>
         </div>
 
         <div>
-          <p>Email: ${order.email}</p>
-          <p>Ph # ${order.phone}</p>
+          <p>Email: ${order.customerDetails.email}</p>
+          <p>Ph # ${order.customerDetails.phone}</p>
         </div>
 
         <div>
           <p>
             <span>Seller Address: </span>
             <span>
-              ${order.addressDetails.address}
-              ${order.addressDetails.state}
-              ${order.addressDetails.city}
-              ${order.addressDetails.pinCode}
+              ${order.customerDetails.addressDetails.address}
+              ${order.customerDetails.addressDetails.state}
+              ${order.customerDetails.addressDetails.city}
+              ${order.customerDetails.addressDetails.pinCode}
             </span>
           </p>
         </div>
@@ -951,19 +975,19 @@ const ORDER_RECEIVED_TEMPLATE = (order) => {
       >
         <tr>
           <td><b>Product</b></td>
-          <td>${order.productName}</td>
+          <td>${order.productDetails.productName}</td>
         </tr>
         <tr>
           <td>
             <b>Agent Name</b>
           </td>
-          <td>${order.pickedUpDetails.agentName}</td>
+          <td>${order.assignmentStatus.assignedTo.name}</td>
         </tr>
         <tr>
           <td>
             <b>Pick Up Time</b>
           </td>
-          <td>${order.pickedUpDetails.pickedUpDate}</td>
+          <td>${order.completedAt}</td>
         </tr>
         <tr>
           <td><b>Quantity</b></td>
@@ -1017,13 +1041,13 @@ const ORDER_CANCEL_TEMPLATE = (cancelReason) => {
 };
 
 const ORDER_ASSIGN_AGENT_TEMPLATE = (updateOrder) => {
-  return `Dear ${updateOrder.customerName},
+  return `Dear ${updateOrder.customerDetails.name},
   
       We are pleased to inform you that an agent has been assigned to pick up your order. Below are the details:
   
           Order ID: ${updateOrder.orderId}
-          Assigned Agent: ${updateOrder.pickedUpDetails.agentName}
-          PickUp Date & Time: ${updateOrder.pickedUpDetails.pickedUpDate}
+          Assigned Agent: ${updateOrder.assignmentStatus.assignedTo.name}
+          Assigned At: ${updateOrder.assignmentStatus.assignedAt}
   
       Please ensure the item is ready for pickup at the scheduled time. If you have any questions or need to reschedule, feel free to contact us.
   

@@ -1,10 +1,11 @@
 import Order from "../models/orderModel.js";
+import { ORDER_STATUS } from "../constants/orders.js";
 
 export const getMostSoldProductsAndBrands = async (req, res) => {
   try {
     // 1️⃣ Most Sold Products (Only Completed Orders)
     const mostSoldProducts = await Order.aggregate([
-      { $match: { "status.completed": true } }, // ✅ Filter completed orders
+      { $match: { status: ORDER_STATUS.COMPLETED } }, // ✅ Filter completed orders
 
       {
         $group: {
@@ -74,7 +75,7 @@ export const getMostSoldProductsAndBrands = async (req, res) => {
 
     // 2️⃣ Most Selling Brands (Only Completed Orders)
     const mostSellingBrands = await Order.aggregate([
-      { $match: { "status.completed": true } },
+      { $match: { status: ORDER_STATUS.COMPLETED } },
 
       // 🔎 Lookup product for each order
       {

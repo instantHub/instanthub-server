@@ -1,8 +1,8 @@
 import jwt from "jsonwebtoken";
-import Admin from "../models/adminModel.js";
+import Partner from "../models/partnerModel.js";
 
-export const authenticate = async (req, res, next) => {
-  console.log("authenticate");
+export const partner_authenticate = async (req, res, next) => {
+  console.log("partner_authenticate");
 
   try {
     const { accessToken, sessionToken } = req.cookies;
@@ -19,16 +19,19 @@ export const authenticate = async (req, res, next) => {
     // Verify access token
     const decoded = jwt.verify(accessToken, process.env.JWT_SECRET);
 
-    // Find admin and verify session
-    const admin = await Admin.findById(decoded.adminId);
-    // console.log("admin from authenticate", admin);
+    /*
+        Find partner and verify session
+        we are decoding adminId from token because we used adminId while signing the token in generateToken function
+    **/
+    const partner = await Partner.findById(decoded.adminId);
+    // console.log("partner from authenticate", partner);
 
-    if (!admin || !admin.isActive) {
+    if (!partner || !partner.isActive) {
       return res.status(401).json({ message: "Invalid token" });
     }
 
     // Verify session token exists and is valid
-    const validSession = admin.sessionTokens.find(
+    const validSession = partner.sessionTokens.find(
       (session) =>
         session.token === sessionToken && session.expiresAt > new Date()
     );
@@ -39,13 +42,16 @@ export const authenticate = async (req, res, next) => {
 
     // Check if password was changed after token was issued
     const tokenIssuedAt = new Date(decoded.iat * 1000);
-    if (admin.passwordChangedAt && tokenIssuedAt < admin.passwordChangedAt) {
+    if (
+      partner.passwordChangedAt &&
+      tokenIssuedAt < partner.passwordChangedAt
+    ) {
       return res
         .status(401)
         .json({ message: "Password changed, please login again" });
     }
 
-    req.admin = admin;
+    req.partner = partner;
     next();
   } catch (error) {
     if (error.name === "TokenExpiredError") {
