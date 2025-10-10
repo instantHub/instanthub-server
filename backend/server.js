@@ -41,6 +41,7 @@ import SEORoutes from "./routes/seoRoutes.js";
 import statsRoutes from "./routes/stats.routes.js";
 import questionsPricesRoutes from "./routes/questions/prices.routes.js";
 import partnerRoutes from "./routes/partnerRoutes.js";
+import executiveRoutes from "./routes/executiveRoutes.js";
 import variantQuestionsRoutes from "./routes/questions/variantQuestions.routes.js";
 
 import { generateSitemap, getDynamicUrls } from "./generateSiteMap.js";
@@ -112,6 +113,7 @@ app.use(cookieParser());
 /* ROUTES */
 app.use("/api/admin", adminRoutes);
 app.use("/api/partners", partnerRoutes);
+app.use("/api/executives", executiveRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/category", categoryRoutes);
 app.use("/api/upload/categories", uploadCategoriesRoutes);
@@ -125,7 +127,10 @@ app.use("/api/upload/condition-labels", uploadConditionLabelsRoutes);
 app.use("/api/sliders", sliderRoutes);
 app.use("/api/upload/sliders", uploadSliderRoutes);
 app.use("/api/orders", orderRoutes);
-app.use("/api/upload/customer-proof", uploadCustomerProofRoutes);
+
+// TODO: we have replaced this in orders route itself, delete this after everything goes well
+// app.use("/api/upload/customer-proof", uploadCustomerProofRoutes);
+
 app.use("/api/series", seriesRoutes);
 app.use("/api/otp", otpRoutes);
 app.use("/api/stocks", stockRoutes);

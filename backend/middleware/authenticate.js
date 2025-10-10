@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import Admin from "../models/adminModel.js";
 
+// TODO: Remove this file and use generic auth middleware from auth.js
 export const authenticate = async (req, res, next) => {
   console.log("authenticate");
 

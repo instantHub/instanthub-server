@@ -50,8 +50,15 @@ const orderSchema = mongoose.Schema(
 
     finalDeductionSet: { type: Array },
 
-    schedulePickUp: { type: String },
-    completedAt: { type: String },
+    // schedulePickUp: { type: String },
+    // completedAt: { type: String },
+    schedulePickUp: {
+      date: { type: Date },
+      timeSlot: { type: String },
+    },
+    schedulePickUpRaw: { type: String },
+
+    completedAt: { type: Date },
 
     status: {
       type: String,
@@ -75,6 +82,7 @@ const orderSchema = mongoose.Schema(
 
       assignedTo: {
         name: { type: String },
+        phone: { type: mongoose.Schema.Types.Mixed },
         role: {
           type: String,
           enum: ["partner", "executive"],

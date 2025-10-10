@@ -1,4 +1,8 @@
+import { getFullScheduleDate } from "../getFullScheduleDate.js";
+
 const ORDER_PDF = (order) => {
+  const schedulePickUp = getFullScheduleDate(order.schedulePickUp.date);
+
   return `<!DOCTYPE html>
 <html lang="en">
   <head>
@@ -175,7 +179,10 @@ const ORDER_PDF = (order) => {
               order.customerDetails.addressDetails.pinCode
             }
           </td>
-          <td><strong>Scheduled:</strong> ${order.schedulePickUp}</td>
+          <td>
+            <b>Scheduled: </b> 
+            ${schedulePickUp} - ${order.schedulePickUp.timeSlot}
+           </td>
         </tr>
       </table>
 
@@ -239,6 +246,8 @@ const ORDER_PDF = (order) => {
 };
 
 const ORDER_EMAIL_TEMPLATE = (order) => {
+  const schedulePickUp = getFullScheduleDate(order.schedulePickUp.date);
+
   return `<!DOCTYPE html>
 <html lang="en">
   <head>
@@ -404,7 +413,10 @@ const ORDER_EMAIL_TEMPLATE = (order) => {
         </div>
 
         <div>
-          <p>PickUp Scheduled ${order.schedulePickUp}</p>
+          <p>
+            PickUp Scheduled: 
+            ${schedulePickUp} - ${order.schedulePickUp.timeSlot}
+          </p>
         </div>
       </div>
 
@@ -505,6 +517,8 @@ const filteredDeductionsHTML = (order) => {
 };
 
 const ORDER_RECEIVED_PDF = (order) => {
+  const schedulePickUp = getFullScheduleDate(order.schedulePickUp.date);
+
   return `<!DOCTYPE html>
 <html lang="en">
   <head>
@@ -708,7 +722,7 @@ const ORDER_RECEIVED_PDF = (order) => {
           <p>Purchase Receipt</p>
         </div>
         <div class="purchase-block-details md-text">
-          <p><strong>Date:</strong> ${order.schedulePickUp}</p>
+          <p><strong>Date:</strong> ${schedulePickUp}</p>
           <p>${order.orderId}</p>
           <p>${order.customerDetails.name}</p>
           <p>
@@ -933,11 +947,7 @@ const ORDER_RECEIVED_TEMPLATE = (order) => {
       "
     >
       <div class="sell" style="text-align: center">
-        <img
-          src="https://api.instanthub.in/uploads/instanthub-logo.png"
-          alt=""
-          style="width: 100px; height: 90px"
-        />
+        <img src="https://api.instanthub.in/uploads/instanthub-logo.png" alt="Instant Hub Logo" width="150" style="display: block;"/>
       </div>
       <h1 class="sell" style="text-align: center">Purchased Receipt</h1>
 
@@ -987,7 +997,7 @@ const ORDER_RECEIVED_TEMPLATE = (order) => {
           <td>
             <b>Pick Up Time</b>
           </td>
-          <td>${order.completedAt}</td>
+          <td>${getFullScheduleDate(order.completedAt)}</td>
         </tr>
         <tr>
           <td><b>Quantity</b></td>
@@ -1040,31 +1050,10 @@ const ORDER_CANCEL_TEMPLATE = (cancelReason) => {
       https://www.instanthub.in/`;
 };
 
-const ORDER_ASSIGN_AGENT_TEMPLATE = (updateOrder) => {
-  return `Dear ${updateOrder.customerDetails.name},
-  
-      We are pleased to inform you that an agent has been assigned to pick up your order. Below are the details:
-  
-          Order ID: ${updateOrder.orderId}
-          Assigned Agent: ${updateOrder.assignmentStatus.assignedTo.name}
-          Assigned At: ${updateOrder.assignmentStatus.assignedAt}
-  
-      Please ensure the item is ready for pickup at the scheduled time. If you have any questions or need to reschedule, feel free to contact us.
-  
-      Thank you for choosing Instant Hub.
-  
-      Best regards,
-      InstantHub Team
-      support@instanthub.in
-      8722288017
-      https://www.instanthub.in/`;
-};
-
 export {
   ORDER_PDF,
   ORDER_EMAIL_TEMPLATE,
   ORDER_RECEIVED_PDF,
   ORDER_RECEIVED_TEMPLATE,
   ORDER_CANCEL_TEMPLATE,
-  ORDER_ASSIGN_AGENT_TEMPLATE,
 };

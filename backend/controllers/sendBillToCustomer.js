@@ -57,7 +57,7 @@ export const sendInvoice = async (req, res) => {
       email: "shouaibahmed111@gmail.com",
       phone: "8722220088",
       deductions: [],
-      schedulePickUp: "August 24, 2025, 10 AM - 12 PM",
+      schedulePickUpRaw: "August 24, 2025, 10 AM - 12 PM",
       paymentMode: "Instant Cash",
       offerPrice: 10650,
       finalDeductionSet: [

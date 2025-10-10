@@ -8,6 +8,15 @@ import Stock from "../models/stocksModel.js";
 import generateToken from "../utils/generateToken.js";
 import jwt from "jsonwebtoken";
 import crypto from "node:crypto";
+import Executive from "../models/executiveModel.js";
+import Partner from "../models/partnerModel.js";
+
+const userModels = {
+  admin: Admin,
+  sub_admin: Admin,
+  executive: Executive,
+  partner: Partner,
+};
 
 export const registerAdmin = async (req, res) => {
   try {
@@ -51,12 +60,20 @@ export const registerAdmin = async (req, res) => {
 export const loginAdmin = async (req, res) => {
   try {
     console.log("loginAdmin controller");
-    const { email, password } = req.body;
-    console.log("data", email, password);
+    const { email, password, role } = req.body;
+    console.log("data", email, password, role);
 
     // const admin = await Admin.findOne({ email });
 
-    const admin = await Admin.findOne({ email, isActive: true });
+    const UserModel = userModels[role];
+    console.log("UserModel in loginAdmin", UserModel);
+
+    if (!UserModel) {
+      return res.status(401).json({ message: "Invalid user role in token." });
+    }
+
+    // const admin = await Admin.findOne({ email, isActive: true });
+    const admin = await UserModel.findOne({ email, isActive: true });
     console.log("admin", admin);
 
     if (!admin) {
@@ -126,46 +143,6 @@ export const loginAdmin = async (req, res) => {
   }
 };
 
-export const validateToken = async (req, res) => {
-  console.log("validateToken controller");
-  try {
-    const token = req.cookies.accessToken; // or however you named your cookie
-    console.log("accessToken from validateToken", token);
-
-    const decodedAccessToken = jwt.decode(token);
-    console.log(
-      "Token expires at:",
-      new Date(decodedAccessToken?.exp * 1000).toString()
-    );
-
-    if (!token) {
-      return res.status(401).json({ error: "No token provided" });
-    }
-
-    // Verify JWT token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    // Fetch fresh user data if needed
-    const admin = await Admin.findById(decoded.adminId);
-
-    res.json({
-      admin: {
-        id: admin._id,
-        name: admin.name,
-        email: admin.email,
-        role: admin.role,
-        permissions: admin.permissions,
-        lastLogin: admin.lastLogin,
-      },
-      sessionExpiry: decoded.exp * 1000, // Convert to milliseconds
-    });
-  } catch (error) {
-    console.log("error", error);
-    // Token is invalid or expired
-    res.status(401).json({ error: "Invalid token" });
-  }
-};
-
 export const refreshToken = async (req, res) => {
   try {
     const { refreshToken } = req.cookies;
@@ -201,13 +178,27 @@ export const refreshToken = async (req, res) => {
 export const logout = async (req, res) => {
   console.log("admin logout controller");
   try {
-    const { sessionToken } = req.cookies;
+    const { id, role } = req.body;
+    console.log("data", id, role);
     console.log("req", req.body);
+
+    const UserModel = userModels[role];
+    console.log("UserModel in logout", UserModel);
+
+    if (!UserModel) {
+      return res.status(401).json({ message: "Invalid user role in token." });
+    }
+
+    // const admin = await Admin.findOne({ email, isActive: true });
+    const user = await UserModel.findOne({ _id: id, isActive: true });
+    console.log("user", user);
+
+    const { sessionToken } = req.cookies;
+
     console.log("sessionToken", sessionToken);
 
     if (sessionToken) {
-      // Remove session token from database
-      await Admin.updateOne(
+      await UserModel.updateOne(
         { _id: req.body.id },
         { $pull: { sessionTokens: { token: sessionToken } } }
       );
@@ -227,9 +218,19 @@ export const logout = async (req, res) => {
 // route    GET /api/admin-profile
 // @access   Private
 export const getAdminProfile = async (req, res) => {
-  // console.log("req.admin", req.admin);
+  console.log("getAdminProfile controller");
   try {
-    const admin = await Admin.findById(req.admin._id).select(
+    const { user, role } = req;
+    console.log("role", role);
+    const UserModel = userModels[role];
+    console.log("UserModel in loginAdmin", UserModel);
+
+    if (!UserModel) {
+      return res.status(401).json({ message: "Invalid user role in token." });
+    }
+
+    // const admin = await Admin.findById(req.user._id).select(
+    const admin = await UserModel.findById(user._id).select(
       "-password -sessionTokens -twoFactorSecret"
     );
 

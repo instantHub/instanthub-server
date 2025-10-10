@@ -12,6 +12,6 @@ router.get("/:mobileNo", getOTP);
 router.get("/", getPhoneNumbers);
 router.delete("/number/:numberId", deleteNumber);
 router.post("/generate-otp", generateOTP);
-// router.put("/order-received", orderReceived);
+// router.put("/order-received", orderComplete);
 
 export default router;

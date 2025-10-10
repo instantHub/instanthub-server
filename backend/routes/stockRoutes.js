@@ -7,6 +7,6 @@ const router = express.Router();
 router.get("/", getStocks);
 router.put("/stock-sold", stockSold);
 // router.post("/generate-otp", generateOTP);
-// router.put("/order-received", orderReceived);
+// router.put("/order-received", orderComplete);
 
 export default router;

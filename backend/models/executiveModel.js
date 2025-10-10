@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 
-const partnerSchema = new mongoose.Schema(
+const executiveSchema = new mongoose.Schema(
   {
     name: {
       type: String,
@@ -22,19 +22,15 @@ const partnerSchema = new mongoose.Schema(
       unique: true,
       trim: true,
     },
-    companyName: {
-      type: String,
-      trim: true,
-    },
     password: {
       type: String,
       required: true,
-      min: 6,
+      minlength: 6,
     },
     role: {
       type: String,
       enum: ["admin", "executive", "partner"],
-      default: "partner",
+      default: "executive",
     },
     isActive: {
       type: Boolean,
@@ -57,12 +53,6 @@ const partnerSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
-    addressDetails: {
-      address: { type: String },
-      state: { type: String },
-      city: { type: String },
-      pinCode: { type: Number },
-    },
     lastLogin: { type: Date },
     loginAttempts: { type: Number, default: 0 },
     lockUntil: { type: Date },
@@ -81,49 +71,52 @@ const partnerSchema = new mongoose.Schema(
 );
 
 // Virtual for account lock status
-partnerSchema.virtual("isLocked").get(function () {
+executiveSchema.virtual("isLocked").get(function () {
   return !!(this.lockUntil && this.lockUntil > Date.now());
 });
 
-partnerSchema.pre("save", async function (next) {
+// Hash password before saving
+executiveSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
     return next();
   }
-
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
   this.passwordChangedAt = new Date();
   next();
 });
 
-partnerSchema.methods.matchPasswords = async function (enteredPassword) {
+// Method to match entered password with hashed password
+executiveSchema.methods.matchPasswords = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-// Increment login attempts
-partnerSchema.methods.incLoginAttempts = async function () {
+// Method to increment login attempts and lock account if necessary
+executiveSchema.methods.incLoginAttempts = async function () {
   if (this.lockUntil && this.lockUntil < Date.now()) {
+    // Reset attempts if lock has expired
     return this.updateOne({
-      $set: { loginAttempts: 0, lockUntil: undefined },
+      $set: { loginAttempts: 1 },
+      $unset: { lockUntil: 1 },
     });
   }
 
   const updates = { $inc: { loginAttempts: 1 } };
   if (this.loginAttempts + 1 >= 5 && !this.isLocked) {
-    updates.$set = { lockUntil: Date.now() + 30 * 60 * 1000 }; // 30 minutes
+    updates.$set = { lockUntil: Date.now() + 30 * 60 * 1000 }; // Lock for 30 minutes
   }
 
   return this.updateOne(updates);
 };
 
-// Clean expired session tokens
-partnerSchema.methods.cleanExpiredTokens = async function () {
+// Method to clean up expired session tokens
+executiveSchema.methods.cleanExpiredTokens = async function () {
   this.sessionTokens = this.sessionTokens.filter(
     (token) => token.expiresAt > new Date()
   );
   return this.save();
 };
 
-const Partner = mongoose.model("Partner", partnerSchema);
+const Executive = mongoose.model("Executive", executiveSchema);
 
-export default Partner;
+export default Executive;

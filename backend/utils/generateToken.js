@@ -1,10 +1,14 @@
 import jwt from "jsonwebtoken";
 
-const generateToken = (res, admin) => {
-  const adminId = admin._id;
-  const accessToken = jwt.sign({ adminId }, process.env.JWT_SECRET, {
-    expiresIn: "2d",
-  });
+const generateToken = (res, user) => {
+  const userId = user._id;
+  const accessToken = jwt.sign(
+    { id: userId, role: user.role },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: "2d",
+    }
+  );
 
   console.log("accessToken from generateToken", accessToken);
 
@@ -17,7 +21,7 @@ const generateToken = (res, admin) => {
   });
 
   const refreshToken = jwt.sign(
-    { adminId, type: "refresh" },
+    { id: userId, type: "refresh" },
     process.env.JWT_REFRESH_SECRET,
     { expiresIn: "7d" }
   );

@@ -6,19 +6,34 @@ import {
   logout,
   registerAdmin,
   updateAdmin,
-  validateToken,
   getAllAdmins,
   deleteAdmin,
 } from "../controllers/adminController.js";
-import { authenticate } from "../middleware/index.js";
+import { auth, authorize } from "../middleware/index.js";
 import { sendInvoice } from "../controllers/sendBillToCustomer.js";
+import { ROLES } from "../constants/auth.js";
 
 const router = express.Router();
 
 router.post("/auth", loginAdmin);
 router.post("/logout", logout);
 
-router.use(authenticate);
+router.get(
+  "/profile",
+  auth,
+  authorize(ROLES.admin, ROLES.sub_admin, ROLES.executive),
+  getAdminProfile
+);
+
+// Dashboard Detail
+router.get(
+  "/dashboard",
+  auth,
+  authorize(ROLES.admin, ROLES.sub_admin),
+  dashboardDetail
+);
+
+router.use(auth, authorize(ROLES.admin));
 
 router.post("/check/bill", sendInvoice);
 
@@ -26,12 +41,6 @@ router.get("/all-admin", getAllAdmins);
 router.put("/:id", updateAdmin);
 router.delete("/:id", deleteAdmin);
 
-router.get("/validate-token", validateToken);
 router.post("/register", registerAdmin);
-
-router.get("/admin-profile", getAdminProfile);
-
-// Dashboard Detail
-router.get("/dashboard", dashboardDetail);
 
 export default router;

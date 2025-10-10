@@ -1,6 +1,4 @@
 import Order from "../models/orderModel.js";
-import path from "path";
-import fs from "fs";
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 dotenv.config();
@@ -13,7 +11,6 @@ import {
 } from "../constants/email.js";
 
 import {
-  ORDER_ASSIGN_AGENT_TEMPLATE,
   ORDER_CANCEL_TEMPLATE,
   ORDER_EMAIL_TEMPLATE,
   ORDER_PDF,
@@ -38,6 +35,8 @@ export const getOrders = async (req, res) => {
 };
 
 export const getOrdersCounts = async (req, res) => {
+  console.log("GetOrdersCounts controller");
+
   try {
     const { utcStartOfDay, utcEndOfDay } = getTodayISTRange();
 
@@ -145,7 +144,7 @@ export const getCancelledOrders = async (req, res) => {
   }
 };
 
-export const getOneOrders = async (req, res) => {
+export const geOrderById = async (req, res) => {
   console.log("GetOrders controller");
 
   try {
@@ -254,49 +253,64 @@ export const createOrder = async (req, res) => {
   }
 };
 
-// Order Received
-export const orderReceived = async (req, res) => {
-  console.log("orderReceived Controller");
+// The new, combined controller
+export const completeOrderWithProofs = async (req, res) => {
+  console.log("completeOrderWithProofs Controller");
   try {
-    console.log(req.body);
-    const {
-      orderId,
-      customerProofFront,
-      customerProofBack,
-      customerOptional1,
-      customerOptional2,
-      // pickedUpDetails,
-      completedAt,
-      deviceInfo,
-      finalPrice,
-      status,
-    } = req.body;
+    // 1. Get text data from req.body
+    const { orderId, completedAt, deviceInfo, finalPrice, status } = req.body;
 
+    // 2. Get file objects from req.files (provided by multer)
+    const files = req.files;
+
+    // Check for required files
+    if (!files.customerProofFront || !files.customerProofBack) {
+      return res
+        .status(400)
+        .json({ message: "Front and Back proof images are required." });
+    }
+
+    // 3. Construct file paths to store in the DB
+    // We prepend a '/' to make it a root-relative URL path
+    const customerProofFrontPath = `/${files.customerProofFront[0].path}`;
+    const customerProofBackPath = `/${files.customerProofBack[0].path}`;
+    const customerOptional1Path = files.customerOptional1
+      ? `/${files.customerOptional1[0].path}`
+      : null;
+    const customerOptional2Path = files.customerOptional2
+      ? `/${files.customerOptional2[0].path}`
+      : null;
+
+    // 4. Build the update object with the new file paths
     const updateObject = {
       customerIDProof: {
-        front: customerProofFront,
-        back: customerProofBack,
+        front: customerProofFrontPath,
+        back: customerProofBackPath,
       },
-      // pickedUpDetails,
       completedAt,
-      deviceInfo,
+      deviceInfo: JSON.parse(deviceInfo), // Remember to parse if you stringified on the frontend
       finalPrice,
       status,
     };
 
-    if (customerOptional1 !== null) {
-      updateObject.customerIDProof.optional1 = customerOptional1;
+    if (customerOptional1Path) {
+      updateObject.customerIDProof.optional1 = customerOptional1Path;
+    }
+    if (customerOptional2Path) {
+      updateObject.customerIDProof.optional2 = customerOptional2Path;
     }
 
-    if (customerOptional2 !== null) {
-      updateObject.customerIDProof.optional2 = customerOptional2;
-    }
-
+    // --- All your existing business logic remains the same ---
     const updatedOrder = await Order.findByIdAndUpdate(orderId, updateObject, {
       new: true,
     });
 
-    updatedOrder.save();
+    // You don't need .save() after findByIdAndUpdate with {new: true}
+    // updatedOrder.save();
+
+    if (!updatedOrder) {
+      return res.status(404).json({ message: "Order not found" });
+    }
 
     console.log("updatedOrder", updatedOrder);
 
@@ -314,33 +328,26 @@ export const orderReceived = async (req, res) => {
         email: updatedOrder.customerDetails.email,
         phone: updatedOrder.customerDetails.phone,
       },
-
-      // pickedUpDetails: updatedOrder.pickedUpDetails,
-      status: {
-        in: true,
-        out: false,
-        lost: false,
-      },
+      status: { in: true, out: false, lost: false },
       purchasePrice: updatedOrder.finalPrice,
     });
 
-    stockIn.save();
+    // You don't need .save() after a .create()
+    // stockIn.save();
 
     const html = ORDER_RECEIVED_PDF(updatedOrder);
-
-    // Generate PDF using Puppeteer
     const pdfBuffer = await createOrderPDF(html);
 
-    // Create a transporter object using SMTP transport
     const transporter = nodemailer.createTransport(HOSTINGER_MAILER);
+
+    const authorizedUser = req.user;
 
     // Email content
     const mailOptions = {
-      // from: process.env.USER, // Sender email address
-      from: ORDERS_EMAIL, // Sender email address
-      to: updatedOrder.customerDetails.email, // Recipient email address
-      cc: INSTANTHUB_GMAIL, // CC email address (can be a string or an array of strings)
-      subject: `Purchase Details for Order ${updatedOrder.orderId}`, // Subject line
+      from: ORDERS_EMAIL,
+      to: updatedOrder.customerDetails.email,
+      cc: authorizedUser?.email,
+      subject: `Your Order #${updatedOrder.orderId} has been complted ${updatedOrder.customerDetails.name}`,
       html: ORDER_RECEIVED_TEMPLATE(updatedOrder),
       attachments: [
         {
@@ -362,11 +369,14 @@ export const orderReceived = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: "Order Received and Updated",
+      message: "Order Completed Successfully",
       data: updatedOrder,
     });
   } catch (error) {
-    res.status(404).json({ message: error.message });
+    console.error("Error in completeOrderWithProofs:", error);
+    res
+      .status(500)
+      .json({ message: error.message || "An unexpected error occurred." });
   }
 };
 
@@ -459,55 +469,67 @@ export const deleteOrder = async (req, res) => {
   }
 };
 
-// Assign Agent
-export const assignAgent = async (req, res) => {
-  console.log("assignAgent controller");
-  const orderId = req.params.orderId;
-  // console.log("orderId", orderId);
-
-  const { assignmentStatus } = req.body;
-  console.log("req.body", assignmentStatus);
+/**
+ * @route   PUT /api/orders/:id/reschedule
+ * @desc    Reschedule an existing order
+ * @access  Private (assuming only authenticated users can do this)
+ */
+export const rescheduleOrder = async (req, res) => {
+  console.log("rescheduleOrder controller");
 
   try {
-    const updateOrder = await Order.findByIdAndUpdate(
-      orderId, // The ID of the order to update
-      { assignmentStatus }, // The fields to update
-      { new: true } // Option to return the updated document
-    );
-    // console.log("updateOrder", updateOrder);
+    // 1. Get the new schedule details from the request body
+    const { newDate, newTimeSlot, rescheduleReason } = req.body;
+    const { id } = req.params;
 
-    if (!updateOrder) {
-      return res.status(404).json({ message: "Order not found" });
+    // A simple validation to ensure required fields are sent
+    if (!newDate || !newTimeSlot || !rescheduleReason) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide newDate, newTimeSlot, and rescheduleReason.",
+      });
     }
 
-    const transporter = nodemailer.createTransport(HOSTINGER_MAILER);
+    // 2. Find the existing order by its ID
+    const order = await Order.findById(id);
 
-    // Email content
-    const mailOptions = {
-      from: ORDERS_EMAIL, // Sender email address
-      to: updateOrder.customerDetails.email, // Recipient email address
-      cc: INSTANTHUB_GMAIL, // CC email address (can be a string or an array of strings)
-      subject: `Agent Has Been Assigned To Your Order #${updateOrder.orderId}`, // Subject line
-      text: ORDER_ASSIGN_AGENT_TEMPLATE(updateOrder),
+    if (!order) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Order not found" });
+    }
+
+    // 3. Archive the current schedule details before updating
+    const previousSchedule = {
+      date: order.schedulePickUp.date,
+      timeSlot: order.schedulePickUp.timeSlot,
     };
+    order.rescheduleStatus.previousScheduledDates.push(previousSchedule);
 
-    // Send email
-    transporter
-      .sendMail(mailOptions)
-      .then((info) => {
-        console.log("Email sent:", info.response);
-      })
-      .catch((error) => {
-        console.log("Error occurred:", error);
-      });
+    // 4. Update the order document with new information
+    // Update the schedule itself
+    order.schedulePickUp.date = newDate;
+    order.schedulePickUp.timeSlot = newTimeSlot;
 
-    res
-      .status(200)
-      .json({ message: "Agent Assigned successfully", updateOrder });
-  } catch (error) {
-    return res.status(500).json({
-      message: "Internal server error while cancelling Order.",
-      error,
+    // Update the reschedule tracking status
+    order.rescheduleStatus.rescheduled = true;
+    order.rescheduleStatus.rescheduleReason = rescheduleReason;
+    order.rescheduleStatus.lastRescheduledDate = new Date().toISOString();
+    order.rescheduleStatus.rescheduleCount += 1; // Increment the count
+
+    // IMPORTANT: Set who rescheduled the order.
+    order.rescheduleStatus.rescheduledBy = req.user?.name || "System"; // Fallback to 'System' if no user
+
+    // 5. Save the updated order to the database
+    const updatedOrder = await order.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Order rescheduled successfully.",
+      data: updatedOrder,
     });
+  } catch (error) {
+    console.error("Error rescheduling order:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
