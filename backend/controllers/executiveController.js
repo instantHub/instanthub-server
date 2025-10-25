@@ -12,6 +12,7 @@ import {
   ORDER_ASSIGN_AGENT_TEMPLATE,
 } from "../utils/emailTemplates/executive.js";
 import mongoose from "mongoose";
+import { getDateRanges } from "../utils/getDateRanges.js";
 
 /**
  * @desc    Create a new executive
@@ -541,5 +542,344 @@ export const getOrdersByStatus = async (req, res) => {
     res
       .status(500)
       .json({ message: "Server error while fetching orders by status." });
+  }
+};
+
+// controllers/executiveStatsController.js
+
+/**
+ * Get order statistics for logged-in executive
+ * @route GET /api/executive/orders/stats
+ * @access Private (Executive only)
+ */
+export const getExecutiveOrderStats = async (req, res) => {
+  try {
+    const executiveId = req.user._id; // From auth middleware
+    const executiveName = req.user.name; // From auth middleware
+
+    const { todayStart, todayEnd, tomorrowStart, tomorrowEnd, weekAgo } =
+      getDateRanges();
+
+    // Base query - orders assigned to this executive by name
+    const baseQuery = {
+      "assignmentStatus.assigned": true,
+      "assignmentStatus.assignedTo.name": executiveName,
+    };
+
+    // Execute all queries in parallel
+    const [
+      // Overall counts
+      totalAssigned,
+      pendingOrders,
+      completedOrders,
+      overdueOrders,
+      inProgressOrders,
+
+      // Today's counts
+      todayTotal,
+      todayPending,
+      todayCompleted,
+      todayOverdue,
+
+      // Tomorrow's counts
+      tomorrowTotal,
+      tomorrowPending,
+
+      // Weekly performance
+      weeklyCompleted,
+
+      // Get executive details
+      executive,
+    ] = await Promise.all([
+      // Overall
+      Order.countDocuments(baseQuery),
+      Order.countDocuments({
+        ...baseQuery,
+        status: "pending",
+      }),
+      Order.countDocuments({
+        ...baseQuery,
+        status: "completed",
+      }),
+      Order.countDocuments({
+        ...baseQuery,
+        "schedulePickUp.date": { $lt: todayStart },
+        status: { $nin: ["completed", "cancelled"] },
+      }),
+      Order.countDocuments({
+        ...baseQuery,
+        status: "in-progress",
+      }),
+
+      // Today
+      Order.countDocuments({
+        ...baseQuery,
+        "schedulePickUp.date": { $gte: todayStart, $lte: todayEnd },
+      }),
+      Order.countDocuments({
+        ...baseQuery,
+        "schedulePickUp.date": { $gte: todayStart, $lte: todayEnd },
+        status: "pending",
+      }),
+      Order.countDocuments({
+        ...baseQuery,
+        "schedulePickUp.date": { $gte: todayStart, $lte: todayEnd },
+        status: "completed",
+      }),
+      Order.countDocuments({
+        ...baseQuery,
+        "schedulePickUp.date": { $gte: todayStart, $lt: todayStart },
+        status: { $nin: ["completed", "cancelled"] },
+      }),
+
+      // Tomorrow
+      Order.countDocuments({
+        ...baseQuery,
+        "schedulePickUp.date": { $gte: tomorrowStart, $lte: tomorrowEnd },
+      }),
+      Order.countDocuments({
+        ...baseQuery,
+        "schedulePickUp.date": { $gte: tomorrowStart, $lte: tomorrowEnd },
+        status: "pending",
+      }),
+
+      // Last 7 days completed
+      Order.countDocuments({
+        ...baseQuery,
+        status: "completed",
+        completedAt: { $gte: weekAgo },
+      }),
+
+      // Executive details
+      Executive.findById(executiveId).select(
+        "name rating totalCompletedOrders"
+      ),
+    ]);
+
+    const result = {
+      executive: {
+        name: executive?.name || executiveName,
+        rating: executive?.rating || 1,
+        totalCompleted: executive?.totalCompletedOrders || 0,
+      },
+      overall: {
+        totalAssigned,
+        pending: pendingOrders,
+        completed: completedOrders,
+        overdue: overdueOrders,
+        inProgress: inProgressOrders,
+      },
+      today: {
+        total: todayTotal,
+        pending: todayPending,
+        completed: todayCompleted,
+        overdue: todayOverdue,
+      },
+      tomorrow: {
+        total: tomorrowTotal,
+        pending: tomorrowPending,
+      },
+      performance: {
+        weeklyCompleted,
+        completionRate:
+          totalAssigned > 0
+            ? ((completedOrders / totalAssigned) * 100).toFixed(1)
+            : "0",
+      },
+    };
+
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    console.error("Error fetching executive stats:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch executive statistics",
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * Get orders assigned to logged-in executive with filtering
+ * @route GET /api/executive/orders?status=pending&dateFilter=today&page=1&limit=20
+ * @access Private (Executive only)
+ */
+export const getExecutiveOrders2 = async (req, res) => {
+  try {
+    const executiveId = req.user._id;
+    const executiveName = req.user.name;
+
+    const {
+      status,
+      dateFilter,
+      page = 1,
+      limit = 20,
+      sortBy = "schedulePickUp.date",
+      order = "asc",
+    } = req.query;
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const sortOrder = order === "desc" ? -1 : 1;
+
+    // Base query - only orders assigned to this executive
+    let matchQuery = {
+      "assignmentStatus.assigned": true,
+      "assignmentStatus.assignedTo.name": executiveName,
+    };
+
+    // Validate and handle status filter
+    const validStatuses = [
+      "pending",
+      "completed",
+      "overdue",
+      "cancelled",
+      "in-progress",
+      "all",
+    ];
+    if (status && !validStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: `Status must be one of: ${validStatuses.join(", ")}`,
+      });
+    }
+
+    const { todayStart, todayEnd, tomorrowStart, tomorrowEnd } =
+      getDateRanges();
+
+    // Handle status filter
+    if (status === "overdue") {
+      matchQuery["schedulePickUp.date"] = { $lt: todayStart };
+      matchQuery.status = { $nin: ["completed", "cancelled"] };
+    } else if (status && status !== "all") {
+      matchQuery.status = status;
+    }
+
+    // Handle date filter
+    if (dateFilter === "today") {
+      matchQuery["schedulePickUp.date"] = {
+        $gte: todayStart,
+        $lte: todayEnd,
+      };
+    } else if (dateFilter === "tomorrow") {
+      matchQuery["schedulePickUp.date"] = {
+        $gte: tomorrowStart,
+        $lte: tomorrowEnd,
+      };
+    }
+
+    // Build sort object
+    let sortObject = {};
+    sortObject[sortBy] = sortOrder;
+    if (sortBy !== "createdAt") {
+      sortObject.createdAt = -1; // Secondary sort
+    }
+
+    // Execute queries in parallel
+    const [orders, totalCount] = await Promise.all([
+      Order.find(matchQuery)
+        .sort(sortObject)
+        .skip(skip)
+        .limit(parseInt(limit))
+        .select({
+          orderId: 1,
+          customerDetails: 1,
+          productDetails: 1,
+          deviceInfo: 1,
+          status: 1,
+          schedulePickUp: 1,
+          offerPrice: 1,
+          finalPrice: 1,
+          paymentMode: 1,
+          assignmentStatus: 1,
+          rescheduleStatus: 1,
+          customerIDProof: 1,
+          createdAt: 1,
+          completedAt: 1,
+        })
+        .lean(),
+      Order.countDocuments(matchQuery),
+    ]);
+
+    // Format orders with overdue flag
+    const formattedOrders = orders.map((order) => {
+      const isOverdue =
+        order.schedulePickUp?.date &&
+        new Date(order.schedulePickUp.date) < todayStart &&
+        !["completed", "cancelled"].includes(order.status);
+
+      return {
+        id: order._id.toString(),
+        orderId: order.orderId,
+        customer: {
+          name: order.customerDetails?.name || "N/A",
+          email: order.customerDetails?.email || "N/A",
+          phone: order.customerDetails?.phone?.toString() || "N/A",
+          address: order.customerDetails?.addressDetails?.address || "N/A",
+          city: order.customerDetails?.addressDetails?.city || "N/A",
+          state: order.customerDetails?.addressDetails?.state || "N/A",
+          pinCode:
+            order.customerDetails?.addressDetails?.pinCode?.toString() || "N/A",
+        },
+        product: {
+          name: order.productDetails?.productName || "N/A",
+          brand: order.productDetails?.productBrand || "N/A",
+          category: order.productDetails?.productCategory || "N/A",
+          variant: order.productDetails?.variant?.variantName || "N/A",
+          variantPrice: order.productDetails?.variant?.price || 0,
+        },
+        device: {
+          serialNumber: order.deviceInfo?.serialNumber || null,
+          imeiNumber: order.deviceInfo?.imeiNumber || null,
+        },
+        status: order.status,
+        isOverdue,
+        scheduledDate: order.schedulePickUp?.date || null,
+        timeSlot: order.schedulePickUp?.timeSlot || "N/A",
+        offerPrice: order.offerPrice || 0,
+        finalPrice: order.finalPrice || null,
+        paymentMode: order.paymentMode || "N/A",
+        reschedule: {
+          isRescheduled: order.rescheduleStatus?.rescheduled || false,
+          rescheduleCount: order.rescheduleStatus?.rescheduleCount || 0,
+          rescheduleReason: order.rescheduleStatus?.rescheduleReason || null,
+        },
+        hasProofs: !!(
+          order.customerIDProof?.front && order.customerIDProof?.back
+        ),
+        createdAt: order.createdAt,
+        completedAt: order.completedAt || null,
+      };
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        orders: formattedOrders,
+        pagination: {
+          currentPage: parseInt(page),
+          totalPages: Math.ceil(totalCount / parseInt(limit)),
+          totalOrders: totalCount,
+          ordersPerPage: parseInt(limit),
+          hasNextPage: skip + formattedOrders.length < totalCount,
+          hasPrevPage: parseInt(page) > 1,
+        },
+        filters: {
+          status: status || "all",
+          dateFilter: dateFilter || "all",
+          sortBy,
+          order,
+        },
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching executive orders:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch orders",
+      error: error.message,
+    });
   }
 };

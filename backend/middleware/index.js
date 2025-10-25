@@ -2,3 +2,4 @@
 export { authenticate } from "./authenticate.js";
 export { auth } from "./auth.js";
 export { authorize } from "./authorization.js";
+export { createUploadMiddleware } from "./uploadMiddleware.js";

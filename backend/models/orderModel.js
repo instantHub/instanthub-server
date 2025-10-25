@@ -117,6 +117,13 @@ const orderSchema = mongoose.Schema(
 
 // orderSchema.index({ name: 1, category: 1 }, { unique: true });
 
+orderSchema.index({ status: 1 });
+orderSchema.index({ "schedulePickUp.date": 1 });
+orderSchema.index({ "assignmentStatus.assigned": 1, status: 1 });
+orderSchema.index({ status: 1, "schedulePickUp.date": 1 });
+orderSchema.index({ orderId: 1 }, { unique: true });
+orderSchema.index({ createdAt: -1 });
+
 const virtual = orderSchema.virtual("id");
 virtual.get(function () {
   return this._id;

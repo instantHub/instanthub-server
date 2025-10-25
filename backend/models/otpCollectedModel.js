@@ -10,6 +10,7 @@ const otpCollectedSchema = mongoose.Schema(
       type: String,
       required: true,
     },
+    selectedDeductionSet: { type: Array },
     totalOTPsTaken: {
       type: Number,
     },

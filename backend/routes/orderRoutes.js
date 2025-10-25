@@ -2,18 +2,15 @@ import express from "express";
 import multer from "multer";
 import path from "path";
 import {
-  getOrders,
   geOrderById,
   createOrder,
   deleteOrder,
   orderCancel,
-  getOrdersCounts,
-  getTodaysOrders,
-  getPendingOrders,
-  getCompletedOrders,
-  getCancelledOrders,
   completeOrderWithProofs,
   rescheduleOrder,
+  getOrderStats,
+  getOrdersByStatus,
+  orderReopen,
 } from "../controllers/orderController.js";
 import { auth } from "../middleware/auth.js";
 import { authorize } from "../middleware/authorization.js";
@@ -70,6 +67,13 @@ router.post(
 );
 
 router.put(
+  "/:id/reopen",
+  auth,
+  authorize(ROLES.admin, ROLES.executive),
+  orderReopen
+);
+
+router.put(
   "/:id/reschedule",
   auth,
   authorize(ROLES.admin, ROLES.executive),
@@ -83,12 +87,6 @@ router.put(
   orderCancel
 );
 
-// router.put(
-//   "/complete",
-//   auth,
-//   authorize(ROLES.admin, ROLES.executive),
-//   orderComplete
-// );
 router.delete(
   "/delete-order/:orderId",
   auth,
@@ -99,16 +97,35 @@ router.delete(
 // Admin only routes
 router.use(auth, authorize(ROLES.admin));
 
-// Specific GET routes
-router.get("/count", getOrdersCounts);
-router.get("/today", getTodaysOrders);
-router.get("/pending", getPendingOrders);
-router.get("/completed", getCompletedOrders);
-router.get("/cancelled", getCancelledOrders);
+router.get("/stats", getOrderStats);
+router.get("/by-status", getOrdersByStatus);
 
-// Default GET all orders
-router.get("/", getOrders);
+router.get("/:orderId/order-details", geOrderById);
 
-router.get("/:orderId", geOrderById);
+/**
+ * API ENDPOINTS:
+ *
+ * 1. GET /api/orders/stats
+ *    - Returns overall, today's, and tomorrow's order statistics
+ *    - No parameters required
+ *
+ * 2. GET /api/orders/by-status
+ *    - Returns filtered orders based on status and date
+ *    - Query parameters:
+ *      - status (required): pending | completed | cancelled | in-progress | unassigned | all
+ *      - dateFilter (optional): today | tomorrow
+ *      - page (optional, default: 1)
+ *      - limit (optional, default: 20)
+ *      - sortBy (optional, default: createdAt)
+ *      - order (optional, default: desc)
+ *
+ *    Examples:
+ *    - /api/orders/by-status?status=pending
+ *    - /api/orders/by-status?status=pending&dateFilter=today
+ *    - /api/orders/by-status?status=unassigned&dateFilter=tomorrow
+ *    - /api/orders/by-status?status=completed&page=2&limit=50
+ *    - /api/orders/by-status?status=all&sortBy=finalPrice&order=asc
+ *
+ */
 
 export default router;

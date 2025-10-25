@@ -16,133 +16,12 @@ import {
   ORDER_PDF,
   ORDER_RECEIVED_PDF,
   ORDER_RECEIVED_TEMPLATE,
+  ORDER_RESCHEDULED_TEMPLATE,
 } from "../utils/emailTemplates/orders.js";
-import { getTodayISTRange } from "../utils/getTodayISTRange.js";
 import { createOrderPDF } from "../utils/pdf.creation.js";
-import { ORDER_STATUS } from "../constants/orders.js";
 import { deleteImage } from "../utils/deleteImage.js";
-
-export const getOrders = async (req, res) => {
-  console.log("GetOrders controller");
-
-  try {
-    const ordersList = await Order.find().populate("productId", "name");
-    // console.log(ordersList);
-    res.status(200).json(ordersList);
-  } catch (error) {
-    res.status(404).json({ message: error.message });
-  }
-};
-
-export const getOrdersCounts = async (req, res) => {
-  console.log("GetOrdersCounts controller");
-
-  try {
-    const { utcStartOfDay, utcEndOfDay } = getTodayISTRange();
-
-    const [
-      pending,
-      completed,
-      cancelled,
-      pendingToday,
-      completedToday,
-      cancelledToday,
-    ] = await Promise.all([
-      Order.countDocuments({ status: ORDER_STATUS.PENDING }),
-      Order.countDocuments({ status: ORDER_STATUS.COMPLETED }),
-      Order.countDocuments({ status: ORDER_STATUS.CANCELLED }),
-
-      Order.countDocuments({
-        status: ORDER_STATUS.PENDING,
-        createdAt: { $gte: utcStartOfDay, $lte: utcEndOfDay },
-      }),
-      Order.countDocuments({
-        status: ORDER_STATUS.COMPLETED,
-        createdAt: { $gte: utcStartOfDay, $lte: utcEndOfDay },
-      }),
-      Order.countDocuments({
-        status: "cancelled",
-        createdAt: { $gte: utcStartOfDay, $lte: utcEndOfDay },
-      }),
-    ]);
-
-    res.status(200).json({
-      total: {
-        pending,
-        completed,
-        cancelled,
-      },
-      today: {
-        pending: pendingToday,
-        completed: completedToday,
-        cancelled: cancelledToday,
-      },
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: "Failed to fetch order counts",
-      error: error.message,
-    });
-  }
-};
-
-export const getTodaysOrders = async (req, res) => {
-  try {
-    const { utcStartOfDay, utcEndOfDay } = getTodayISTRange();
-
-    const orders = await Order.find({
-      createdAt: { $gte: utcStartOfDay, $lte: utcEndOfDay },
-    }).sort({ createdAt: -1 });
-
-    res.status(200).json(orders);
-  } catch (error) {
-    res.status(500).json({
-      message: "Failed to fetch today's orders",
-      error: error.message,
-    });
-  }
-};
-
-// 2. Get Pending Orders
-export const getPendingOrders = async (req, res) => {
-  try {
-    // const orders = await Order.find({ status: "pending" }).sort({
-    const orders = await Order.find({ status: ORDER_STATUS.PENDING }).sort({
-      createdAt: -1,
-    });
-    res.status(200).json(orders);
-  } catch (error) {
-    res.status(500).json({ message: "Failed to fetch pending orders", error });
-  }
-};
-
-// 3. Get Completed Orders
-export const getCompletedOrders = async (req, res) => {
-  try {
-    const orders = await Order.find({ status: ORDER_STATUS.COMPLETED }).sort({
-      createdAt: -1,
-    });
-    res.status(200).json(orders);
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Failed to fetch completed orders", error });
-  }
-};
-
-// 4. Get Cancelled Orders
-export const getCancelledOrders = async (req, res) => {
-  try {
-    const orders = await Order.find({ status: ORDER_STATUS.CANCELLED }).sort({
-      createdAt: -1,
-    });
-    res.status(200).json(orders);
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Failed to fetch cancelled orders", error });
-  }
-};
+import { getDateRanges } from "../utils/getDateRanges.js";
+import { ORDER_STATUS } from "../constants/orders.js";
 
 export const geOrderById = async (req, res) => {
   console.log("GetOrders controller");
@@ -347,7 +226,7 @@ export const completeOrderWithProofs = async (req, res) => {
       from: ORDERS_EMAIL,
       to: updatedOrder.customerDetails.email,
       cc: authorizedUser?.email,
-      subject: `Your Order #${updatedOrder.orderId} has been complted ${updatedOrder.customerDetails.name}`,
+      subject: `Your Order #${updatedOrder.orderId} has been completed ${updatedOrder.customerDetails.name}`,
       html: ORDER_RECEIVED_TEMPLATE(updatedOrder),
       attachments: [
         {
@@ -470,6 +349,45 @@ export const deleteOrder = async (req, res) => {
 };
 
 /**
+ * @route   PUT /api/orders/:id/reopen
+ * @desc    ReOpen an cancelled order
+ * @access  Private (assuming only authenticated users can do this)
+ */
+export const orderReopen = async (req, res) => {
+  console.log("orderReopen controller");
+
+  try {
+    // 1. Get the Object id of the order from params
+    const { id } = req.params;
+
+    // 2. Find the existing order by its ID and update status to 'pending'
+    const order = await Order.findByIdAndUpdate(
+      id,
+      { status: ORDER_STATUS.PENDING },
+      { new: true }
+    );
+
+    if (!order) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Order not found" });
+    }
+
+    // 3. Save the updated order to the database
+    const updatedOrder = await order.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Order reopened successfully.",
+      data: updatedOrder,
+    });
+  } catch (error) {
+    console.error("Error rescheduling order:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+/**
  * @route   PUT /api/orders/:id/reschedule
  * @desc    Reschedule an existing order
  * @access  Private (assuming only authenticated users can do this)
@@ -523,6 +441,29 @@ export const rescheduleOrder = async (req, res) => {
     // 5. Save the updated order to the database
     const updatedOrder = await order.save();
 
+    const transporter = nodemailer.createTransport(HOSTINGER_MAILER);
+
+    const authorizedUser = req.user;
+
+    // Email content
+    const mailOptions = {
+      from: ORDERS_EMAIL,
+      to: updatedOrder.customerDetails.email,
+      cc: authorizedUser?.email,
+      subject: `Your Order #${updatedOrder.orderId} has been rescheduled ${updatedOrder.customerDetails.name}`,
+      html: ORDER_RESCHEDULED_TEMPLATE(updatedOrder),
+    };
+
+    // Send email
+    transporter
+      .sendMail(mailOptions)
+      .then((info) => {
+        console.log("Email sent:", info.response);
+      })
+      .catch((error) => {
+        console.log("Error occurred:", error);
+      });
+
     res.status(200).json({
       success: true,
       message: "Order rescheduled successfully.",
@@ -531,5 +472,428 @@ export const rescheduleOrder = async (req, res) => {
   } catch (error) {
     console.error("Error rescheduling order:", error);
     res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+/**
+ * Get comprehensive order statistics using parallel queries
+ * @route GET /api/orders/stats
+ * @access Private
+ */
+export const getOrderStats = async (req, res) => {
+  try {
+    const { todayStart, todayEnd, tomorrowStart, tomorrowEnd } =
+      getDateRanges();
+
+    const locationStatsPipeline = [
+      {
+        // Find only pending orders to aggregate
+        $match: { status: "pending" },
+      },
+      {
+        // Group by city
+        $group: {
+          _id: "$customerDetails.addressDetails.city",
+          totalPending: { $sum: 1 },
+          todayPending: {
+            // Conditionally sum if the order is today
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $gte: ["$schedulePickUp.date", todayStart] },
+                    { $lte: ["$schedulePickUp.date", todayEnd] },
+                  ],
+                },
+                1,
+                0,
+              ],
+            },
+          },
+        },
+      },
+      {
+        // Project to a cleaner format
+        $project: {
+          _id: 0,
+          location: "$_id",
+          totalPending: 1,
+          todayPending: 1,
+        },
+      },
+      {
+        // Filter out null/empty locations
+        $match: { location: { $ne: null, $ne: "" } },
+      },
+      {
+        // Sort by location name
+        $sort: { location: 1 },
+      },
+    ];
+
+    // Execute all queries in parallel
+    const [
+      // Overall counts
+      overallTotal,
+      overallPending,
+      overallCompleted,
+      overallCancelled,
+      overallUnassigned,
+      overallOverdue,
+
+      // Today's counts
+      todayTotal,
+      todayPending,
+      todayCompleted,
+      todayCancelled,
+      todayUnassigned,
+
+      // Tomorrow's counts
+      tomorrowTotal,
+      tomorrowUnassigned,
+
+      // Location stats query
+      locationStats,
+    ] = await Promise.all([
+      // Overall
+      Order.countDocuments({}),
+      Order.countDocuments({ status: "pending" }),
+      Order.countDocuments({ status: "completed" }),
+      Order.countDocuments({ status: "cancelled" }),
+      Order.countDocuments({
+        "assignmentStatus.assigned": false,
+        status: { $nin: ["completed", "cancelled"] },
+      }),
+
+      // Overdue orders: scheduled date is before today and not completed/cancelled
+      Order.countDocuments({
+        "schedulePickUp.date": { $lt: todayStart },
+        status: { $nin: ["completed", "cancelled"] },
+      }),
+
+      // Today
+      Order.countDocuments({
+        "schedulePickUp.date": { $gte: todayStart, $lte: todayEnd },
+      }),
+      Order.countDocuments({
+        "schedulePickUp.date": { $gte: todayStart, $lte: todayEnd },
+        status: "pending",
+      }),
+      Order.countDocuments({
+        "schedulePickUp.date": { $gte: todayStart, $lte: todayEnd },
+        status: "completed",
+      }),
+      Order.countDocuments({
+        "schedulePickUp.date": { $gte: todayStart, $lte: todayEnd },
+        status: "cancelled",
+      }),
+      Order.countDocuments({
+        "schedulePickUp.date": { $gte: todayStart, $lte: todayEnd },
+        "assignmentStatus.assigned": false,
+        status: { $nin: ["completed", "cancelled"] },
+      }),
+
+      // Tomorrow
+      Order.countDocuments({
+        "schedulePickUp.date": { $gte: tomorrowStart, $lte: tomorrowEnd },
+      }),
+      Order.countDocuments({
+        "schedulePickUp.date": { $gte: tomorrowStart, $lte: tomorrowEnd },
+        "assignmentStatus.assigned": false,
+        status: { $nin: ["completed", "cancelled"] },
+      }),
+
+      // New query to the array
+      Order.aggregate(locationStatsPipeline),
+    ]);
+
+    const result = {
+      overall: {
+        total: overallTotal,
+        pending: overallPending,
+        completed: overallCompleted,
+        cancelled: overallCancelled,
+        unassigned: overallUnassigned,
+        overdue: overallOverdue,
+      },
+      today: {
+        total: todayTotal,
+        pending: todayPending,
+        completed: todayCompleted,
+        cancelled: todayCancelled,
+        unassigned: todayUnassigned,
+      },
+      tomorrow: {
+        total: tomorrowTotal,
+        unassigned: tomorrowUnassigned,
+      },
+
+      // New locationStats to the response
+      locationStats: locationStats,
+    };
+
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    console.error("Error fetching order stats:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch order statistics",
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * Get orders by status with optional date filtering
+ * @route GET /api/orders/by-status?status=pending&dateFilter=today&page=1&limit=20
+ * @access Private
+ */
+export const getOrdersByStatus = async (req, res) => {
+  console.log("getOrdersByStatus controller");
+
+  try {
+    const {
+      status,
+      dateFilter,
+      location,
+      page = 1,
+      limit = 20,
+      sortBy = "createdAt",
+      order = "desc",
+    } = req.query;
+    console.log("req.query", req.query);
+
+    // Validate status parameter
+    const validStatuses = [
+      "pending",
+      "completed",
+      "cancelled",
+      "in-progress",
+      "unassigned",
+      "overdue",
+      "all",
+    ];
+    if (!status || !validStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: `Status parameter is required and must be one of: ${validStatuses.join(
+          ", "
+        )}`,
+      });
+    }
+
+    const { todayStart, todayEnd, tomorrowStart, tomorrowEnd } =
+      getDateRanges();
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const sortOrder = order === "desc" ? -1 : 1;
+
+    // Build match query
+    let matchQuery = {};
+
+    // Handle status filter
+    if (status === "unassigned") {
+      matchQuery = {
+        "assignmentStatus.assigned": false,
+        status: { $nin: ["completed", "cancelled"] },
+      };
+    } else if (status === "overdue") {
+      // Overdue: scheduled date is before today and not completed/cancelled
+      console.log("overdue orders filter applied");
+
+      // const todayStart = new Date();
+      // todayStart.setHours(0, 0, 0, 0);
+
+      matchQuery = {
+        "schedulePickUp.date": { $lt: todayStart },
+        status: { $nin: ["completed", "cancelled"] },
+      };
+    } else if (status !== "all") {
+      matchQuery.status = status;
+    }
+
+    // --- // NEW Location Filter ---
+    if (location && location !== "all") {
+      matchQuery["customerDetails.addressDetails.city"] = location;
+    }
+
+    // Handle date filter
+    if (dateFilter) {
+      // const { todayStart, todayEnd, tomorrowStart, tomorrowEnd } =
+      //   getDateRanges();
+
+      if (dateFilter === "today") {
+        matchQuery["schedulePickUp.date"] = {
+          $gte: todayStart,
+          $lte: todayEnd,
+        };
+      } else if (dateFilter === "tomorrow") {
+        matchQuery["schedulePickUp.date"] = {
+          $gte: tomorrowStart,
+          $lte: tomorrowEnd,
+        };
+      }
+    }
+
+    // Execute queries in parallel
+    const [orders, totalCount] = await Promise.all([
+      Order.aggregate([
+        { $match: matchQuery },
+        { $sort: { [sortBy]: sortOrder } },
+        { $skip: skip },
+        { $limit: parseInt(limit) },
+        {
+          $project: {
+            orderId: 1,
+            customerName: "$customerDetails.name",
+            customerEmail: "$customerDetails.email",
+            customerPhone: "$customerDetails.phone",
+            customerAddress: "$customerDetails.addressDetails.address",
+            customerCity: "$customerDetails.addressDetails.city",
+            customerState: "$customerDetails.addressDetails.state",
+            customerPinCode: "$customerDetails.addressDetails.pinCode",
+            status: 1,
+            scheduledDate: "$schedulePickUp.date",
+            timeSlot: "$schedulePickUp.timeSlot",
+            finalPrice: 1,
+            offerPrice: 1,
+            paymentMode: 1,
+            productName: "$productDetails.productName",
+            productBrand: "$productDetails.productBrand",
+            productCategory: "$productDetails.productCategory",
+            variantName: "$productDetails.variant.variantName",
+            variantPrice: "$productDetails.variant.price",
+            serialNumber: "$deviceInfo.serialNumber",
+            imeiNumber: "$deviceInfo.imeiNumber",
+            assignmentStatus: 1,
+            rescheduleStatus: 1,
+            cancellationDetails: 1,
+            createdAt: 1,
+            completedAt: 1,
+          },
+        },
+      ]),
+      // NEW location based
+      // Order.aggregate([
+      //   { $match: matchQuery },
+      //   { $sort: { [sortBy]: sortOrder } },
+      // ]),
+      Order.countDocuments(matchQuery),
+    ]);
+
+    // Format response with overdue indicator
+    // const todayStart = new Date();
+    // todayStart.setHours(0, 0, 0, 0);
+
+    const formattedOrders = orders.map((order) => {
+      const isOverdue =
+        new Date(order.scheduledDate) < todayStart &&
+        !["completed", "cancelled"].includes(order.status);
+
+      return {
+        id: order._id,
+        orderId: order.orderId,
+
+        // Customer details
+        customer: {
+          name: order.customerName || "N/A",
+          email: order.customerEmail || "N/A",
+          phone: order.customerPhone || "N/A",
+          address: order.customerAddress || "N/A",
+          city: order.customerCity || "N/A",
+          state: order.customerState || "N/A",
+          pinCode: order.customerPinCode || "N/A",
+        },
+
+        // Product details
+        product: {
+          name: order.productName || "N/A",
+          brand: order.productBrand || "N/A",
+          category: order.productCategory || "N/A",
+          variant: order.variantName || "N/A",
+          variantPrice: order.variantPrice || 0,
+        },
+
+        // Device info
+        device: {
+          serialNumber: order.serialNumber || "N/A",
+          imeiNumber: order.imeiNumber || "N/A",
+        },
+
+        // Order details
+        status: order.status,
+        isOverdue: isOverdue,
+        scheduledDate: order.scheduledDate,
+        timeSlot: order.timeSlot || "N/A",
+        offerPrice: order.offerPrice || 0,
+        finalPrice: order.finalPrice || 0,
+        paymentMode: order.paymentMode || "N/A",
+
+        // Assignment details
+        assignment: {
+          isAssigned: order.assignmentStatus?.assigned || false,
+          assignedTo: order.assignmentStatus?.assignedTo?.name || null,
+          assignedToPhone: order.assignmentStatus?.assignedTo?.phone || null,
+          assignedToRole: order.assignmentStatus?.assignedTo?.role || null,
+          assignedAt: order.assignmentStatus?.assignedAt || null,
+          assignedBy: order.assignmentStatus?.assignedBy?.name || null,
+        },
+
+        // Reschedule details
+        reschedule: {
+          isRescheduled: order.rescheduleStatus?.rescheduled || false,
+          rescheduleCount: order.rescheduleStatus?.rescheduleCount || 0,
+          rescheduleReason: order.rescheduleStatus?.rescheduleReason || null,
+          lastRescheduledDate:
+            order.rescheduleStatus?.lastRescheduledDate || null,
+        },
+
+        // Cancellation details
+        cancellation:
+          order.status === "cancelled"
+            ? {
+                cancelledBy: order.cancellationDetails?.cancelledBy || null,
+                cancelReason: order.cancellationDetails?.cancelReason || null,
+                cancelledAt: order.cancellationDetails?.cancelledAt || null,
+              }
+            : null,
+
+        // Timestamps
+        createdAt: order.createdAt,
+        completedAt: order.completedAt,
+      };
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        orders: formattedOrders,
+        pagination: {
+          currentPage: parseInt(page),
+          totalPages: Math.ceil(totalCount / parseInt(limit)),
+          totalOrders: totalCount,
+          ordersPerPage: parseInt(limit),
+          hasNextPage: skip + formattedOrders.length < totalCount,
+          hasPrevPage: parseInt(page) > 1,
+        },
+        filters: {
+          status: status,
+          dateFilter: dateFilter || "all",
+          location: location || "all", // <-- Add location to filters response
+          sortBy: sortBy,
+          order: order,
+        },
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching orders by status:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch orders",
+      error: error.message,
+    });
   }
 };

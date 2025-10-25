@@ -9,6 +9,8 @@ import {
   getExecutiveOrdersByStatus,
   getExecutiveOrderCounts,
   getExecutiveScheduledOrders,
+  getExecutiveOrderStats,
+  getExecutiveOrders2,
 } from "../controllers/executiveController.js";
 import { auth, authorize } from "../middleware/index.js";
 import { ROLES } from "../constants/auth.js";
@@ -32,7 +34,15 @@ router.put(
   updateExecutive
 );
 
-router.get("/orders", auth, authorize(ROLES.executive), getExecutiveOrders);
+router.get("/orders", auth, authorize(ROLES.executive), getExecutiveOrders2);
+// router.get("/orders", auth, authorize(ROLES.executive), getExecutiveOrders);
+
+router.get(
+  "/orders/stats",
+  auth,
+  authorize(ROLES.executive),
+  getExecutiveOrderStats
+);
 
 router.get(
   "/:id/orders-count",

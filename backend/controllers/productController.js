@@ -437,7 +437,7 @@ export const checkEmptyPricing = async (req, res) => {
   console.log("productsController checkEmptyPricing");
 
   try {
-    const MIN_ZERO_PRICING = 4; // Define the threshold
+    const MIN_ZERO_PRICING = 10; // Define the threshold
 
     // MongoDB Aggregation Pipeline
     const pipeline = [

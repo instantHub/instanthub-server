@@ -1050,10 +1050,96 @@ const ORDER_CANCEL_TEMPLATE = (cancelReason) => {
       https://www.instanthub.in/`;
 };
 
+const ORDER_RESCHEDULED_TEMPLATE = (updateOrder) => {
+  // Format the new scheduled date for better readability.
+  const rescheduledDateFormatted = new Date(
+    updateOrder.schedulePickUp.date
+  ).toLocaleString("en-IN", {
+    dateStyle: "long", // e.g., "12 October 2025"
+    timeZone: "Asia/Kolkata",
+  });
+
+  const customerName = updateOrder.customerDetails.name;
+  const orderId = updateOrder.orderId;
+  const timeSlot = updateOrder.schedulePickUp.timeSlot;
+  const rescheduleReason = updateOrder.rescheduleStatus.rescheduleReason;
+  const currentYear = new Date().getFullYear();
+
+  return `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Your Order Pickup has been Rescheduled</title>
+    </head>
+    <body style="margin: 0; padding: 0; background-color: #f4f7f6; font-family: Arial, sans-serif;">
+      <table border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr>
+          <td style="padding: 20px 0;">
+            <table align="center" border="0" cellpadding="0" cellspacing="0" width="600" style="border-collapse: collapse; background-color: #ffffff; border: 1px solid #cccccc;">
+              
+              <tr>
+                <td align="center" style="padding: 40px 0 30px 0; color: #000;">
+                  <img src="https://api.instanthub.in/uploads/instanthub-logo.png" alt="Instant Hub Logo" width="150" style="display: block;"/>
+                  <h1 style="margin: 20px 0 0 0; font-size: 24px; font-weight: bold;">Order Pickup Rescheduled</h1>
+                </td>
+              </tr>
+              
+              <tr>
+                <td style="padding: 40px 30px;">
+                  <h2 style="font-size: 20px; color: #333333; margin: 0 0 20px 0;">Hello ${customerName},</h2>
+                  <p style="margin: 0 0 25px 0; font-size: 16px; line-height: 1.5; color: #555555;">
+                    This is to inform you that the pickup for your order has been rescheduled. Please find the updated details below.
+                  </p>
+                  
+                  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f9f9f9; border: 1px solid #eeeeee; padding: 20px;">
+                    <tr>
+                      <td style="font-size: 16px; color: #333333; line-height: 1.6;">
+                        <p style="margin: 0 0 10px 0;"><strong>Order ID:</strong> ${orderId}</p>
+                        <p style="margin: 0 0 10px 0;"><strong>New Pickup Date:</strong> ${rescheduledDateFormatted}</p>
+                        <p style="margin: 0 0 10px 0;"><strong>New Time Slot:</strong> ${timeSlot}</p>
+                        ${
+                          rescheduleReason
+                            ? `<p style="margin: 0;"><strong>Reason:</strong> ${rescheduleReason}</p>`
+                            : ""
+                        }
+                      </td>
+                    </tr>
+                  </table>
+                  
+                  <p style="margin: 25px 0 25px 0; font-size: 16px; line-height: 1.5; color: #555555;">
+                    We apologize for any inconvenience this may cause. If this new schedule does not work for you or if you have any questions, please feel free to contact our support team.
+                  </p>
+                </td>
+              </tr>
+              
+              <tr>
+                <td style="padding: 30px; background-color: #f4f7f6; text-align: center;">
+                  <p style="margin: 0; font-size: 14px; color: #888888;">
+                    Thank you for your understanding.<br>
+                    <a href="mailto:support@instanthub.in" style="color: #004AAD; text-decoration: none;">support@instanthub.in</a>
+                  </p>
+                  <p style="margin: 10px 0 0 0; font-size: 12px; color: #aaaaaa;">
+                    &copy; ${currentYear} Instant Hub. All Rights Reserved. <br>
+                    https://www.instanthub.in/
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>
+  `;
+};
+
 export {
   ORDER_PDF,
   ORDER_EMAIL_TEMPLATE,
   ORDER_RECEIVED_PDF,
   ORDER_RECEIVED_TEMPLATE,
   ORDER_CANCEL_TEMPLATE,
+  ORDER_RESCHEDULED_TEMPLATE,
 };

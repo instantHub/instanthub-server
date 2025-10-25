@@ -23,8 +23,8 @@ export const generateOTP = async (req, res) => {
   console.log("generateOTP controller");
 
   try {
-    const { mobileNo, purpose } = req.body;
-    console.log("mobileNo, purpose ", mobileNo, purpose);
+    const { mobileNo, purpose, selectedDeductionSet } = req.body;
+    console.log("mobileNo, purpose ", mobileNo, purpose, selectedDeductionSet);
 
     // Check count of OTPs generated for the mobile number within the last 24 hours
     const startTime = new Date();
@@ -48,6 +48,7 @@ export const generateOTP = async (req, res) => {
         const otpData = {
           otp: otpValue,
           purpose: purpose,
+          selectedDeductionSet,
           totalOTPsTaken: numberPresent.totalOTPsTaken + 1,
         };
         console.log("otpData", otpData);
@@ -63,11 +64,14 @@ export const generateOTP = async (req, res) => {
         await updatedOTP.save();
         console.log("updatedOTP", updatedOTP);
 
-        //   Adding userNumber and totalOTPsTaken to OTPCollected model
         if (otpCollectedByNo) {
           let updatedUserNumber = await OTPCollected.findByIdAndUpdate(
             otpCollectedByNo._id,
-            { totalOTPsTaken: otpCollectedByNo.totalOTPsTaken + 1, purpose },
+            {
+              totalOTPsTaken: otpCollectedByNo.totalOTPsTaken + 1,
+              purpose,
+              selectedDeductionSet,
+            },
             {
               new: true,
             }
@@ -77,6 +81,7 @@ export const generateOTP = async (req, res) => {
           let userNumber = await OTPCollected.create({
             mobileNumber: mobileNo,
             purpose,
+            selectedDeductionSet,
             totalOTPsTaken: 1,
           });
           await userNumber.save();
@@ -110,7 +115,6 @@ export const generateOTP = async (req, res) => {
       await otp.save();
       //   console.log("object", otp);
 
-      //   Adding userNumber and totalOTPsTaken to OTPCollected model
       if (otpCollectedByNo) {
         let updatedUserNumber = await OTPCollected.findByIdAndUpdate(
           otpCollectedByNo._id,
@@ -150,7 +154,7 @@ export const getPhoneNumbers = async (req, res) => {
   try {
     const phoneNumbers = await OTPCollected.find();
     console.log(phoneNumbers.length);
-    res.status(200).json({ phoneNumbers });
+    res.status(200).json(phoneNumbers);
   } catch (error) {
     res
       .status(404)
