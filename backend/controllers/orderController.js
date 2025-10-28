@@ -659,6 +659,7 @@ export const getOrdersByStatus = async (req, res) => {
       status,
       dateFilter,
       location,
+      search = "",
       page = 1,
       limit = 20,
       sortBy = "createdAt",
@@ -735,6 +736,39 @@ export const getOrdersByStatus = async (req, res) => {
           $gte: tomorrowStart,
           $lte: tomorrowEnd,
         };
+      }
+    }
+
+    // Search Filter (NEW)
+    if (search && search.trim()) {
+      const searchTerm = search.trim();
+      const escapedSearch = searchTerm.replace(
+        /[-\/\\^$*+?.()|[\]{}]/g,
+        "\\$&"
+      );
+      const searchRegex = new RegExp(escapedSearch, "i");
+
+      // Check if search term is purely numeric
+      const isNumeric = /^\d+$/.test(searchTerm);
+
+      matchQuery.$or = [
+        { orderId: searchRegex }, // Works for "1394" in "MB25100971394"
+        { "customerDetails.name": searchRegex },
+        { "customerDetails.addressDetails.city": searchRegex },
+        { "customerDetails.addressDetails.state": searchRegex },
+      ];
+
+      // If numeric, also search by phone (stored as Number) and pincode
+      if (isNumeric) {
+        const numericValue = parseInt(searchTerm);
+
+        // For phone number (stored as Number in DB)
+        matchQuery.$or.push({ "customerDetails.phone": numericValue });
+
+        // For pincode (if stored as String)
+        matchQuery.$or.push({
+          "customerDetails.addressDetails.pinCode": searchTerm,
+        });
       }
     }
 

@@ -101,12 +101,15 @@ export const generateOTP = async (req, res) => {
         //   throw new Error("Exceeded OTP limit. Try again later."); // Throw error if limit exceeded
       }
     } else if (!numberPresent) {
+      console.log("New number");
+
       const otpValue = Math.floor(1000 + Math.random() * 9000).toString(); // Generate a 6-digit OTP
-      console.log("otpValue", otpValue);
+
       const otpData = {
         mobileNumber: mobileNo,
         otp: otpValue,
         purpose,
+        selectedDeductionSet,
         totalOTPsTaken: 1,
       };
       console.log("otpData", otpData);
@@ -128,6 +131,7 @@ export const generateOTP = async (req, res) => {
         let userNumber = await OTPCollected.create({
           mobileNumber: mobileNo,
           purpose,
+          selectedDeductionSet,
           totalOTPsTaken: 1,
         });
         await userNumber.save();

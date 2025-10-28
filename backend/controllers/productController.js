@@ -10,43 +10,124 @@ import { APPLE } from "../constants/general.js";
 import { slugify } from "../utils/slugify.js";
 import { deleteImage } from "../utils/deleteImage.js";
 
+// export const getAllProducts = async (req, res) => {
+//   console.log("getAllProducts Controller");
+
+//   const page = parseInt(req.query.page) || 1;
+//   const limit = parseInt(req.query.limit) < 10 ? 20 : parseInt(req.query.limit);
+//   const search = req.query.search || "";
+//   const categoryId = req.query.categoryId || "";
+
+//   try {
+//     // Escape special characters in the search term
+//     const escapedSearch = search.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
+//     const regex = new RegExp(escapedSearch, "i");
+//     const query = {
+//       name: { $regex: search, $options: "i" },
+//       ...(categoryId ? { category: categoryId } : {}), // Add category only if categoryId exists
+//     };
+
+//     const skip = (page - 1) * limit;
+
+//     const products = await Product.find(query)
+//       .skip(skip)
+//       .limit(limit)
+//       .select("-processorBasedDeduction -simpleDeductions")
+//       .populate("category", "name image categoryType uniqueURL")
+//       .populate("brand", "name image uniqueURL");
+
+//     const totalProducts = await Product.countDocuments(query);
+
+//     res.status(200).json({
+//       page,
+//       limit,
+//       totalProducts,
+//       totalPages: Math.ceil(totalProducts / limit),
+//       products,
+//     });
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
+
+// controllers/productController.js
+
+/**
+ * Get all products with advanced filtering
+ * @route GET /api/products
+ * @access Private (Admin)
+ */
 export const getAllProducts = async (req, res) => {
-  console.log("getAllProducts Controller");
-
-  const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) < 10 ? 20 : parseInt(req.query.limit);
-  const search = req.query.search || "";
-  const categoryId = req.query.categoryId || "";
-
   try {
-    // Escape special characters in the search term
-    const escapedSearch = search.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
-    const regex = new RegExp(escapedSearch, "i");
-    const query = {
-      name: { $regex: search, $options: "i" },
-      ...(categoryId ? { category: categoryId } : {}), // Add category only if categoryId exists
-    };
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(10, parseInt(req.query.limit) || 20));
+    const search = (req.query.search || "").trim();
+    const categoryId = req.query.categoryId || "";
+    const status = req.query.status || "";
+
+    // Build query
+    const query = {};
+
+    // Search filter
+    if (search) {
+      const escapedSearch = search.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
+      query.$or = [
+        { name: { $regex: escapedSearch, $options: "i" } },
+        { uniqueURL: { $regex: escapedSearch, $options: "i" } },
+      ];
+    }
+
+    // Category filter
+    if (categoryId) {
+      query.category = categoryId;
+    }
+
+    // Status filter
+    if (status) {
+      query.status = status;
+    }
 
     const skip = (page - 1) * limit;
 
-    const products = await Product.find(query)
-      .skip(skip)
-      .limit(limit)
-      .select("-processorBasedDeduction -simpleDeductions")
-      .populate("category", "name image categoryType uniqueURL")
-      .populate("brand", "name image uniqueURL");
-
-    const totalProducts = await Product.countDocuments(query);
+    // Execute queries in parallel
+    const [products, totalProducts] = await Promise.all([
+      Product.find(query)
+        .skip(skip)
+        .limit(limit)
+        .select("-processorBasedDeduction -simpleDeductions")
+        .populate("category", "name image categoryType uniqueURL")
+        .populate("brand", "name image uniqueURL")
+        .sort({ createdAt: -1 })
+        .lean(),
+      Product.countDocuments(query),
+    ]);
 
     res.status(200).json({
-      page,
-      limit,
-      totalProducts,
-      totalPages: Math.ceil(totalProducts / limit),
-      products,
+      success: true,
+      data: {
+        products,
+        pagination: {
+          page,
+          limit,
+          totalProducts,
+          totalPages: Math.ceil(totalProducts / limit),
+          hasNextPage: page < Math.ceil(totalProducts / limit),
+          hasPrevPage: page > 1,
+        },
+        filters: {
+          search,
+          categoryId,
+          status,
+        },
+      },
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Error fetching products:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch products",
+      error: error.message,
+    });
   }
 };
 
