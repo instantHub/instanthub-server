@@ -1,7 +1,6 @@
 import express from "express";
 import {
   loginAdmin,
-  dashboardDetail,
   getAdminProfile,
   logout,
   registerAdmin,
@@ -23,14 +22,6 @@ router.get(
   auth,
   authorize(ROLES.admin, ROLES.sub_admin, ROLES.executive),
   getAdminProfile
-);
-
-// Dashboard Detail
-router.get(
-  "/dashboard",
-  auth,
-  authorize(ROLES.admin, ROLES.sub_admin),
-  dashboardDetail
 );
 
 router.use(auth, authorize(ROLES.admin));
