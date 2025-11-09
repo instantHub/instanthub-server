@@ -1,7 +1,8 @@
-import Partner from "../models/partnerModel.js";
-import generateToken from "../utils/generateToken.js";
+import Partner from "../../models/partner/partner.model.js";
+import generateToken from "../../utils/generateToken.js";
 import crypto from "node:crypto";
 import jwt from "jsonwebtoken";
+import PartnerRequest from "../../models/partner/partner-request.model.js";
 
 /**
  * @desc    Create a new partner
@@ -10,7 +11,8 @@ import jwt from "jsonwebtoken";
  */
 export const createPartner = async (req, res) => {
   try {
-    const { name, email, phone, companyName, password } = req.body;
+    const { _id, name, email, phone, companyName, password, address } =
+      req.body;
 
     if (!name || !email || !phone || !password) {
       return res
@@ -33,8 +35,20 @@ export const createPartner = async (req, res) => {
       email,
       phone,
       companyName,
+      address,
       password,
     });
+    console.log("created partner :- ", partner);
+
+    const request = await PartnerRequest.findById(_id);
+    if (!request || request.status !== "pending") {
+      return res
+        .status(400)
+        .json({ message: "Invalid or already processed partner request" });
+    }
+
+    request.status = "approved";
+    await request.save();
 
     res.status(201).json(partner);
   } catch (error) {

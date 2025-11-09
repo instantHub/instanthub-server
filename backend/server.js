@@ -20,6 +20,8 @@ import uploadSliderRoutes from "./routes/uploads/uploadSliderRoutes.js";
 import uploadBrandsRoutes from "./routes/uploads/uploadBrandRoutes.js";
 import uploadCategoriesRoutes from "./routes/uploads/uploadCategoryRoutes.js";
 import uploadConditionLabelsRoutes from "./routes/uploads/uploadConditionLabelsRoutes.js";
+
+// TODO: remove this file completely in future after full inspection
 import uploadCustomerProofRoutes from "./routes/uploads/uploadCustomerProof.js";
 import productRoutes from "./routes/productRoutes.js";
 import processorRoutes from "./routes/processorRoutes.js";
@@ -40,10 +42,11 @@ import testimonialRoutes from "./routes/testimonialRoutes.js";
 import SEORoutes from "./routes/seoRoutes.js";
 import statsRoutes from "./routes/stats.routes.js";
 import questionsPricesRoutes from "./routes/questions/prices.routes.js";
-import partnerRoutes from "./routes/partnerRoutes.js";
 import executiveRoutes from "./routes/executiveRoutes.js";
 import variantQuestionsRoutes from "./routes/questions/variantQuestions.routes.js";
 import orderAnalyticsRoutes from "./routes/order-analytics.routes.js";
+import partnerRoutes from "./routes/partner/partner.routes.js";
+import partnerRequestRoutes from "./routes/partner/partner-request.routes.js";
 
 import { generateSitemap, getDynamicUrls } from "./generateSiteMap.js";
 
@@ -114,6 +117,7 @@ app.use(cookieParser());
 /* ROUTES */
 app.use("/api/admin", adminRoutes);
 app.use("/api/partners", partnerRoutes);
+app.use("/api/partners-requests", partnerRequestRoutes);
 app.use("/api/executives", executiveRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/category", categoryRoutes);

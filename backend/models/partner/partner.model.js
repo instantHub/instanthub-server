@@ -33,7 +33,7 @@ const partnerSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["admin", "executive", "partner"],
+      enum: ["executive", "partner"],
       default: "partner",
     },
     isActive: {
@@ -57,11 +57,11 @@ const partnerSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
-    addressDetails: {
-      address: { type: String },
+    address: {
+      street: { type: String },
       state: { type: String },
       city: { type: String },
-      pinCode: { type: Number },
+      pincode: { type: Number },
     },
     lastLogin: { type: Date },
     loginAttempts: { type: Number, default: 0 },

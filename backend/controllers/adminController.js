@@ -3,7 +3,7 @@ import generateToken from "../utils/generateToken.js";
 import jwt from "jsonwebtoken";
 import crypto from "node:crypto";
 import Executive from "../models/executiveModel.js";
-import Partner from "../models/partnerModel.js";
+import Partner from "../models/partner/partner.model.js";
 
 const userModels = {
   admin: Admin,

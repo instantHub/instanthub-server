@@ -1,8 +1,8 @@
 import jwt from "jsonwebtoken";
 import Admin from "../models/adminModel.js";
 import Executive from "../models/executiveModel.js";
-import Partner from "../models/partnerModel.js";
-import { log } from "node:console";
+import Partner from "../models/partner/partner.model.js";
+// import { log } from "node:console";
 
 const userModels = {
   admin: Admin,
