@@ -2,6 +2,7 @@ import nodemailer from "nodemailer";
 import Executive from "../models/executiveModel.js";
 import Order from "../models/orderModel.js";
 import {
+  GMAIL_MAILER,
   HOSTINGER_MAILER,
   INSTANTHUB_GMAIL,
   ORDERS_EMAIL,
@@ -47,11 +48,13 @@ export const createExecutive = async (req, res) => {
       password,
     });
 
-    // Email Password to the created executive
-    const transporter = nodemailer.createTransport(HOSTINGER_MAILER);
+    // TODO: Update the node mailer to official emails after reactivating SUPPORT Email
+    // const transporter = nodemailer.createTransport(HOSTINGER_MAILER);
+    const transporter = nodemailer.createTransport(GMAIL_MAILER);
 
     const mailOptions = {
-      from: SUPPORT_EMAIL,
+      // from: SUPPORT_EMAIL,
+      from: INSTANTHUB_GMAIL,
       to: email,
       subject: `Welcome to Instant Hub: Your Executive Account Details`,
       html: ACCOUNT_CREATION(executive, password),
@@ -209,14 +212,17 @@ export const assignOrderToExecutive = async (req, res) => {
     });
     await executive.save();
 
-    const transporter = nodemailer.createTransport(HOSTINGER_MAILER);
+    // TODO: Update the node mailer to official emails after reactivating SUPPORT Email
+    // const transporter = nodemailer.createTransport(HOSTINGER_MAILER);
+    const transporter = nodemailer.createTransport(GMAIL_MAILER);
 
     // Email content
     const mailOptions = {
-      from: ORDERS_EMAIL, // Sender email address
-      to: updateOrder.customerDetails.email, // Recipient email address
-      cc: executive.email, // CC email address (can be a string or an array of strings)
-      subject: `Agent Has Been Assigned To Your Order #${updateOrder.orderId}`, // Subject line
+      // from: ORDERS_EMAIL,
+      from: INSTANTHUB_GMAIL,
+      to: updateOrder.customerDetails.email,
+      cc: executive.email,
+      subject: `Agent Has Been Assigned To Your Order #${updateOrder.orderId}`,
       html: ORDER_ASSIGN_AGENT_TEMPLATE(updateOrder, executive),
     };
 

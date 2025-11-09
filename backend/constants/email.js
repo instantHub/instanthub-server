@@ -23,6 +23,23 @@ const HOSTINGER_MAILER = {
   auth: HOSTINGER_EMAIL_AUTH,
 };
 
+const GMAIL_HOST = "smtp.gmail.com"; // Replace with your SMTP server
+const GMAIL_PORT = 465; // Use 587 for TLS or 465 for SSL
+const GMAIL_SECURE = true;
+
+const GMAIL_AUTH = {
+  user: "instanthub.in@gmail.com", // Your domain email
+  pass: process.env.APP_PASSWORD, // Your domain email password
+};
+
+const GMAIL_MAILER = {
+  service: "gmail",
+  host: GMAIL_HOST, // Replace with your SMTP server
+  port: GMAIL_PORT, // Use 587 for TLS or 465 for SSL
+  secure: GMAIL_SECURE, // true for port 465, false for 587
+  auth: GMAIL_AUTH,
+};
+
 export {
   HOSTINGER_HOST,
   HOSTINGER_PORT,
@@ -34,6 +51,13 @@ export {
   RECYCLE_ORDER_EMAIL,
   HOSTINGER_EMAIL_AUTH,
   HOSTINGER_MAILER,
+
+  // GMAIL
+  GMAIL_HOST,
+  GMAIL_PORT,
+  GMAIL_SECURE,
+  GMAIL_AUTH,
+  GMAIL_MAILER,
 };
 
 // const SMTP_MAILER = {

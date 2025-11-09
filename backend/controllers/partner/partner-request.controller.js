@@ -1,7 +1,12 @@
 import nodemailer from "nodemailer";
 import Partner from "../../models/partner/partner.model.js";
 import PartnerRequest from "../../models/partner/partner-request.model.js";
-import { HOSTINGER_MAILER, SUPPORT_EMAIL } from "../../constants/email.js";
+import {
+  GMAIL_MAILER,
+  HOSTINGER_MAILER,
+  INSTANTHUB_GMAIL,
+  SUPPORT_EMAIL,
+} from "../../constants/email.js";
 import { PARTNER_REQUEST } from "../../utils/emailTemplates/partners-requests.js";
 
 export const submitPartnerRequest = async (req, res) => {
@@ -11,10 +16,13 @@ export const submitPartnerRequest = async (req, res) => {
     const request = new PartnerRequest(req.body);
     await request.save();
 
-    const transporter = nodemailer.createTransport(HOSTINGER_MAILER);
+    // TODO: Update the node mailer to official emails after reactivating SUPPORT Email
+    // const transporter = nodemailer.createTransport(HOSTINGER_MAILER);
+    const transporter = nodemailer.createTransport(GMAIL_MAILER);
 
     const mailOptions = {
-      from: SUPPORT_EMAIL,
+      // from: SUPPORT_EMAIL,
+      from: INSTANTHUB_GMAIL,
       to: request.email,
       subject: `Welcome to Instant Hub: Your Partner Request has been received.`,
       html: PARTNER_REQUEST(request),
@@ -126,11 +134,14 @@ export const rejectPartnerRequest = async (req, res) => {
   request.rejectionReason = rejectionReason;
   await request.save();
 
+  // TODO: Update the node mailer to official emails after reactivating SUPPORT Email
   // Send rejection email
-  const transporter = nodemailer.createTransport(HOSTINGER_MAILER);
+  // const transporter = nodemailer.createTransport(HOSTINGER_MAILER);
+  const transporter = nodemailer.createTransport(GMAIL_MAILER);
 
   const mailOptions = {
-    from: SUPPORT_EMAIL,
+    // from: SUPPORT_EMAIL,
+    from: INSTANTHUB_GMAIL,
     to: request.email,
     subject: `Your Partner Request has been Rejected`,
     html: `
