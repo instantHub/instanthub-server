@@ -104,7 +104,7 @@ export const createOrder = async (req, res) => {
       // from: ORDERS_EMAIL,
       from: INSTANTHUB_GMAIL,
       to: order.customerDetails.email,
-      // cc: INSTANTHUB_GMAIL,
+      cc: INSTANTHUB_GMAIL,
       subject: `Your Order #${orderId} has been placed ${order.customerDetails.name}`,
       html: ORDER_EMAIL_TEMPLATE(order),
       attachments: [

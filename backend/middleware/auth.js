@@ -7,6 +7,7 @@ import Partner from "../models/partner/partner.model.js";
 const userModels = {
   admin: Admin,
   sub_admin: Admin,
+  marketing: Admin,
   executive: Executive,
   partner: Partner,
 };
@@ -40,7 +41,7 @@ export const auth = async (req, res, next) => {
     // Find user and verify session
     const user = await UserModel.findById(decoded.id);
     console.log(
-      "User " + user.name + " found in auth middleware - role ",
+      "User " + user.name + "(name) found in auth middleware - role ",
       user.role
     );
 

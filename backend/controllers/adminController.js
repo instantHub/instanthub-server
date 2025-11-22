@@ -8,6 +8,7 @@ import Partner from "../models/partner/partner.model.js";
 const userModels = {
   admin: Admin,
   sub_admin: Admin,
+  marketing: Admin,
   executive: Executive,
   partner: Partner,
 };

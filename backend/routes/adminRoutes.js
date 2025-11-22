@@ -20,7 +20,7 @@ router.post("/logout", logout);
 router.get(
   "/profile",
   auth,
-  authorize(ROLES.admin, ROLES.sub_admin, ROLES.executive),
+  authorize(ROLES.admin, ROLES.sub_admin, ROLES.executive, ROLES.marketing),
   getAdminProfile
 );
 
