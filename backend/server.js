@@ -69,49 +69,30 @@ app.use(morgan("common"));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-const corsOrigin = process.env.CORS_ORIGIN || "https://www.instanthub.in"; // Default to instanthub.in
-// const corsOrigin = process.env.CORS_ORIGIN;
-console.log("corsOrigin", corsOrigin);
+const CORS_MAIN_ORIGIN =
+  process.env.CORS_MAIN_ORIGIN || "https://www.instanthub.in";
+const CORS_PARTNERS_ORIGIN =
+  process.env.CORS_PARTNERS_ORIGIN || "https://partner.instanthub.in";
+
+// Include any other production or staging domains here
+const allowedOrigins = [CORS_MAIN_ORIGIN, CORS_PARTNERS_ORIGIN];
+console.log("Allowed CORS Origins:", allowedOrigins.join(", "));
+
 app.use(
   cors({
-    origin: corsOrigin,
-    credentials: true, // Include this if you need to pass credentials
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+      // Check if the origin is in the allowed list
+      if (allowedOrigins.indexOf(origin) === -1) {
+        const msg = `The CORS policy for this site does not allow access from the specified Origin: ${origin}`;
+        return callback(new Error(msg), false);
+      }
+      return callback(null, true);
+    },
+    credentials: true, // IMPORTANT: Allows cookies/headers to be sent
   })
 );
-
-app.use(function (req, res, next) {
-  // const allowedOrigins = ["https://instantcashpick.com"];
-  const allowedOrigins = [
-    // "http://localhost:5173",
-    "https://www.instanthub.in",
-    "https://instantcashpick.com",
-  ];
-  const origin = req.headers.origin;
-  console.log("origin from app.use for headers:", origin);
-
-  if (allowedOrigins.includes(origin)) {
-    console.log("Allowed Origin");
-    res.setHeader("Access-Control-Allow-Origin", origin);
-  }
-
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "GET, POST, OPTIONS, PUT, PATCH, DELETE"
-  );
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
-
-  // Handle preflight requests
-  if (req.method == "OPTIONS") {
-    res.setHeader("Access-Control-Allow-Credentials", "true");
-    // Explicitly set the allowed origin instead of using wildcard *
-    res.setHeader("Access-Control-Allow-Origin", origin);
-    return res.status(200).end();
-  }
-
-  res.setHeader("Access-Control-Allow-Credentials", "true");
-  next();
-});
 
 app.use(cookieParser());
 
@@ -162,10 +143,8 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.get("/sitemap.xml", async (req, res) => {
   try {
     const urls = await getDynamicUrls();
-    // console.log("URLS", urls);
 
     const sitemap = generateSitemap(urls);
-    // console.log("sitemap", sitemap);
 
     res.header("Content-Type", "application/xml");
     res.send(sitemap);
@@ -182,9 +161,3 @@ mongoose
     app.listen(PORT, () => console.log(`Port is listening @ ${PORT}`));
   })
   .catch((error) => console.log(`${error} connection failed!`));
-
-// Penkek-8megra-xyrcod
-
-// mongodb+srv://qureshiyusuff:NY@qureshi2@cluster0.lerztq0.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
-
-// 49.37.251.250/32

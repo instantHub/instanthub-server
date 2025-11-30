@@ -4,7 +4,8 @@ import {
   deletePartner,
   getPartnerProfile,
   getPartners,
-  loginPartner,
+  partnerLogin,
+  partnerLogout,
   updatePartner,
 } from "../../controllers/index.js";
 import { auth, authorize } from "../../middleware/index.js";
@@ -12,7 +13,8 @@ import { ROLES } from "../../constants/auth.js";
 
 const router = express.Router();
 
-router.post("/auth", loginPartner);
+router.post("/auth", partnerLogin);
+router.post("/logout", partnerLogout);
 
 // All routes in this file are protected
 router.get("/", auth, authorize(ROLES.admin), getPartners);

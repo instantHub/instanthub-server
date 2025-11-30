@@ -1,7 +1,4 @@
 import Partner from "../../models/partner/partner.model.js";
-import generateToken from "../../utils/generateToken.js";
-import crypto from "node:crypto";
-import jwt from "jsonwebtoken";
 import PartnerRequest from "../../models/partner/partner-request.model.js";
 
 /**
@@ -125,98 +122,5 @@ export const deletePartner = async (req, res) => {
   } catch (error) {
     console.error("Error deleting partner:", error);
     res.status(500).json({ message: "Server Error", error: error.message });
-  }
-};
-
-export const loginPartner = async (req, res) => {
-  try {
-    console.log("loginPartner controller");
-    const { email, password } = req.body;
-    console.log("data", email, password);
-
-    const partner = await Partner.findOne({ email, isActive: true });
-    // console.log("partner", partner);
-
-    if (!partner) {
-      return res.status(401).json({ message: "Invalid credentials" });
-    }
-
-    if (partner.isLocked) {
-      return res.status(423).json({
-        message: "Account locked due to multiple failed attempts",
-      });
-    }
-
-    const isPasswordValid = await partner.matchPasswords(password);
-
-    if (!isPasswordValid) {
-      await partner.incLoginAttempts();
-      return res
-        .status(401)
-        .json({ message: "Wrong Password, Invalid credentials" });
-    }
-
-    // Clean expired tokens and generate new ones
-    await partner.cleanExpiredTokens();
-    const { accessToken, refreshToken } = generateToken(res, partner);
-
-    // Store session token
-    const sessionToken = {
-      token: crypto.randomBytes(32).toString("hex"),
-      createdAt: new Date(),
-      // expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
-      expiresAt: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000), // 7 days
-      ipAddress: req.ip || req.headers["x-forwarded-for"] || "unknown",
-      userAgent: req.headers["user-agent"],
-    };
-
-    partner.sessionTokens.push(sessionToken);
-    partner.lastLogin = new Date();
-    partner.loginAttempts = 0;
-    partner.lockUntil = undefined;
-    await partner.save();
-
-    res.cookie("sessionToken", sessionToken.token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      path: "/",
-    });
-
-    const decoded = jwt.verify(accessToken, process.env.JWT_SECRET);
-
-    res.json({
-      partner: {
-        id: partner._id,
-        name: partner.name,
-        email: partner.email,
-        role: partner.role,
-        permissions: partner.permissions,
-        lastLogin: partner.lastLogin,
-        token: accessToken,
-        sessionExpiry: decoded.exp * 1000, // Convert to milliseconds
-      },
-    });
-  } catch (error) {
-    console.error("Auth error:", error);
-    res.status(500).json({ msg: "Server error" });
-  }
-};
-
-export const getPartnerProfile = async (req, res) => {
-  // console.log("req.admin", req.admin);
-  try {
-    const partner = await Partner.findById(req.partner._id).select(
-      "-password -sessionTokens -twoFactorSecret"
-    );
-
-    if (!partner) {
-      return res.status(404).json({ message: "Partner not found" });
-    }
-
-    res.json(partner);
-  } catch (error) {
-    res.status(500).json({ message: "Server error" });
   }
 };
