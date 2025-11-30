@@ -5,7 +5,7 @@ export function deleteImage(image) {
   console.log("In delete image");
   const __dirname = path.resolve();
   const imagePath = path.join(__dirname, image);
-  console.log("imagePath", image);
+  console.log("imagePath", imagePath);
 
   try {
     fs.unlink(imagePath, (err) => {

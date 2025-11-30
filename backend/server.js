@@ -47,6 +47,7 @@ import variantQuestionsRoutes from "./routes/questions/variantQuestions.routes.j
 import orderAnalyticsRoutes from "./routes/order-analytics.routes.js";
 import partnerRoutes from "./routes/partner/partner.routes.js";
 import partnerRequestRoutes from "./routes/partner/partner-request.routes.js";
+import blogsRoutes from "./routes/blog.routes.js";
 
 import { generateSitemap, getDynamicUrls } from "./generateSiteMap.js";
 
@@ -151,6 +152,7 @@ app.use("/api/stats", statsRoutes);
 app.use("/api/questions/pricing", questionsPricesRoutes);
 app.use("/api/variant/questions", variantQuestionsRoutes);
 app.use("/api/orders/analytics", orderAnalyticsRoutes);
+app.use("/api/blogs", blogsRoutes);
 
 // Delete Image Route
 app.use("/api/delete", deleteRoutes);

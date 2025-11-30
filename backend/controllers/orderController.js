@@ -190,7 +190,7 @@ export const completeOrderWithProofs = async (req, res) => {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    console.log("updatedOrder", updatedOrder);
+    // console.log("updatedOrder", updatedOrder);
 
     const stockIn = await Stocks.create({
       orderId: updatedOrder.orderId,

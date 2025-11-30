@@ -15,6 +15,7 @@ import {
 import { auth } from "../middleware/auth.js";
 import { authorize } from "../middleware/authorization.js";
 import { ROLES } from "../constants/auth.js";
+import { compressCustomerProofImages } from "../middleware/index.js";
 
 const router = express.Router();
 
@@ -63,6 +64,7 @@ router.post(
     { name: "customerOptional1", maxCount: 1 },
     { name: "customerOptional2", maxCount: 1 },
   ]),
+  compressCustomerProofImages,
   completeOrderWithProofs
 );
 

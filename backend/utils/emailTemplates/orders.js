@@ -383,7 +383,7 @@ const ORDER_EMAIL_TEMPLATE = (order) => {
 
       <h1 class="title" style="text-align: center">Sell Receipt</h1>
       <h2 class="congrats" style="text-align: center">
-        Congradulations your order has been placed with InstantHub
+        Congratulations your order has been placed with InstantHub
       </h2>
       <h1 style="font-size: small">
         <a href="https://instanthub.in">InstantHub</a>
