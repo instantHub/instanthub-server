@@ -10,6 +10,7 @@ const userModels = {
   marketing: Admin,
   executive: Executive,
   partner: Partner,
+  partner_executive: Executive,
 };
 
 export const auth = async (req, res, next) => {

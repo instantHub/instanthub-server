@@ -2,9 +2,11 @@ import crypto from "node:crypto";
 import jwt from "jsonwebtoken";
 import generateToken from "../../utils/generateToken.js";
 import Partner from "../../models/partner/partner.model.js";
+import Executive from "../../models/executiveModel.js";
 
 const userModels = {
   partner: Partner,
+  partner_executive: Executive,
 };
 
 export const partnerLogin = async (req, res) => {
@@ -78,6 +80,7 @@ export const partnerLogin = async (req, res) => {
         name: partner.name,
         email: partner.email,
         role: partner.role,
+        partnerID: partner.partnerID,
         permissions: partner.permissions,
         lastLogin: partner.lastLogin,
         sessionExpiry: decoded.exp * 1000, // Convert to milliseconds
@@ -130,15 +133,25 @@ export const getPartnerProfile = async (req, res) => {
   console.log("getPartnerProfile controller called");
 
   try {
-    const partner = await Partner.findById(req.user._id).select(
-      "-password -sessionTokens -twoFactorSecret"
-    );
+    const { _id, role } = req.user;
+    console.log("req.user", _id, role);
 
-    if (!partner) {
-      return res.status(404).json({ message: "Partner not found" });
+    const UserModel = userModels[role];
+    console.log("UserModel in getPartnerProfile", UserModel);
+
+    if (!UserModel) {
+      return res.status(401).json({ message: "Invalid user role in token." });
     }
 
-    res.json(partner);
+    const user = await UserModel.findById(_id).select(
+      "-password -sessionTokens -twoFactorSecret -isActive -loginAttempts -lockUntil -createdAt -updatedAt"
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json(user);
   } catch (error) {
     res.status(500).json({ message: "Server error" });
   }

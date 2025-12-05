@@ -14,6 +14,8 @@ import {
 } from "../utils/emailTemplates/executive.js";
 import mongoose from "mongoose";
 import { getDateRanges } from "../utils/getDateRanges.js";
+import { generateUniqueID } from "../utils/helper.js";
+import { ROLES } from "../constants/auth.js";
 
 /**
  * @desc    Create a new executive
@@ -35,17 +37,26 @@ export const createExecutive = async (req, res) => {
     });
 
     if (executiveExists) {
-      // return res.status(409).json({
       return res.status(400).json({
         message: "An executive with this email or phone already exists.",
       });
     }
 
+    const executiveID = generateUniqueID(ROLES.executive);
+    const creator = {
+      id: req.user.adminID,
+      name: req.user.name,
+      role: "admin",
+    };
+
     const executive = await Executive.create({
+      executiveID,
       name,
       email,
       phone,
       password,
+      role: "executive",
+      creator,
     });
 
     // TODO: Update the node mailer to official emails after reactivating SUPPORT Email

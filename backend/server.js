@@ -45,8 +45,11 @@ import questionsPricesRoutes from "./routes/questions/prices.routes.js";
 import executiveRoutes from "./routes/executiveRoutes.js";
 import variantQuestionsRoutes from "./routes/questions/variantQuestions.routes.js";
 import orderAnalyticsRoutes from "./routes/order-analytics.routes.js";
+
 import partnerRoutes from "./routes/partner/partner.routes.js";
 import partnerRequestRoutes from "./routes/partner/partner-request.routes.js";
+import partnerOrdersRoutes from "./routes/partner/partner-orders.routes.js";
+
 import blogsRoutes from "./routes/blog.routes.js";
 
 import { generateSitemap, getDynamicUrls } from "./generateSiteMap.js";
@@ -98,9 +101,13 @@ app.use(cookieParser());
 
 /* ROUTES */
 app.use("/api/admin", adminRoutes);
+
 app.use("/api/partners", partnerRoutes);
 app.use("/api/partners-requests", partnerRequestRoutes);
+app.use("/api/partners-orders", partnerOrdersRoutes);
+
 app.use("/api/executives", executiveRoutes);
+
 app.use("/api/upload", uploadRoutes);
 app.use("/api/category", categoryRoutes);
 app.use("/api/upload/categories", uploadCategoriesRoutes);

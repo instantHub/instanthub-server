@@ -31,9 +31,19 @@ const partnerSchema = new mongoose.Schema(
       required: true,
       min: 6,
     },
+    partnerID: { type: String, unique: true, required: true, immutable: true },
+    creator: {
+      id: { type: String },
+      name: { type: String },
+      role: {
+        type: String,
+        enum: ["admin"],
+        default: "admin",
+      },
+    },
     role: {
       type: String,
-      enum: ["executive", "partner"],
+      enum: ["partner"],
       default: "partner",
     },
     isActive: {
@@ -46,6 +56,7 @@ const partnerSchema = new mongoose.Schema(
         orderId: { type: String },
         assignedAt: { type: Date, default: Date.now },
       },
+      { _id: false },
     ],
     rating: {
       type: Number,

@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import crypto from "node:crypto";
 import Executive from "../models/executiveModel.js";
 import Partner from "../models/partner/partner.model.js";
+import { generateUniqueID } from "../utils/helper.js";
 
 const userModels = {
   admin: Admin,
@@ -14,6 +15,8 @@ const userModels = {
 };
 
 export const registerAdmin = async (req, res) => {
+  console.log("registerAdmin controller called..!");
+
   try {
     const { name, email, password, role } = req.body;
 
@@ -27,7 +30,10 @@ export const registerAdmin = async (req, res) => {
       return res.status(409).json({ message: "Email already registered" });
     }
 
+    const adminID = generateUniqueID(role);
+
     const admin = await Admin.create({
+      adminID,
       name,
       email,
       password,

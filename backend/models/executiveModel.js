@@ -27,10 +27,20 @@ const executiveSchema = new mongoose.Schema(
       required: true,
       minlength: 6,
     },
+    executiveID: { type: String, unique: true, required: true },
     role: {
       type: String,
-      enum: ["admin", "executive", "partner"],
+      enum: ["executive", "partner_executive"],
       default: "executive",
+    },
+    creator: {
+      id: { type: String },
+      name: { type: String },
+      role: {
+        type: String,
+        enum: ["admin", "partner"],
+        default: "admin",
+      },
     },
     isActive: {
       type: Boolean,
@@ -42,6 +52,7 @@ const executiveSchema = new mongoose.Schema(
         orderId: { type: String },
         assignedAt: { type: Date, default: Date.now },
       },
+      { _id: false },
     ],
     rating: {
       type: Number,
