@@ -9,7 +9,6 @@ import {
   deleteAdmin,
 } from "../controllers/adminController.js";
 import { auth, authorize } from "../middleware/index.js";
-import { sendInvoice } from "../controllers/sendBillToCustomer.js";
 import { ROLES } from "../constants/auth.js";
 
 const router = express.Router();
@@ -25,8 +24,6 @@ router.get(
 );
 
 router.use(auth, authorize(ROLES.admin));
-
-router.post("/check/bill", sendInvoice);
 
 router.get("/all-admin", getAllAdmins);
 router.put("/:id", updateAdmin);

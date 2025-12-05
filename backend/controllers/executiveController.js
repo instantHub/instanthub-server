@@ -59,13 +59,14 @@ export const createExecutive = async (req, res) => {
       creator,
     });
 
-    // TODO: Update the node mailer to official emails after reactivating SUPPORT Email
-    // const transporter = nodemailer.createTransport(HOSTINGER_MAILER);
-    const transporter = nodemailer.createTransport(GMAIL_MAILER);
+    const useGmailService = process.env.USE_GMAIL_SERVICE;
+    const MAILER = useGmailService ? GMAIL_MAILER : HOSTINGER_MAILER;
+    const FROM = useGmailService ? INSTANTHUB_GMAIL : SUPPORT_EMAIL;
+
+    const transporter = nodemailer.createTransport(MAILER);
 
     const mailOptions = {
-      // from: SUPPORT_EMAIL,
-      from: INSTANTHUB_GMAIL,
+      from: FROM,
       to: email,
       subject: `Welcome to Instant Hub: Your Executive Account Details`,
       html: ACCOUNT_CREATION(executive, password),
@@ -223,14 +224,15 @@ export const assignOrderToExecutive = async (req, res) => {
     });
     await executive.save();
 
-    // TODO: Update the node mailer to official emails after reactivating SUPPORT Email
-    // const transporter = nodemailer.createTransport(HOSTINGER_MAILER);
-    const transporter = nodemailer.createTransport(GMAIL_MAILER);
+    const useGmailService = process.env.USE_GMAIL_SERVICE;
+    const MAILER = useGmailService ? GMAIL_MAILER : HOSTINGER_MAILER;
+    const FROM = useGmailService ? INSTANTHUB_GMAIL : ORDERS_EMAIL;
+
+    const transporter = nodemailer.createTransport(MAILER);
 
     // Email content
     const mailOptions = {
-      // from: ORDERS_EMAIL,
-      from: INSTANTHUB_GMAIL,
+      from: FROM,
       to: updateOrder.customerDetails.email,
       cc: executive.email,
       subject: `Agent Has Been Assigned To Your Order #${updateOrder.orderId}`,

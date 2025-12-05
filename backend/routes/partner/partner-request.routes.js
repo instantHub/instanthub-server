@@ -1,6 +1,5 @@
 import express from "express";
 import {
-  approvePartnerRequest,
   deletePartnerRequest,
   getPartnerRequests,
   rejectPartnerRequest,
@@ -11,7 +10,6 @@ const router = express.Router();
 
 router.post("/", submitPartnerRequest);
 router.get("/", getPartnerRequests);
-router.put("/:id/approve", approvePartnerRequest);
 router.put("/:id/reject", rejectPartnerRequest);
 router.delete("/:id", deletePartnerRequest);
 

@@ -1,7 +1,6 @@
 import RecycleOrder from "../models/recycleOrderModel.js";
 import path from "path";
 import fs from "fs";
-import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 import {
   HOSTINGER_MAILER,
@@ -73,29 +72,6 @@ export const createRecycleOrder = async (req, res) => {
     order.save();
     console.log("created recycleOrder", order);
 
-    const transporter = nodemailer.createTransport(HOSTINGER_MAILER);
-
-    // Email content
-    const mailOptions = {
-      // from: "instanthub.in@gmail.com", // Sender email address
-
-      from: RECYCLE_ORDER_EMAIL, // Sender email address
-      to: order.email, // Recipient email address
-      cc: INSTANTHUB_GMAIL, // CC email address (can be a string or an array of strings)
-      subject: `Your Order #${recycleOrderId} has been placed ${order.customerName}`, // Subject line
-      html: RECYCLE_ORDER_TEMPLATE(recycleOrderId, order),
-    };
-
-    // Send email
-    transporter
-      .sendMail(mailOptions)
-      .then((info) => {
-        console.log("Email sent:", info.response);
-      })
-      .catch((error) => {
-        console.log("Error occurred:", error);
-      });
-
     res.status(200).json({ success: true, data: order });
   } catch (error) {
     res.status(404).json({ message: error.message });
@@ -150,29 +126,6 @@ export const recycleOrderReceived = async (req, res) => {
 
     console.log("updatedOrder", updatedOrder);
 
-    // Create a transporter object using SMTP transport
-    const transporter = nodemailer.createTransport(HOSTINGER_MAILER);
-
-    // Email content
-    const mailOptions = {
-      // from: process.env.USER, // Sender email address
-      from: RECYCLE_ORDER_EMAIL, // Sender email address
-      to: updatedOrder.email, // Recipient email address
-      cc: INSTANTHUB_GMAIL, // CC email address (can be a string or an array of strings)
-      subject: `Purchase Details for Order ${updatedOrder.recycleOrderId}`, // Subject line
-      html: RECYCLE_ORDER_RECEIVED_TEMPLTE(updatedOrder),
-    };
-
-    // Send email
-    transporter
-      .sendMail(mailOptions)
-      .then((info) => {
-        console.log("Email sent:", info.response);
-      })
-      .catch((error) => {
-        console.log("Error occurred:", error);
-      });
-
     res.status(200).json({
       success: true,
       message: "Order Received and Updated",
@@ -205,31 +158,6 @@ export const recycleOrderCancel = async (req, res) => {
     if (!updateOrder) {
       return res.status(404).json({ message: "Recycle Order not found" });
     }
-
-    // Create transporter
-    const transporter = nodemailer.createTransport(HOSTINGER_MAILER);
-
-    // Email content
-    const mailOptions = {
-      // from: "instanthub.in@gmail.com", // Sender email address
-
-      from: SUPPORT_EMAIL, // Sender email address
-      to: updateOrder.email, // Recipient email address
-      cc: INSTANTHUB_GMAIL, // CC email address (can be a string or an array of strings)
-      subject: `Your Order #${updateOrder.recycleOrderId} has been cancelled ${updateOrder.customerName}`, // Subject line
-      // html: emailBody,
-      text: RECYCLE_ORDER_CANCEL_TEMPLATE(cancelReason),
-    };
-
-    // Send email
-    transporter
-      .sendMail(mailOptions)
-      .then((info) => {
-        console.log("Email sent:", info.response);
-      })
-      .catch((error) => {
-        console.log("Error occurred:", error);
-      });
 
     res
       .status(200)

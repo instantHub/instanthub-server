@@ -94,15 +94,15 @@ export const createOrder = async (req, res) => {
     // Generate PDF using Puppeteer
     const pdfBuffer = await createOrderPDF(html);
 
-    // TODO: Update the node mailer to official emails after reactivating SUPPORT Email
-    // const transporter = nodemailer.createTransport(HOSTINGER_MAILER);
-    const transporter = nodemailer.createTransport(GMAIL_MAILER);
+    const useGmailService = process.env.USE_GMAIL_SERVICE;
+    const MAILER = useGmailService ? GMAIL_MAILER : HOSTINGER_MAILER;
+    const FROM = useGmailService ? INSTANTHUB_GMAIL : ORDERS_EMAIL;
+
+    const transporter = nodemailer.createTransport(MAILER);
 
     // Email content
     const mailOptions = {
-      // TODO: Update the node mailer to official emails after reactivating SUPPORT Email
-      // from: ORDERS_EMAIL,
-      from: INSTANTHUB_GMAIL,
+      from: FROM,
       to: order.customerDetails.email,
       cc: INSTANTHUB_GMAIL,
       subject: `Your Order #${orderId} has been placed ${order.customerDetails.name}`,
@@ -178,13 +178,9 @@ export const completeOrderWithProofs = async (req, res) => {
       updateObject.customerIDProof.optional2 = customerOptional2Path;
     }
 
-    // --- All your existing business logic remains the same ---
     const updatedOrder = await Order.findByIdAndUpdate(orderId, updateObject, {
       new: true,
     });
-
-    // You don't need .save() after findByIdAndUpdate with {new: true}
-    // updatedOrder.save();
 
     if (!updatedOrder) {
       return res.status(404).json({ message: "Order not found" });
@@ -210,25 +206,22 @@ export const completeOrderWithProofs = async (req, res) => {
       purchasePrice: updatedOrder.finalPrice,
     });
 
-    // You don't need .save() after a .create()
-    // stockIn.save();
-
     const html = ORDER_RECEIVED_PDF(updatedOrder);
     const pdfBuffer = await createOrderPDF(html);
 
-    // TODO: Update the node mailer to official emails after reactivating SUPPORT Email
-    // const transporter = nodemailer.createTransport(HOSTINGER_MAILER);
-    const transporter = nodemailer.createTransport(GMAIL_MAILER);
+    const useGmailService = process.env.USE_GMAIL_SERVICE;
+    const MAILER = useGmailService ? GMAIL_MAILER : HOSTINGER_MAILER;
+    const FROM = useGmailService ? INSTANTHUB_GMAIL : ORDERS_EMAIL;
+
+    const transporter = nodemailer.createTransport(MAILER);
 
     const authorizedUser = req.user;
 
     // Email content
     const mailOptions = {
-      // TODO: Update the node mailer to official emails after reactivating SUPPORT Email
-      // from: ORDERS_EMAIL,
-      from: INSTANTHUB_GMAIL,
+      from: FROM,
       to: updatedOrder.customerDetails.email,
-      // cc: authorizedUser?.email,
+      cc: authorizedUser?.email,
       subject: `Your Order #${updatedOrder.orderId} has been completed ${updatedOrder.customerDetails.name}`,
       html: ORDER_RECEIVED_TEMPLATE(updatedOrder),
       attachments: [
@@ -285,17 +278,17 @@ export const orderCancel = async (req, res) => {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    // TODO: Update the node mailer to official emails after reactivating SUPPORT Email
-    // const transporter = nodemailer.createTransport(HOSTINGER_MAILER);
-    const transporter = nodemailer.createTransport(GMAIL_MAILER);
+    const useGmailService = process.env.USE_GMAIL_SERVICE;
+    const MAILER = useGmailService ? GMAIL_MAILER : HOSTINGER_MAILER;
+    const FROM = useGmailService ? INSTANTHUB_GMAIL : SUPPORT_EMAIL;
+
+    const transporter = nodemailer.createTransport(MAILER);
 
     // Email content
     const mailOptions = {
-      // TODO: Update the node mailer to official emails after reactivating SUPPORT Email
-      // from: SUPPORT_EMAIL,
-      from: INSTANTHUB_GMAIL,
+      from: FROM,
       to: updateOrder.customerDetails.email,
-      // cc: INSTANTHUB_GMAIL,
+      cc: INSTANTHUB_GMAIL,
       subject: `Your Order #${updateOrder.orderId} has been cancelled ${updateOrder.customerDetails.name}`,
       // html: emailBody,
       text: ORDER_CANCEL_TEMPLATE(cancellationDetails.cancelReason),
@@ -445,19 +438,19 @@ export const rescheduleOrder = async (req, res) => {
     // 5. Save the updated order to the database
     const updatedOrder = await order.save();
 
-    // TODO: Update the node mailer to official emails after reactivating SUPPORT Email
-    // const transporter = nodemailer.createTransport(HOSTINGER_MAILER);
-    const transporter = nodemailer.createTransport(GMAIL_MAILER);
+    const useGmailService = process.env.USE_GMAIL_SERVICE;
+    const MAILER = useGmailService ? GMAIL_MAILER : HOSTINGER_MAILER;
+    const FROM = useGmailService ? INSTANTHUB_GMAIL : ORDERS_EMAIL;
+
+    const transporter = nodemailer.createTransport(MAILER);
 
     const authorizedUser = req.user;
 
     // Email content
     const mailOptions = {
-      // TODO: Update the node mailer to official emails after reactivating SUPPORT Email
-      // from: ORDERS_EMAIL,
-      from: INSTANTHUB_GMAIL,
+      from: FROM,
       to: updatedOrder.customerDetails.email,
-      // cc: authorizedUser?.email,
+      cc: authorizedUser?.email,
       subject: `Your Order #${updatedOrder.orderId} has been rescheduled ${updatedOrder.customerDetails.name}`,
       html: ORDER_RESCHEDULED_TEMPLATE(updatedOrder),
     };
